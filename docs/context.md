@@ -42,3 +42,11 @@
 ## Ссылки
 - Последний отчёт: [stages/stage-00.md](stages/stage-00.md)
 - Шаблон ревью: [reviews/stage-XX-review.template.md](reviews/stage-XX-review.template.md)
+
+## Репозиторий
+- Удалённый: **https://github.com/HoudiwinG/second-brain** (приватный), ветка master
+- Выгрузка: 2026-10-22, коммиты 50afd6b / 58cb23b / 1265a37
+- CI: GitHub Actions (.github/workflows/ci.yml) — pub get + analyze + test
+- Секреты: `.env` исключён в .gitignore (после выгрузки добавлена гарантия
+  `.env` / `.env.*` / `!.env.example` — проверено `git ls-files`); в репозитории
+  только `.env.example`. Локальные дампы сессий агента тоже в .gitignore.
