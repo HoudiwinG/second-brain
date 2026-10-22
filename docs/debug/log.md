@@ -90,9 +90,9 @@ R00-013, R00-014 — закрыты 2026-10-22, после них 24/24 и ло�
 | 2026-10-22 08:35| 0    | R00-012 | принято     | agent-2 | 1f30763  | примечание в начале `PROMPT.md` |
 | 2026-10-22 08:35| 0    | R00-013 | найдено     | agent-2 | 1f30763  | ADR-001 ссылается на удалённый `lib/app/settings_controller.dart` (MINOR) |
 | 2026-10-22 08:35| 0    | R00-014 | найдено     | agent-2 | 64ab3a6 | откат настроек при ошибке не покрыт тестом и не виден пользователю (MINOR) |
-| 2026-10-22 09:05| 0    | R00-013 | исправлено  | agent-1 | —        | ADR-001: путь заменён на `features/settings/application/settings_controller.dart` |
-| 2026-10-22 09:05| 0    | R00-014 | исправлено  | agent-1 | —        | `bool` + SnackBar; 3 теста failure/success; analyze 0, test 24/24 |
-| 2026-10-22 09:10| 0    | R00-001 | подтверждено | agent-1 | 64ab3a6 | CI через API: analyze-and-test и build-windows success; локальная сборка Windows success |
+| 2026-10-22 09:05| 0    | R00-013 | исправлено  | agent-1 | a68b224  | ADR-001: путь заменён на `features/settings/application/settings_controller.dart` |
+| 2026-10-22 09:05| 0    | R00-014 | исправлено  | agent-1 | a68b224  | `bool` + SnackBar; 3 теста failure/success; analyze 0, test 24/24 |
+| 2026-10-22 09:10| 0    | R00-001 | подтверждено | agent-1 | a68b224  | CI через API: run 39746024266 (64ab3a6) и 39755053239 (a68b224) — оба success; локальная сборка Windows success |
 
 ## Паттерны ошибок
 

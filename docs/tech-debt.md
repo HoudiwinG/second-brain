@@ -22,7 +22,7 @@
 Проверка после закрытия (локально, Flutter 3.47.7):
 `flutter analyze --fatal-infos` → 0 issues; `flutter test` → 24/24;
 `flutter build windows --debug` → **success** локально и в CI, job `build-windows`
-([run 39746024266](https://github.com/HoudiwinG/second-brain/actions/runs/39746024266)).
+([последний run 39755053239](https://github.com/HoudiwinG/second-brain/actions/runs/39755053239)).
 
 ---
 
@@ -202,6 +202,9 @@ CI-доказательство (R00-001): коммит `64ab3a6`, run
 GitHub API: job'ы
 [analyze-and-test](https://github.com/HoudiwinG/second-brain/actions/runs/39746024266/job/119714562468) и
 [build-windows](https://github.com/HoudiwinG/second-brain/actions/runs/39746024266/job/119714562295)).
+Финальный коммит с R00-013/R00-014 — `a68b224`, run
+[39755053239](https://github.com/HoudiwinG/second-brain/actions/runs/39755053239)
+— оба job'а **success**.
 
 ---
 

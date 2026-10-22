@@ -237,9 +237,9 @@
 - Проверяемый коммит: код — `64ab3a6`; документация/HEAD — `1f30763` (`master`, `[skip ci]`)
 - Отчёт разработчика: [docs/stages/stage-00.md](../stages/stage-00.md)
 - Метод: независимая сверка `git diff 3526642..64ab3a6`, фактического кода, тестов, CI-конфига, ARB и ADR; локальный прогон Flutter 3.47.7 из `C:\src\flutter`; проверка исходников `tray_manager 0.5.0` (Dart-обёртка + Windows C++), структуры `.ico` и lock-файла.
-- Ограничения среды:
-  - репозиторий приватный, `gh` не установлен; GitHub API и веб-страница run без токена отдают 404, поэтому conclusion run 39746024266 **не перепроверен независимо** — принят как attestation agent-1/пользователя;
-  - Visual Studio Build Tools установлены без workload C++ (`vswhere -requires …VC.Tools.x86.x64` пуст), поэтому локальный `flutter build windows` невозможен;
+- Ограничения среды (на момент ревью; актуальный статус — в «Обновлении» в конце файла):
+  - репозиторий приватный, `gh` не установлен; GitHub API и веб-страница run без токена отдают 404, поэтому conclusion run 39746024266 agent-2 независимо не проверял — принят как attestation agent-1/пользователя (agent-1 позднее проверил через API: success);
+  - Visual Studio Build Tools были установлены без workload C++ (`vswhere -requires …VC.Tools.x86.x64` пуст), поэтому локальный `flutter build windows` тогда не выполнялся; позднее C++/ATL установлены, сборка прошла;
   - GUI-проверка трея и глобального хоткея не выполнялась (нет рабочего Windows GUI-прогона).
 
 ### Итог повторного ревью
@@ -340,7 +340,7 @@ flutter analyze --fatal-infos → No issues found! (ran in 16.1s)
 flutter test --reporter expanded → +21: All tests passed!
 flutter pub get --enforce-lockfile → Got dependencies! (lock не изменён)
 git ls-remote origin refs/heads/master → 1f30763… (push подтверждён)
-flutter doctor -v → Visual Studio Build Tools 2022: «installation is incomplete» (C++ workload отсутствует)
+flutter doctor -v → на момент ревью VS Build Tools 2022: «installation is incomplete» (C++ workload отсутствует); после установки C++ + ATL/ATLMFC локальная сборка успешна
 ```
 
 Дополнительно проверено: `.ico` — 2 изображения 16×16/32×32, 32 bpp; ARB EN/RU — 31 ключ, расхождений нет; `sqlite3_flutter_libs` в `pubspec.lock` отсутствует; `tray_manager 0.5.0` резолвит путь как `<exe>/data/flutter_assets/assets/tray_icon.ico`.
@@ -360,11 +360,13 @@ flutter doctor -v → Visual Studio Build Tools 2022: «installation is incomple
   0 issues; `flutter test` → **24/24**.
 - **CI (R00-001) проверен agent-1 через GitHub API:** run
   [39746024266](https://github.com/HoudiwinG/second-brain/actions/runs/39746024266)
-  — jobs
+  (коммит `64ab3a6`) — jobs
   [analyze-and-test](https://github.com/HoudiwinG/second-brain/actions/runs/39746024266/job/119714562468)
   и
   [build-windows](https://github.com/HoudiwinG/second-brain/actions/runs/39746024266/job/119714562295)
-  завершились **success**.
+  завершились **success**. Финальный коммит `a68b224` (R00-013/R00-014) — run
+  [39755053239](https://github.com/HoudiwinG/second-brain/actions/runs/39755053239),
+  оба job'а **success**.
 - **Локальная Windows-сборка:** Visual Studio Build Tools 2022 с workload C++ и
   ATL/ATLMFC установлены; `flutter build windows --debug` → **success**
   (`build\windows\x64\runner\Debug\second_brain.exe`). GUI-проверка трея и

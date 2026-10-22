@@ -1,6 +1,6 @@
 # Stage-00: Каркас проекта (Flutter, Windows-first)
 
-- **Статус:** done (analyze 0 issues, test 24/24; локальная сборка `flutter build windows --debug` — success; CI [39746024266](https://github.com/HoudiwinG/second-brain/actions/runs/39746024266) — `analyze-and-test` + `build-windows` success)
+- **Статус:** done (analyze 0 issues, test 24/24; локальная сборка `flutter build windows --debug` — success; CI [39755053239](https://github.com/HoudiwinG/second-brain/actions/runs/39755053239) — `analyze-and-test` + `build-windows` success)
 - **Дата начала / завершения (UTC):** 2026-10-21 ~16:00 — 2026-10-21 20:00
 - **Основной агент:** agent-1 (DeepSeek V4.1 Flash Free / OpenCode)
 - **Ревьюер:** agent-2 — 2026-10-22: **FAIL** → повторное ревью **PASS WITH COMMENTS**; R00-001…R00-014 закрыты/приняты

@@ -7,7 +7,7 @@
 - **Открытых MAJOR:** 0
 - **Сборка:** `flutter analyze` OK (0 issues); `flutter test` — 24/24;
   локально `flutter build windows --debug` — **success**; CI
-  [run 39746024266](https://github.com/HoudiwinG/second-brain/actions/runs/39746024266)
+  [run 39755053239](https://github.com/HoudiwinG/second-brain/actions/runs/39755053239)
   — **success**: `analyze-and-test` и `build-windows` (включая Windows-тесты)
 - **Тесты:** зелёные 24/24 (`flutter test`)
 - **Flutter SDK:** 3.47.7 stable, установлен в C:\src\flutter (добавлен в PATH пользователя)
@@ -68,12 +68,14 @@
 - Удалённый: **https://github.com/HoudiwinG/second-brain** (приватный), ветка master
 - Выгрузка: 2026-10-22, коммиты 50afd6b / 58cb23b / 1265a37 / **64ab3a6**
   (`chore(stage-00): закрыть техдолг и находки ревью`) / **1f30763**
-  (`docs: зафиксировать зелёный CI и закрытие R00-001`)
-- CI-прогон для 64ab3a6:
-  https://github.com/HoudiwinG/second-brain/actions/runs/39746024266
+  (`docs: зафиксировать зелёный CI и закрытие R00-001`) / **a68b224**
+  (`fix(stage-00): закрыть R00-013/R00-014 и подтвердить локальную сборку`)
+- Последний CI-прогон для a68b224:
+  https://github.com/HoudiwinG/second-brain/actions/runs/39755053239
   — **success**; jobs:
-  [analyze-and-test](https://github.com/HoudiwinG/second-brain/actions/runs/39746024266/job/119714562468) /
-  [build-windows](https://github.com/HoudiwinG/second-brain/actions/runs/39746024266/job/119714562295)
+  [analyze-and-test](https://github.com/HoudiwinG/second-brain/actions/runs/39755053239/job/119744838792) /
+  [build-windows](https://github.com/HoudiwinG/second-brain/actions/runs/39755053239/job/119744839114)
+- Ранее для 64ab3a6: run 39746024266 — **success** (те же два job'а).
 - CI: GitHub Actions (.github/workflows/ci.yml) — pub get --enforce-lockfile +
   analyze + test (ubuntu) + test + build windows --debug (windows-latest)
 - Секреты: `.env` исключён в .gitignore (после выгрузки добавлена гарантия
