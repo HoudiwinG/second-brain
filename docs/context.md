@@ -9,7 +9,7 @@
 - **Открытых CRITICAL:** 0
 - **Открытых MAJOR:** 0 (TD-21 — принятое ограничение `REAL` для финансов)
 - **Сборка:** `flutter analyze --fatal-infos` — 0 issues;
-  `flutter test` — **44/44**; `flutter build windows --debug` — **success**
+  `flutter test` — **45/45**; `flutter build windows --debug` — **success**
 - **Flutter SDK:** 3.47.7 stable, `C:\src\flutter` (Dart 3.13.5)
 - **Ветка:** `master`; CI stage-01:
   [run 39763804171](https://github.com/HoudiwinG/second-brain/actions/runs/39763804171) —
@@ -55,8 +55,9 @@
 - TD-23 (MINOR, accepted): экспорт/импорт через ввод пути, без file-picker.
 - TD-24 (MINOR, accepted): нет UI корзины/restore/purge для soft-delete.
 - TD-14…TD-20 — ограничения stage-00 (трей 0.5.0, хоткей, golden-тесты и др.).
-- Ручной прогон GUI (трей, `Ctrl+Alt+B`) не выполнялся; сборка Windows
-  подтверждена локально.
+- Ручной прогон GUI (трей, `Ctrl+Alt+B`) **выполнялся**; единственная
+  найденная проблема — overflow бокового rail при низком окне — исправлена
+  (`scrollable: true`) и покрыта тестом.
 
 ## Ближайшие задачи (stage-02 «UX-каркас»)
 - Довести UX экранов ядра данных, file-picker, корзину/restore.

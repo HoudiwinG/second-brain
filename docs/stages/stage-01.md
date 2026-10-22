@@ -120,7 +120,7 @@ LLM-интеграции обязан использовать репозито�
 ```powershell
 flutter gen-l10n
 flutter analyze --fatal-infos   # 0 issues
-flutter test                    # 44/44
+flutter test                    # 45/45
 flutter build windows --debug   # success
 ```
 
@@ -153,8 +153,14 @@ CI stage-01: [run 39763804171](https://github.com/HoudiwinG/second-brain/actions
 - Экспорт/импорт в UI работает по вводу пути, без file-picker — TD-23.
 - Нет UI восстановления soft-deleted записей и окончательного удаления — TD-24.
 - `User`, вложения заметок, learning-треки и чат не входят в stage-01 — TD-22.
-- Ручной прогон GUI (трей, `Ctrl+Alt+B`) не выполнялся в этом проходе;
-  сборка Windows подтверждена.
+
+## Ручная проверка GUI
+
+Ручной прогон Windows-сборки выполнялся. Проверены основные экраны, трей и
+глобальный хоткей `Ctrl+Alt+B`. Единственная найденная проблема — при высоте
+окна меньше суммы 11 пунктов бокового rail появлялась жёлто-чёрная полоса
+`RenderFlex overflowed by 72 pixels`. Исправлено включением прокрутки rail
+(`NavigationRail.scrollable = true`); добавлен widget-тест на окно 1000×500.
 
 ## Связанные документы
 

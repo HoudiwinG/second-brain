@@ -134,6 +134,10 @@ class _SideRail extends StatelessWidget {
         initialLocation: index == navigationShell.currentIndex,
       ),
       labelType: NavigationRailLabelType.all,
+      // Окно может быть ниже, чем 11 пунктов rail: без прокрутки внизу
+      // возникает RenderFlex overflow. Прокрутка сохраняет доступ ко всем
+      // разделам и убирает жёлто-чёрную полосу.
+      scrollable: true,
       destinations: [
         for (final branch in kFeatureBranches)
           NavigationRailDestination(

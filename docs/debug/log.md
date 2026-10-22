@@ -124,6 +124,7 @@ R00-015/R00-016 закрыты (документация). Полный журн
 | 2026-10-22 12:25 | `TextEditingController` удалялся до конца анимации закрытия диалога | контроллеры перенесены в stateful-диалоги с `dispose` |
 | 2026-10-22 12:40 | widget-тест не дожидался SQLite в fake async | `tester.runAsync` + пауза, затем `pumpAndSettle` |
 | 2026-10-22 12:50 | `app_router_widget_test` ожидал заглушку заметок | ожидание заменено на `NotesScreen` |
+| 2026-10-22 14:05 | ручной GUI: rail overflow by 72 при низком окне | `NavigationRail.scrollable = true` + тест 1000×500 |
 
 ## Паттерны ошибок
 

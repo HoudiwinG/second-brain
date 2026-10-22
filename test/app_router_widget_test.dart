@@ -135,6 +135,24 @@ void main() {
     expect(tester.widget<MaterialApp>(find.byType(MaterialApp)).locale, isNull);
   });
 
+  testWidgets('низкое окно: rail прокручивается без overflow', (tester) async {
+    // 11 пунктов rail не помещаются по высоте: проверяем scrollable.
+    tester.view.physicalSize = const Size(1000, 500);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.reset);
+
+    await pumpApp(tester);
+
+    expect(find.byType(NavigationRail), findsOneWidget);
+    expect(tester.takeException(), isNull);
+
+    // Прокрутка вниз открывает нижние разделы.
+    await tester.drag(find.byType(NavigationRail), const Offset(0, -300));
+    await tester.pumpAndSettle();
+    expect(tester.takeException(), isNull);
+    expect(find.text('Settings'), findsOneWidget);
+  });
+
   testWidgets('узкое окно: скрытая ветка подсвечивает «Ещё»', (tester) async {
     tester.view.physicalSize = const Size(600, 900);
     tester.view.devicePixelRatio = 1.0;

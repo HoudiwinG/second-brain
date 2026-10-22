@@ -20,7 +20,7 @@
 | pending | 0 |
 
 Проверка после stage-01 (локально, Flutter 3.47.7):
-`flutter analyze --fatal-infos` → 0 issues; `flutter test` → 44/44;
+`flutter analyze --fatal-infos` → 0 issues; `flutter test` → 45/45;
 `flutter build windows --debug` → **success**. CI stage-01:
 [run 39763804171](https://github.com/HoudiwinG/second-brain/actions/runs/39763804171)
 — **success** (`analyze-and-test`, `build-windows`).
