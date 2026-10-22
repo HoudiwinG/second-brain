@@ -5,6 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:second_brain/app/app.dart';
 import 'package:second_brain/app/di.dart';
 import 'package:second_brain/app/feature_directions.dart';
+import 'package:second_brain/features/notes/presentation/notes_screen.dart';
 import 'package:second_brain/features/settings/application/settings_controller.dart';
 import 'package:second_brain/app/widgets/placeholder_section_screen.dart';
 import 'package:second_brain/data/db/app_database.dart';
@@ -69,7 +70,7 @@ void main() {
     await tester.tap(notesLabel);
     await tester.pumpAndSettle();
 
-    expect(find.byType(PlaceholderSectionScreen), findsOneWidget);
+    expect(find.byType(NotesScreen), findsOneWidget);
 
     // Тап по «Settings» в боковом rail.
     final settingsLabel = find.text('Settings');

@@ -3,7 +3,11 @@ import 'dart:io';
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:second_brain/data/db/app_database.dart';
+import 'package:second_brain/data/repositories/notes_repository.dart';
+import 'package:second_brain/data/repositories/search_repository.dart';
 import 'package:second_brain/data/repositories/settings_repository.dart';
+import 'package:second_brain/features/notes/domain/note.dart';
+import 'package:sqlite3/sqlite3.dart' as sqlite;
 
 import 'helpers/in_memory_db.dart';
 
@@ -11,28 +15,26 @@ import 'helpers/in_memory_db.dart';
 ///
 /// Нужна, чтобы проверить политику ADR-012: непокрытый переход onUpgrade
 /// обязан падать, а не молча создавать недостающие таблицы.
-final class _AppDatabaseV2 extends AppDatabase {
-  _AppDatabaseV2(super.executor);
+final class _AppDatabaseV3 extends AppDatabase {
+  _AppDatabaseV3(super.executor);
 
   @override
-  int get schemaVersion => 2;
+  int get schemaVersion => 3;
 }
 
-/// Интеграционный тест миграций drift: схема создаётся с нуля
-/// (onCreate → v1), таблица app_settings доступна сразу.
+/// Интеграционные тесты миграций drift.
 void main() {
-  group('AppDatabase миграции', () {
-    test('schemaVersion = 1 (первая версия схемы)', () {
+  group('AppDatabase схема v2', () {
+    test('schemaVersion = 2 (ядро данных stage-01)', () {
       final db = InMemoryDbFactory.open();
       addTearDown(db.close);
-      expect(db.schemaVersion, 1);
+      expect(db.schemaVersion, 2);
     });
 
-    test('onCreate создаёт таблицу app_settings: запись и чтение работают', () async {
+    test('onCreate создаёт app_settings и таблицы ядра', () async {
       final db = InMemoryDbFactory.open();
       addTearDown(db.close);
 
-      // Прямая вставка подтверждает, что таблица создана миграцией.
       await db
           .into(db.appSettings)
           .insert(
@@ -46,11 +48,23 @@ void main() {
       final row = await (db.select(
         db.appSettings,
       )..where((t) => t.key.equals('migration.test'))).getSingleOrNull();
-
       expect(row, isNotNull);
       expect(row!.value, 'ok');
       // Drift читает DateTime в локальной зоне — сравниваем по моменту времени.
       expect(row.updatedAt.toUtc(), DateTime.utc(2026, 1, 1));
+
+      expect(await db.select(db.categories).get(), isEmpty);
+      expect(await db.select(db.notes).get(), isEmpty);
+      expect(await db.select(db.tasks).get(), isEmpty);
+      expect(await db.select(db.ideaEntries).get(), isEmpty);
+      expect(await db.select(db.financeTransactions).get(), isEmpty);
+
+      final fts = await db
+          .customSelect(
+            "SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'search_index'",
+          )
+          .getSingleOrNull();
+      expect(fts, isNotNull);
     });
 
     test('set/get сохраняет значение поверх onCreate', () async {
@@ -77,7 +91,7 @@ void main() {
     });
 
     test(
-      'onUpgrade неизвестной версии падает UnsupportedError (ADR-012)',
+      'неизвестная будущая версия падает UnsupportedError (ADR-012)',
       () async {
         final dir = await Directory.systemTemp.createTemp('second_brain_db_');
         addTearDown(() async {
@@ -85,34 +99,82 @@ void main() {
         });
         final file = File('${dir.path}/migration.sqlite');
 
-        // Создаём файловую БД версии 1 и оставляем данные.
-        final v1 = AppDatabase(NativeDatabase(file));
-        await v1
-            .into(v1.appSettings)
+        final v2 = AppDatabase(NativeDatabase(file));
+        await v2
+            .into(v2.appSettings)
             .insert(
               AppSettingsCompanion.insert(
                 key: 'keep.me',
-                value: 'v1',
+                value: 'v2',
                 updatedAt: DateTime.utc(2026, 1, 1),
               ),
             );
-        await v1.close();
+        await v2.close();
 
-        // Открываем её «новой» версией без миграции: onUpgrade обязан упасть.
-        final v2 = _AppDatabaseV2(NativeDatabase(file));
+        final v3 = _AppDatabaseV3(NativeDatabase(file));
         addTearDown(() async {
           try {
-            await v2.close();
+            await v3.close();
           } on Object {
             // Соединение могло остаться в незавершённой миграции.
           }
         });
 
         await expectLater(
-          () => v2.select(v2.appSettings).get(),
+          () => v3.select(v3.appSettings).get(),
           throwsA(isA<UnsupportedError>()),
         );
       },
     );
+  });
+
+  group('Миграция v1 → v2', () {
+    test('сохраняет app_settings и создаёт таблицы ядра + FTS', () async {
+      final dir = await Directory.systemTemp.createTemp('second_brain_db_');
+      addTearDown(() async {
+        if (dir.existsSync()) await dir.delete(recursive: true);
+      });
+      final file = File('${dir.path}/v1.sqlite');
+
+      // Legacy-файл версии 1: только app_settings, user_version = 1.
+      final legacy = sqlite.sqlite3.open(file.path);
+      legacy.execute('''
+        CREATE TABLE app_settings (
+          key TEXT NOT NULL PRIMARY KEY,
+          value TEXT NOT NULL,
+          updated_at INTEGER NOT NULL
+        )
+      ''');
+      legacy.execute(
+        'INSERT INTO app_settings (key, value, updated_at) VALUES (?, ?, ?)',
+        [
+          'keep.me',
+          'v1',
+          DateTime.utc(2026, 1, 1).millisecondsSinceEpoch ~/ 1000,
+        ],
+      );
+      legacy.execute('PRAGMA user_version = 1');
+      legacy.close();
+
+      final db = AppDatabase(NativeDatabase(file));
+      addTearDown(db.close);
+
+      final settings = await (db.select(
+        db.appSettings,
+      )..where((t) => t.key.equals('keep.me'))).getSingle();
+      expect(settings.value, 'v1');
+      expect(settings.updatedAt.toUtc(), DateTime.utc(2026, 1, 1));
+      expect(await db.select(db.notes).get(), isEmpty);
+
+      final notes = DriftNotesRepository(db);
+      final note = (await notes.create(
+        const NoteDraft(title: 'После миграции', body: 'FTS работает'),
+      )).unwrap();
+      final search = DriftSearchRepository(db);
+      final hits = (await search.search('миграции')).unwrap();
+      expect(hits, hasLength(1));
+      expect(hits.single.entityId, note.id);
+      expect(db.schemaVersion, 2);
+    });
   });
 }

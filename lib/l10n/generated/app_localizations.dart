@@ -283,6 +283,414 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Global hotkey: Ctrl+Alt+B opens the app window.'**
   String get hintGlobalHotkey;
+
+  /// No description provided for @actionAdd.
+  ///
+  /// In en, this message translates to:
+  /// **'Add'**
+  String get actionAdd;
+
+  /// No description provided for @actionSave.
+  ///
+  /// In en, this message translates to:
+  /// **'Save'**
+  String get actionSave;
+
+  /// No description provided for @actionCancel.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get actionCancel;
+
+  /// No description provided for @actionDelete.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete'**
+  String get actionDelete;
+
+  /// No description provided for @actionEdit.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit'**
+  String get actionEdit;
+
+  /// No description provided for @actionRefresh.
+  ///
+  /// In en, this message translates to:
+  /// **'Refresh'**
+  String get actionRefresh;
+
+  /// No description provided for @actionCategories.
+  ///
+  /// In en, this message translates to:
+  /// **'Categories'**
+  String get actionCategories;
+
+  /// No description provided for @actionExportJson.
+  ///
+  /// In en, this message translates to:
+  /// **'Export JSON backup'**
+  String get actionExportJson;
+
+  /// No description provided for @actionImportJson.
+  ///
+  /// In en, this message translates to:
+  /// **'Import JSON backup'**
+  String get actionImportJson;
+
+  /// No description provided for @actionExportCsv.
+  ///
+  /// In en, this message translates to:
+  /// **'Export finance CSV'**
+  String get actionExportCsv;
+
+  /// No description provided for @actionImportCsv.
+  ///
+  /// In en, this message translates to:
+  /// **'Import finance CSV'**
+  String get actionImportCsv;
+
+  /// No description provided for @fieldTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Title'**
+  String get fieldTitle;
+
+  /// No description provided for @fieldBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Text'**
+  String get fieldBody;
+
+  /// No description provided for @fieldTags.
+  ///
+  /// In en, this message translates to:
+  /// **'Tags (comma-separated)'**
+  String get fieldTags;
+
+  /// No description provided for @fieldCategory.
+  ///
+  /// In en, this message translates to:
+  /// **'Category'**
+  String get fieldCategory;
+
+  /// No description provided for @fieldPrivate.
+  ///
+  /// In en, this message translates to:
+  /// **'Do not send to LLM'**
+  String get fieldPrivate;
+
+  /// No description provided for @fieldDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Description'**
+  String get fieldDescription;
+
+  /// No description provided for @fieldPriority.
+  ///
+  /// In en, this message translates to:
+  /// **'Priority'**
+  String get fieldPriority;
+
+  /// No description provided for @fieldStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'Status'**
+  String get fieldStatus;
+
+  /// No description provided for @fieldDueDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Due date'**
+  String get fieldDueDate;
+
+  /// No description provided for @fieldNoDueDate.
+  ///
+  /// In en, this message translates to:
+  /// **'No due date'**
+  String get fieldNoDueDate;
+
+  /// No description provided for @fieldIdeaText.
+  ///
+  /// In en, this message translates to:
+  /// **'Idea'**
+  String get fieldIdeaText;
+
+  /// No description provided for @fieldSource.
+  ///
+  /// In en, this message translates to:
+  /// **'Source'**
+  String get fieldSource;
+
+  /// No description provided for @fieldMood.
+  ///
+  /// In en, this message translates to:
+  /// **'Mood'**
+  String get fieldMood;
+
+  /// No description provided for @fieldAmount.
+  ///
+  /// In en, this message translates to:
+  /// **'Amount'**
+  String get fieldAmount;
+
+  /// No description provided for @fieldCurrency.
+  ///
+  /// In en, this message translates to:
+  /// **'Currency'**
+  String get fieldCurrency;
+
+  /// No description provided for @fieldType.
+  ///
+  /// In en, this message translates to:
+  /// **'Type'**
+  String get fieldType;
+
+  /// No description provided for @fieldDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Date'**
+  String get fieldDate;
+
+  /// No description provided for @fieldNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Note'**
+  String get fieldNote;
+
+  /// No description provided for @fieldAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Account'**
+  String get fieldAccount;
+
+  /// No description provided for @fieldNewCategory.
+  ///
+  /// In en, this message translates to:
+  /// **'New category name'**
+  String get fieldNewCategory;
+
+  /// No description provided for @fieldPath.
+  ///
+  /// In en, this message translates to:
+  /// **'File path'**
+  String get fieldPath;
+
+  /// No description provided for @categoryNone.
+  ///
+  /// In en, this message translates to:
+  /// **'No category'**
+  String get categoryNone;
+
+  /// No description provided for @categoryParent.
+  ///
+  /// In en, this message translates to:
+  /// **'Parent category (optional)'**
+  String get categoryParent;
+
+  /// No description provided for @priorityLow.
+  ///
+  /// In en, this message translates to:
+  /// **'Low'**
+  String get priorityLow;
+
+  /// No description provided for @priorityNormal.
+  ///
+  /// In en, this message translates to:
+  /// **'Normal'**
+  String get priorityNormal;
+
+  /// No description provided for @priorityHigh.
+  ///
+  /// In en, this message translates to:
+  /// **'High'**
+  String get priorityHigh;
+
+  /// No description provided for @priorityUrgent.
+  ///
+  /// In en, this message translates to:
+  /// **'Urgent'**
+  String get priorityUrgent;
+
+  /// No description provided for @statusTodo.
+  ///
+  /// In en, this message translates to:
+  /// **'To do'**
+  String get statusTodo;
+
+  /// No description provided for @statusInProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'In progress'**
+  String get statusInProgress;
+
+  /// No description provided for @statusDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Done'**
+  String get statusDone;
+
+  /// No description provided for @statusCancelled.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancelled'**
+  String get statusCancelled;
+
+  /// No description provided for @financeIncome.
+  ///
+  /// In en, this message translates to:
+  /// **'Income'**
+  String get financeIncome;
+
+  /// No description provided for @financeExpense.
+  ///
+  /// In en, this message translates to:
+  /// **'Expense'**
+  String get financeExpense;
+
+  /// No description provided for @financeBalance.
+  ///
+  /// In en, this message translates to:
+  /// **'Balance'**
+  String get financeBalance;
+
+  /// No description provided for @financeTransactions.
+  ///
+  /// In en, this message translates to:
+  /// **'Transactions'**
+  String get financeTransactions;
+
+  /// No description provided for @notesEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No notes yet'**
+  String get notesEmpty;
+
+  /// No description provided for @tasksEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No tasks yet'**
+  String get tasksEmpty;
+
+  /// No description provided for @ideasEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No ideas yet'**
+  String get ideasEmpty;
+
+  /// No description provided for @financeEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No transactions yet'**
+  String get financeEmpty;
+
+  /// No description provided for @categoriesEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No categories yet'**
+  String get categoriesEmpty;
+
+  /// No description provided for @searchHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Search notes, tasks, ideas and finance'**
+  String get searchHint;
+
+  /// No description provided for @searchNoResults.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing found'**
+  String get searchNoResults;
+
+  /// No description provided for @searchPrompt.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a query'**
+  String get searchPrompt;
+
+  /// No description provided for @searchTypeNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Note'**
+  String get searchTypeNote;
+
+  /// No description provided for @searchTypeTask.
+  ///
+  /// In en, this message translates to:
+  /// **'Task'**
+  String get searchTypeTask;
+
+  /// No description provided for @searchTypeIdea.
+  ///
+  /// In en, this message translates to:
+  /// **'Idea'**
+  String get searchTypeIdea;
+
+  /// No description provided for @searchTypeFinance.
+  ///
+  /// In en, this message translates to:
+  /// **'Finance'**
+  String get searchTypeFinance;
+
+  /// No description provided for @privateBadge.
+  ///
+  /// In en, this message translates to:
+  /// **'Private'**
+  String get privateBadge;
+
+  /// No description provided for @deleteConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete this record?'**
+  String get deleteConfirm;
+
+  /// No description provided for @dataSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Data'**
+  String get dataSection;
+
+  /// No description provided for @settingsDataHint.
+  ///
+  /// In en, this message translates to:
+  /// **'JSON is a full backup; CSV contains finance operations.'**
+  String get settingsDataHint;
+
+  /// No description provided for @exportSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Backup saved'**
+  String get exportSuccess;
+
+  /// No description provided for @importSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Backup imported'**
+  String get importSuccess;
+
+  /// No description provided for @importWarning.
+  ///
+  /// In en, this message translates to:
+  /// **'Import replaces all local data. Continue?'**
+  String get importWarning;
+
+  /// No description provided for @errorDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'Operation failed'**
+  String get errorDetails;
+
+  /// No description provided for @tagsLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Tags'**
+  String get tagsLabel;
+
+  /// No description provided for @dateNotSet.
+  ///
+  /// In en, this message translates to:
+  /// **'Not set'**
+  String get dateNotSet;
 }
 
 class _AppLocalizationsDelegate

@@ -47,6 +47,8 @@ dev_dependencies:
   flutter_lints: ^6.0.0
   build_runner: ^2.16.2
   drift_dev: ^2.35.1
+  # Прямая зависимость для теста миграции v1→v2 (создание legacy-файла).
+  sqlite3: ^3.7.1
 
 # Секция, специфичная для Flutter-пакетов.
 flutter:

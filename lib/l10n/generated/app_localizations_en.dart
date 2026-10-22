@@ -103,4 +103,209 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get hintGlobalHotkey =>
       'Global hotkey: Ctrl+Alt+B opens the app window.';
+
+  @override
+  String get actionAdd => 'Add';
+
+  @override
+  String get actionSave => 'Save';
+
+  @override
+  String get actionCancel => 'Cancel';
+
+  @override
+  String get actionDelete => 'Delete';
+
+  @override
+  String get actionEdit => 'Edit';
+
+  @override
+  String get actionRefresh => 'Refresh';
+
+  @override
+  String get actionCategories => 'Categories';
+
+  @override
+  String get actionExportJson => 'Export JSON backup';
+
+  @override
+  String get actionImportJson => 'Import JSON backup';
+
+  @override
+  String get actionExportCsv => 'Export finance CSV';
+
+  @override
+  String get actionImportCsv => 'Import finance CSV';
+
+  @override
+  String get fieldTitle => 'Title';
+
+  @override
+  String get fieldBody => 'Text';
+
+  @override
+  String get fieldTags => 'Tags (comma-separated)';
+
+  @override
+  String get fieldCategory => 'Category';
+
+  @override
+  String get fieldPrivate => 'Do not send to LLM';
+
+  @override
+  String get fieldDescription => 'Description';
+
+  @override
+  String get fieldPriority => 'Priority';
+
+  @override
+  String get fieldStatus => 'Status';
+
+  @override
+  String get fieldDueDate => 'Due date';
+
+  @override
+  String get fieldNoDueDate => 'No due date';
+
+  @override
+  String get fieldIdeaText => 'Idea';
+
+  @override
+  String get fieldSource => 'Source';
+
+  @override
+  String get fieldMood => 'Mood';
+
+  @override
+  String get fieldAmount => 'Amount';
+
+  @override
+  String get fieldCurrency => 'Currency';
+
+  @override
+  String get fieldType => 'Type';
+
+  @override
+  String get fieldDate => 'Date';
+
+  @override
+  String get fieldNote => 'Note';
+
+  @override
+  String get fieldAccount => 'Account';
+
+  @override
+  String get fieldNewCategory => 'New category name';
+
+  @override
+  String get fieldPath => 'File path';
+
+  @override
+  String get categoryNone => 'No category';
+
+  @override
+  String get categoryParent => 'Parent category (optional)';
+
+  @override
+  String get priorityLow => 'Low';
+
+  @override
+  String get priorityNormal => 'Normal';
+
+  @override
+  String get priorityHigh => 'High';
+
+  @override
+  String get priorityUrgent => 'Urgent';
+
+  @override
+  String get statusTodo => 'To do';
+
+  @override
+  String get statusInProgress => 'In progress';
+
+  @override
+  String get statusDone => 'Done';
+
+  @override
+  String get statusCancelled => 'Cancelled';
+
+  @override
+  String get financeIncome => 'Income';
+
+  @override
+  String get financeExpense => 'Expense';
+
+  @override
+  String get financeBalance => 'Balance';
+
+  @override
+  String get financeTransactions => 'Transactions';
+
+  @override
+  String get notesEmpty => 'No notes yet';
+
+  @override
+  String get tasksEmpty => 'No tasks yet';
+
+  @override
+  String get ideasEmpty => 'No ideas yet';
+
+  @override
+  String get financeEmpty => 'No transactions yet';
+
+  @override
+  String get categoriesEmpty => 'No categories yet';
+
+  @override
+  String get searchHint => 'Search notes, tasks, ideas and finance';
+
+  @override
+  String get searchNoResults => 'Nothing found';
+
+  @override
+  String get searchPrompt => 'Enter a query';
+
+  @override
+  String get searchTypeNote => 'Note';
+
+  @override
+  String get searchTypeTask => 'Task';
+
+  @override
+  String get searchTypeIdea => 'Idea';
+
+  @override
+  String get searchTypeFinance => 'Finance';
+
+  @override
+  String get privateBadge => 'Private';
+
+  @override
+  String get deleteConfirm => 'Delete this record?';
+
+  @override
+  String get dataSection => 'Data';
+
+  @override
+  String get settingsDataHint =>
+      'JSON is a full backup; CSV contains finance operations.';
+
+  @override
+  String get exportSuccess => 'Backup saved';
+
+  @override
+  String get importSuccess => 'Backup imported';
+
+  @override
+  String get importWarning => 'Import replaces all local data. Continue?';
+
+  @override
+  String get errorDetails => 'Operation failed';
+
+  @override
+  String get tagsLabel => 'Tags';
+
+  @override
+  String get dateNotSet => 'Not set';
 }

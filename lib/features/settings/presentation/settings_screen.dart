@@ -1,6 +1,11 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:path_provider/path_provider.dart';
 
+import '../../../app/di.dart';
+import '../../../app/widgets/data_ui.dart';
 import '../../../core/logging/app_logger.dart';
 import '../../../l10n/generated/app_localizations.dart';
 import '../application/settings_controller.dart';
@@ -11,6 +16,181 @@ import '../application/settings_controller.dart';
 /// появится на следующих этапах.
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
+
+  Future<void> _exportJson(
+    BuildContext context,
+    WidgetRef ref,
+    AppLocalizations lcm,
+  ) async {
+    try {
+      final service = await ref.read(backupServiceProvider.future);
+      final dir = await getApplicationSupportDirectory();
+      final file = File(
+        '${dir.path}${Platform.pathSeparator}backups'
+        '${Platform.pathSeparator}second-brain-'
+        '${DateTime.now().toUtc().toIso8601String().replaceAll(':', '-')}.json',
+      );
+      final result = await service.exportJson(file);
+      if (!context.mounted) return;
+      result.when(
+        success: (_) =>
+            showMessageSnackBar(context, '${lcm.exportSuccess}: ${file.path}'),
+        failure: (error) => showErrorSnackBar(context, lcm, error),
+      );
+    } on Exception catch (error, stackTrace) {
+      AppLogger.e('SettingsScreen: экспорт JSON не удался', error, stackTrace);
+      if (context.mounted) {
+        showMessageSnackBar(context, lcm.errorUnexpected);
+      }
+    }
+  }
+
+  Future<void> _exportCsv(
+    BuildContext context,
+    WidgetRef ref,
+    AppLocalizations lcm,
+  ) async {
+    try {
+      final service = await ref.read(backupServiceProvider.future);
+      final dir = await getApplicationSupportDirectory();
+      final file = File(
+        '${dir.path}${Platform.pathSeparator}backups'
+        '${Platform.pathSeparator}finance-'
+        '${DateTime.now().toUtc().toIso8601String().replaceAll(':', '-')}.csv',
+      );
+      final result = await service.exportFinanceCsv(file);
+      if (!context.mounted) return;
+      result.when(
+        success: (_) =>
+            showMessageSnackBar(context, '${lcm.exportSuccess}: ${file.path}'),
+        failure: (error) => showErrorSnackBar(context, lcm, error),
+      );
+    } on Exception catch (error, stackTrace) {
+      AppLogger.e('SettingsScreen: экспорт CSV не удался', error, stackTrace);
+      if (context.mounted) {
+        showMessageSnackBar(context, lcm.errorUnexpected);
+      }
+    }
+  }
+
+  Future<String?> _askPath(
+    BuildContext context,
+    AppLocalizations lcm, {
+    required String initial,
+    required bool showWarning,
+  }) async {
+    final controller = TextEditingController(text: initial);
+    final result = await showDialog<String>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(lcm.fieldPath),
+        content: SizedBox(
+          width: 520,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (showWarning) ...[
+                Text(
+                  lcm.importWarning,
+                  style: TextStyle(
+                    color: Theme.of(dialogContext).colorScheme.error,
+                  ),
+                ),
+                const SizedBox(height: 12),
+              ],
+              TextField(
+                controller: controller,
+                autofocus: true,
+                decoration: dataFieldDecoration(lcm.fieldPath),
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(),
+            child: Text(lcm.actionCancel),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(dialogContext).pop(controller.text),
+            child: Text(lcm.actionSave),
+          ),
+        ],
+      ),
+    );
+    controller.dispose();
+    return result;
+  }
+
+  Future<String> _defaultPath(String fileName) async {
+    final dir = await getApplicationSupportDirectory();
+    return '${dir.path}${Platform.pathSeparator}$fileName';
+  }
+
+  Future<void> _importJson(
+    BuildContext context,
+    WidgetRef ref,
+    AppLocalizations lcm,
+  ) async {
+    try {
+      final initial = await _defaultPath('second-brain-backup.json');
+      if (!context.mounted) return;
+      final path = await _askPath(
+        context,
+        lcm,
+        initial: initial,
+        showWarning: true,
+      );
+      if (path == null) return;
+      final trimmed = path.trim();
+      if (trimmed.isEmpty || !context.mounted) return;
+      final service = await ref.read(backupServiceProvider.future);
+      final result = await service.importJson(File(trimmed));
+      if (!context.mounted) return;
+      result.when(
+        success: (_) => showMessageSnackBar(context, lcm.importSuccess),
+        failure: (error) => showErrorSnackBar(context, lcm, error),
+      );
+    } on Exception catch (error, stackTrace) {
+      AppLogger.e('SettingsScreen: импорт JSON не удался', error, stackTrace);
+      if (context.mounted) {
+        showMessageSnackBar(context, lcm.errorUnexpected);
+      }
+    }
+  }
+
+  Future<void> _importCsv(
+    BuildContext context,
+    WidgetRef ref,
+    AppLocalizations lcm,
+  ) async {
+    try {
+      final initial = await _defaultPath('finance.csv');
+      if (!context.mounted) return;
+      final path = await _askPath(
+        context,
+        lcm,
+        initial: initial,
+        showWarning: false,
+      );
+      if (path == null) return;
+      final trimmed = path.trim();
+      if (trimmed.isEmpty || !context.mounted) return;
+      final service = await ref.read(backupServiceProvider.future);
+      final result = await service.importFinanceCsv(File(trimmed));
+      if (!context.mounted) return;
+      result.when(
+        success: (_) => showMessageSnackBar(context, lcm.importSuccess),
+        failure: (error) => showErrorSnackBar(context, lcm, error),
+      );
+    } on Exception catch (error, stackTrace) {
+      AppLogger.e('SettingsScreen: импорт CSV не удался', error, stackTrace);
+      if (context.mounted) {
+        showMessageSnackBar(context, lcm.errorUnexpected);
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -120,6 +300,43 @@ class SettingsScreen extends ConsumerWidget {
                   style: Theme.of(context).textTheme.bodySmall,
                 ),
               ),
+            ),
+            const SizedBox(height: 24),
+            Text(
+              lcm.dataSection,
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              lcm.settingsDataHint,
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
+            const SizedBox(height: 8),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                OutlinedButton.icon(
+                  onPressed: () => _exportJson(context, ref, lcm),
+                  icon: const Icon(Icons.download_outlined),
+                  label: Text(lcm.actionExportJson),
+                ),
+                OutlinedButton.icon(
+                  onPressed: () => _exportCsv(context, ref, lcm),
+                  icon: const Icon(Icons.table_view_outlined),
+                  label: Text(lcm.actionExportCsv),
+                ),
+                OutlinedButton.icon(
+                  onPressed: () => _importJson(context, ref, lcm),
+                  icon: const Icon(Icons.upload_outlined),
+                  label: Text(lcm.actionImportJson),
+                ),
+                OutlinedButton.icon(
+                  onPressed: () => _importCsv(context, ref, lcm),
+                  icon: const Icon(Icons.upload_file_outlined),
+                  label: Text(lcm.actionImportCsv),
+                ),
+              ],
             ),
           ],
         ),

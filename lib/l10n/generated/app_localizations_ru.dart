@@ -103,4 +103,210 @@ class AppLocalizationsRu extends AppLocalizations {
   @override
   String get hintGlobalHotkey =>
       'Глобальная горячая клавиша: Ctrl+Alt+B открывает окно приложения.';
+
+  @override
+  String get actionAdd => 'Добавить';
+
+  @override
+  String get actionSave => 'Сохранить';
+
+  @override
+  String get actionCancel => 'Отмена';
+
+  @override
+  String get actionDelete => 'Удалить';
+
+  @override
+  String get actionEdit => 'Изменить';
+
+  @override
+  String get actionRefresh => 'Обновить';
+
+  @override
+  String get actionCategories => 'Категории';
+
+  @override
+  String get actionExportJson => 'Экспорт JSON';
+
+  @override
+  String get actionImportJson => 'Импорт JSON';
+
+  @override
+  String get actionExportCsv => 'Экспорт финансов CSV';
+
+  @override
+  String get actionImportCsv => 'Импорт финансов CSV';
+
+  @override
+  String get fieldTitle => 'Заголовок';
+
+  @override
+  String get fieldBody => 'Текст';
+
+  @override
+  String get fieldTags => 'Теги (через запятую)';
+
+  @override
+  String get fieldCategory => 'Категория';
+
+  @override
+  String get fieldPrivate => 'Не отправлять в LLM';
+
+  @override
+  String get fieldDescription => 'Описание';
+
+  @override
+  String get fieldPriority => 'Приоритет';
+
+  @override
+  String get fieldStatus => 'Статус';
+
+  @override
+  String get fieldDueDate => 'Срок';
+
+  @override
+  String get fieldNoDueDate => 'Без срока';
+
+  @override
+  String get fieldIdeaText => 'Идея';
+
+  @override
+  String get fieldSource => 'Источник';
+
+  @override
+  String get fieldMood => 'Настроение';
+
+  @override
+  String get fieldAmount => 'Сумма';
+
+  @override
+  String get fieldCurrency => 'Валюта';
+
+  @override
+  String get fieldType => 'Тип';
+
+  @override
+  String get fieldDate => 'Дата';
+
+  @override
+  String get fieldNote => 'Примечание';
+
+  @override
+  String get fieldAccount => 'Счёт';
+
+  @override
+  String get fieldNewCategory => 'Название новой категории';
+
+  @override
+  String get fieldPath => 'Путь к файлу';
+
+  @override
+  String get categoryNone => 'Без категории';
+
+  @override
+  String get categoryParent => 'Родительская категория (необязательно)';
+
+  @override
+  String get priorityLow => 'Низкий';
+
+  @override
+  String get priorityNormal => 'Обычный';
+
+  @override
+  String get priorityHigh => 'Высокий';
+
+  @override
+  String get priorityUrgent => 'Срочный';
+
+  @override
+  String get statusTodo => 'К выполнению';
+
+  @override
+  String get statusInProgress => 'В работе';
+
+  @override
+  String get statusDone => 'Готово';
+
+  @override
+  String get statusCancelled => 'Отменено';
+
+  @override
+  String get financeIncome => 'Доход';
+
+  @override
+  String get financeExpense => 'Расход';
+
+  @override
+  String get financeBalance => 'Баланс';
+
+  @override
+  String get financeTransactions => 'Операции';
+
+  @override
+  String get notesEmpty => 'Заметок пока нет';
+
+  @override
+  String get tasksEmpty => 'Задач пока нет';
+
+  @override
+  String get ideasEmpty => 'Идей пока нет';
+
+  @override
+  String get financeEmpty => 'Операций пока нет';
+
+  @override
+  String get categoriesEmpty => 'Категорий пока нет';
+
+  @override
+  String get searchHint => 'Поиск по заметкам, задачам, идеям и финансам';
+
+  @override
+  String get searchNoResults => 'Ничего не найдено';
+
+  @override
+  String get searchPrompt => 'Введите запрос';
+
+  @override
+  String get searchTypeNote => 'Заметка';
+
+  @override
+  String get searchTypeTask => 'Задача';
+
+  @override
+  String get searchTypeIdea => 'Идея';
+
+  @override
+  String get searchTypeFinance => 'Финансы';
+
+  @override
+  String get privateBadge => 'Приватно';
+
+  @override
+  String get deleteConfirm => 'Удалить запись?';
+
+  @override
+  String get dataSection => 'Данные';
+
+  @override
+  String get settingsDataHint =>
+      'JSON — полный бэкап; CSV — финансовые операции.';
+
+  @override
+  String get exportSuccess => 'Бэкап сохранён';
+
+  @override
+  String get importSuccess => 'Бэкап импортирован';
+
+  @override
+  String get importWarning =>
+      'Импорт заменит все локальные данные. Продолжить?';
+
+  @override
+  String get errorDetails => 'Операция не выполнена';
+
+  @override
+  String get tagsLabel => 'Теги';
+
+  @override
+  String get dateNotSet => 'Не задано';
 }

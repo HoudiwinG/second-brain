@@ -2,11 +2,26 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../core/secrets/secret_store.dart';
 import '../core/secrets/secure_secret_store.dart';
+import '../data/backup/backup_service.dart';
 import '../data/db/app_database.dart';
+import '../data/repositories/categories_repository.dart';
+import '../data/repositories/finance_repository.dart';
+import '../data/repositories/ideas_repository.dart';
+import '../data/repositories/notes_repository.dart';
+import '../data/repositories/search_repository.dart';
 import '../data/repositories/settings_repository.dart';
+import '../data/repositories/tags_repository.dart';
+import '../data/repositories/tasks_repository.dart';
+import '../features/finance/domain/finance_transaction.dart';
+import '../features/ideas/domain/idea_entry.dart';
+import '../features/notes/domain/category.dart';
+import '../features/notes/domain/note.dart';
+import '../features/notes/domain/tag.dart';
+import '../features/search/domain/search_hit.dart';
+import '../features/tasks/domain/task_item.dart';
 import 'router.dart';
 
-/// DI-контейнеры Riverpod (этап 0).
+/// DI-контейнеры Riverpod.
 
 /// База данных приложения. Лениво открывается при первом обращении;
 /// закрывается при разрушении провайдера.
@@ -16,10 +31,55 @@ final appDatabaseProvider = FutureProvider<AppDatabase>((ref) async {
   return db;
 });
 
-/// Репозиторий настроек поверх готовой БД.
-final settingsRepositoryProvider = FutureProvider<SettingsRepository>((ref) async {
+final settingsRepositoryProvider = FutureProvider<SettingsRepository>((
+  ref,
+) async {
   final db = await ref.watch(appDatabaseProvider.future);
   return SettingsRepository(db);
+});
+
+final notesRepositoryProvider = FutureProvider<NotesRepository>((ref) async {
+  final db = await ref.watch(appDatabaseProvider.future);
+  return DriftNotesRepository(db);
+});
+
+final categoriesRepositoryProvider = FutureProvider<CategoriesRepository>((
+  ref,
+) async {
+  final db = await ref.watch(appDatabaseProvider.future);
+  return DriftCategoriesRepository(db);
+});
+
+final tagsRepositoryProvider = FutureProvider<TagsRepository>((ref) async {
+  final db = await ref.watch(appDatabaseProvider.future);
+  return DriftTagsRepository(db);
+});
+
+final tasksRepositoryProvider = FutureProvider<TasksRepository>((ref) async {
+  final db = await ref.watch(appDatabaseProvider.future);
+  return DriftTasksRepository(db);
+});
+
+final ideasRepositoryProvider = FutureProvider<IdeasRepository>((ref) async {
+  final db = await ref.watch(appDatabaseProvider.future);
+  return DriftIdeasRepository(db);
+});
+
+final financeRepositoryProvider = FutureProvider<FinanceRepository>((
+  ref,
+) async {
+  final db = await ref.watch(appDatabaseProvider.future);
+  return DriftFinanceRepository(db);
+});
+
+final searchRepositoryProvider = FutureProvider<SearchRepository>((ref) async {
+  final db = await ref.watch(appDatabaseProvider.future);
+  return DriftSearchRepository(db);
+});
+
+final backupServiceProvider = FutureProvider<BackupService>((ref) async {
+  final db = await ref.watch(appDatabaseProvider.future);
+  return BackupService(db);
 });
 
 /// Хранилище секретов: secure storage (DPAPI/Keychain/Keystore).
