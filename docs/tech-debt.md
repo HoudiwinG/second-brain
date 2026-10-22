@@ -15,7 +15,7 @@
 | Статус | Кол-во |
 |--------|--------|
 | open | 0 |
-| fixed | 24 |
+| fixed | 26 |
 | accepted | 10 |
 | pending | 0 |
 
@@ -194,8 +194,13 @@
 | R00-012 | NIT | в `PROMPT.md` нет разделов 1–2 | добавлено примечание в начале файла | accepted |
 | R00-013 | MINOR | ADR-001 ссылался на удалённый `lib/app/settings_controller.dart` | путь обновлён на `features/settings/application/` | fixed |
 | R00-014 | MINOR | откат настроек не покрыт тестом и не виден пользователю | `setThemeMode`/`setLocale` → `bool`, SnackBar с `lcm.errorUnexpected`; 3 теста failure/success | fixed |
+| R00-015 | MINOR | PASS-блок self-check приписан agent-2 | блок переименован в «Self-check agent-1», авторство и ссылки исправлены | fixed |
+| R00-016 | MINOR | «запуск подтверждён» без артефакта | формулировка: сборка подтверждена, запуск GUI не зафиксирован (нужен ручной прогон) | fixed |
 
 Локальные доказательства: `docs/context.md` (снимок), 24 теста, 0 issues.
+Повторное ревью №2 (2026-10-22, agent-2): R00-001…R00-014 подтверждены;
+R00-015/R00-016 (minor, документация) закрыты в `docs` — см.
+[reviews/stage-00-review.md](reviews/stage-00-review.md).
 CI-доказательство (R00-001): коммит `64ab3a6`, run
 [39746024266](https://github.com/HoudiwinG/second-brain/actions/runs/39746024266) —
 `analyze-and-test` и `build-windows` завершились **success** (проверено через

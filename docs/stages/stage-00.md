@@ -3,7 +3,7 @@
 - **Статус:** done (analyze 0 issues, test 24/24; локальная сборка `flutter build windows --debug` — success; CI [39755053239](https://github.com/HoudiwinG/second-brain/actions/runs/39755053239) — `analyze-and-test` + `build-windows` success)
 - **Дата начала / завершения (UTC):** 2026-10-21 ~16:00 — 2026-10-21 20:00
 - **Основной агент:** agent-1 (DeepSeek V4.1 Flash Free / OpenCode)
-- **Ревьюер:** agent-2 — 2026-10-22: **FAIL** → повторное ревью **PASS WITH COMMENTS**; R00-001…R00-014 закрыты/приняты
+- **Ревьюер:** agent-2 — 2026-10-22: **FAIL** → повторное ревью №2 **PASS WITH COMMENTS**; R00-001…R00-014 закрыты/приняты, R00-015/R00-016 — minor (документация)
 
 ## Цель и критерии приёмки
 Цель — работающий каркас приложения: Flutter-проект, структура папок,
@@ -11,9 +11,10 @@
 secure storage, логирование, трей/горячая клавиша (Windows), тесты, CI, документация.
 
 Критерии по STAGE_ONE.md:
-1. Приложение запускается на Windows, показывает навигацию по пустым экранам —
-   **сборка и запуск подтверждены** (`build\windows\x64\runner\Debug\second_brain.exe`);
-   GUI-сценарии (трей/хоткей) требуют ручной проверки.
+1. Приложение собирается на Windows и показывает навигацию по пустым экранам —
+   **сборка подтверждена** (`build\windows\x64\runner\Debug\second_brain.exe`);
+   запуск GUI и сценарии трей/хоткей требуют ручной проверки и артефакта
+   (лог/скриншот `flutter run -d windows`).
 2. Переключаются язык и тема — **выполнено** (экран Settings, widget-тест),
 3. Иконка в трее и горячая клавиша работают — **код готов** (Windows-путь);
    сборка Windows подтверждена локально и CI-job'ом `build-windows` (ADR-009),
@@ -190,4 +191,4 @@ flutter build windows --debug
   005 (go_router), 006 (tray пин), 007 (build windows), 008 (структура/l10n),
   009 (CI build), 010 (трей/l10n), 011 (sqlite3), 012 (миграции)
 - Техдолг: [tech-debt.md](../tech-debt.md) — закрыто TD-01…TD-13
-- Ревью: [reviews/stage-00-review.md](../reviews/stage-00-review.md) — FAIL → PASS WITH COMMENTS (agent-2); R00-013/R00-014 закрыты
+- Ревью: [reviews/stage-00-review.md](../reviews/stage-00-review.md) — FAIL → PASS WITH COMMENTS (agent-2, повторное ревью №2); R00-015/R00-016 закрыты

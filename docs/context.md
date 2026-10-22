@@ -2,7 +2,8 @@
 
 - **Текущий этап:** stage-00 (каркас)
 - **Статус:** done; техдолг закрыт (см. [tech-debt.md](tech-debt.md), открытых позиций 0)
-- **Последний закрытый этап:** stage-00 (ревью: FAIL → **PASS WITH COMMENTS**; R00-013/R00-014 закрыты, CI зелёный)
+- **Последний закрытый этап:** stage-00 (ревью: FAIL → **PASS WITH COMMENTS**;
+  R00-013/R00-014 закрыты, R00-015/R00-016 — minor по документации закрыты, CI зелёный)
 - **Открытых CRITICAL:** 0
 - **Открытых MAJOR:** 0
 - **Сборка:** `flutter analyze` OK (0 issues); `flutter test` — 24/24;
@@ -19,7 +20,8 @@
 ## Открытые вопросы / блокеры
 - Техдолг закрыт (TD-01…TD-13), принятые позиции TD-14…TD-20 — в
   [tech-debt.md](tech-debt.md). Находки ревью R00-001…R00-014 закрыты или
-  осознанно приняты (см. раздел «Закрыто по ревью stage-00»).
+  осознанно приняты (см. раздел «Закрыто по ревью stage-00»); R00-015/R00-016
+  (minor, документация) закрыты.
 - R00-001 **закрыт**: коммит `64ab3a6` запушен, оба CI-job'а зелёные
   (`analyze-and-test`, `build-windows`). Локально: analyze 0 issues, test 24/24.
 - Локальная сборка `flutter build windows`: Visual Studio Build Tools 2022 с
@@ -33,8 +35,10 @@
 - tray_manager зафиксирован на 0.5.0 (ADR-006); миграция на nativeapi после
   установки VS / на stage-02.
 - Ревью stage-00: agent-2 дал **FAIL** (2026-10-22), после исправлений —
-  **PASS WITH COMMENTS**; R00-013/R00-014 закрыты (ADR-001 путь, тесты
-  failure-пути + SnackBar), CI зелёный.
+  **PASS WITH COMMENTS** (повторное ревью №2); R00-013/R00-014 закрыты
+  (ADR-001 путь, тесты failure-пути + SnackBar); R00-015/R00-016 — minor
+  (атрибуция PASS-блока, артефакт запуска GUI) закрыты; CI зелёный (attestation),
+  локальная сборка проверена.
 
 ## Ближайшие задачи (следующий этап — stage-01 «Ядро данных»)
 - Drift: таблицы Note, Category, Task, IdeaEntry, FinanceTransaction (+user)
@@ -55,8 +59,9 @@
 
 ## Активный агент
 - agent-1: DeepSeek V4.1 Flash Free (OpenCode), ветка master
-- agent-2: ревью stage-00 — FAIL (2026-10-22), повторное ревью — PASS WITH
-  COMMENTS; R00-013/R00-014 закрыты, блокеров для stage-01 нет
+- agent-2: ревью stage-00 — FAIL (2026-10-22), повторное ревью №2 — PASS WITH
+  COMMENTS; R00-013/R00-014 закрыты, R00-015/R00-016 — minor (документация),
+  закрыты; блокеров для stage-01 нет
 
 ## Ссылки
 - Последний отчёт: [stages/stage-00.md](stages/stage-00.md)
