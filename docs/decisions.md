@@ -37,7 +37,8 @@ LLM-агента и перспектива роста (мультиаккаун�
 - Влияние на совместимость/миграции: апгрейд мажорной версии Riverpod потребует ADR.
 
 ### Затронутые файлы/модули
-- lib/app/di.dart, lib/app/settings_controller.dart — все ключевые провайдеры.
+- lib/app/di.dart, lib/features/settings/application/settings_controller.dart —
+  все ключевые провайдеры (контроллер перенесён из `lib/app` по R00-008).
 
 ### Связанные записи
 ADR-002 (Drift), ADR-005 (роутер)
@@ -299,8 +300,14 @@ ADR-007 отложил `flutter build windows` из-за отсутствия Vi
 ### Решение
 В `.github/workflows/ci.yml` добавлен job `build-windows` на `windows-latest`
 (там предустановлен Visual Studio с workload C++): `flutter pub get` →
-`flutter build windows --debug`. Плюс `concurrency` для отмены устаревших
-прогонов. Локальная сборка остаётся опциональной.
+`flutter test` → `flutter build windows --debug`. Плюс `concurrency` для отмены
+устаревших прогонов. Локальная сборка остаётся опциональной.
+
+### Обновление (2026-10-22)
+Локально установлены Visual Studio Build Tools 2022 (workload C++,
+ATL/ATLMFC); `flutter build windows --debug` прошёл, job `build-windows`
+дополнительно подтверждён в CI. Это не отменяет ADR: CI остаётся обязательным
+источником проверки сборки для агентов без VS.
 
 ### Альтернативы
 - Требовать VS на каждой машине разработчика: медленно, блокирует агентов.

@@ -69,8 +69,14 @@ class SettingsScreen extends ConsumerWidget {
                 ),
               ],
               selected: {state.themeMode},
-              onSelectionChanged: (selection) =>
-                  controller.setThemeMode(selection.first),
+              onSelectionChanged: (selection) async {
+                final saved = await controller.setThemeMode(selection.first);
+                if (!saved && context.mounted) {
+                  ScaffoldMessenger.of(
+                    context,
+                  ).showSnackBar(SnackBar(content: Text(lcm.errorUnexpected)));
+                }
+              },
             ),
             const SizedBox(height: 24),
             Text(
@@ -93,11 +99,16 @@ class SettingsScreen extends ConsumerWidget {
               selected: {
                 state.locale?.languageCode ?? SettingsController.localeSystem,
               },
-              onSelectionChanged: (selection) {
+              onSelectionChanged: (selection) async {
                 final raw = selection.first;
-                controller.setLocale(
+                final saved = await controller.setLocale(
                   raw == SettingsController.localeSystem ? null : Locale(raw),
                 );
+                if (!saved && context.mounted) {
+                  ScaffoldMessenger.of(
+                    context,
+                  ).showSnackBar(SnackBar(content: Text(lcm.errorUnexpected)));
+                }
               },
             ),
             const SizedBox(height: 24),

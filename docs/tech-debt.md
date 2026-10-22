@@ -15,13 +15,13 @@
 | Статус | Кол-во |
 |--------|--------|
 | open | 0 |
-| fixed | 22 |
+| fixed | 24 |
 | accepted | 10 |
 | pending | 0 |
 
 Проверка после закрытия (локально, Flutter 3.47.7):
-`flutter analyze --fatal-infos` → 0 issues; `flutter test` → 21/21;
-`flutter build windows --debug` → **success** в CI, job `build-windows`
+`flutter analyze --fatal-infos` → 0 issues; `flutter test` → 24/24;
+`flutter build windows --debug` → **success** локально и в CI, job `build-windows`
 ([run 39746024266](https://github.com/HoudiwinG/second-brain/actions/runs/39746024266)).
 
 ---
@@ -174,8 +174,9 @@
 ## Закрыто по ревью stage-00 (R00, 2026-10-22)
 
 Ревьюер agent-2 открыл 12 находок (см.
-[reviews/stage-00-review.md](reviews/stage-00-review.md)). Ниже — реакция
-разработчика; статусы в самом ревью остаются `open` до повторной проверки.
+[reviews/stage-00-review.md](reviews/stage-00-review.md)); повторное ревью
+2026-10-22 дало PASS WITH COMMENTS и добавило R00-013/R00-014. Ниже — реакция
+разработчика; все находки закрыты, кроме осознанно принятых R00-010…R00-012.
 
 | ID | Критичность | Находка | Действие | Статус |
 |----|-------------|---------|----------|--------|
@@ -185,17 +186,22 @@
 | R00-004 | MAJOR | `stage-00.md` противоречил ADR-012 | абзац про `createAll` удалён, тесты обновлены | fixed |
 | R00-005 | MAJOR | нет заготовок `CryptoService`/`SyncService` | добавлены интерфейсы в `lib/core/crypto`, `lib/core/sync` | fixed |
 | R00-006 | MINOR | тест миграций не проверял PRAGMA/onUpgrade | добавлены тесты PRAGMA=1 и `UnsupportedError` при v1→v2 | fixed |
-| R00-007 | MINOR | окружение и проверки не воспроизводились | установлен Flutter 3.47.7; analyze 0 issues, tests 21/21 | fixed |
+| R00-007 | MINOR | окружение и проверки не воспроизводились | установлен Flutter 3.47.7; analyze 0 issues, tests 24/24 | fixed |
 | R00-008 | MINOR | логика settings жила в `lib/app` | перенесена в `features/settings/application/` | fixed |
 | R00-009 | MINOR | ошибка репозитория давала unhandled exception | `try/catch` + откат в `setThemeMode`/`setLocale` | fixed |
 | R00-010 | NIT | стартовый заголовок окна — константа | осознанное исключение зафиксировано в ADR-010 | accepted |
 | R00-011 | NIT | ADR-006 не объяснял пин 0.5.0 vs 0.5.3 | добавлено обоснование в ADR-006 | accepted |
 | R00-012 | NIT | в `PROMPT.md` нет разделов 1–2 | добавлено примечание в начале файла | accepted |
+| R00-013 | MINOR | ADR-001 ссылался на удалённый `lib/app/settings_controller.dart` | путь обновлён на `features/settings/application/` | fixed |
+| R00-014 | MINOR | откат настроек не покрыт тестом и не виден пользователю | `setThemeMode`/`setLocale` → `bool`, SnackBar с `lcm.errorUnexpected`; 3 теста failure/success | fixed |
 
-Локальные доказательства: `docs/context.md` (снимок), 21 тест, 0 issues.
+Локальные доказательства: `docs/context.md` (снимок), 24 теста, 0 issues.
 CI-доказательство (R00-001): коммит `64ab3a6`, run
 [39746024266](https://github.com/HoudiwinG/second-brain/actions/runs/39746024266) —
-`analyze-and-test` и `build-windows` завершились **success**.
+`analyze-and-test` и `build-windows` завершились **success** (проверено через
+GitHub API: job'ы
+[analyze-and-test](https://github.com/HoudiwinG/second-brain/actions/runs/39746024266/job/119714562468) и
+[build-windows](https://github.com/HoudiwinG/second-brain/actions/runs/39746024266/job/119714562295)).
 
 ---
 

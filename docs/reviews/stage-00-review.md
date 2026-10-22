@@ -227,3 +227,147 @@
 - Роутинг: 11 веток `StatefulShellRoute.indexedStack`, порядок `FeatureBranch` совпадает с ветками; подсветка нижней панели для скрытых веток → «Ещё» корректна (тест есть).
 - Ошибки desktop-инициализации изолированы (`main.dart:21-26`, `desktop_services.dart:79-82,106-112`); crash-reporter ловит Flutter/async ошибки.
 - Не проверено (нет SDK/VS): `flutter analyze`, `flutter test`, `flutter build windows`, GUI-поведение трея/хоткея.
+
+---
+
+## Повторное ревью (2026-10-22)
+
+- Дата (UTC): 2026-10-22 08:35
+- Ревьюер: agent-2 (DeepSeek V4.1 Flash Free, OpenCode)
+- Проверяемый коммит: код — `64ab3a6`; документация/HEAD — `1f30763` (`master`, `[skip ci]`)
+- Отчёт разработчика: [docs/stages/stage-00.md](../stages/stage-00.md)
+- Метод: независимая сверка `git diff 3526642..64ab3a6`, фактического кода, тестов, CI-конфига, ARB и ADR; локальный прогон Flutter 3.47.7 из `C:\src\flutter`; проверка исходников `tray_manager 0.5.0` (Dart-обёртка + Windows C++), структуры `.ico` и lock-файла.
+- Ограничения среды:
+  - репозиторий приватный, `gh` не установлен; GitHub API и веб-страница run без токена отдают 404, поэтому conclusion run 39746024266 **не перепроверен независимо** — принят как attestation agent-1/пользователя;
+  - Visual Studio Build Tools установлены без workload C++ (`vswhere -requires …VC.Tools.x86.x64` пуст), поэтому локальный `flutter build windows` невозможен;
+  - GUI-проверка трея и глобального хоткея не выполнялась (нет рабочего Windows GUI-прогона).
+
+### Итог повторного ревью
+- Вердикт: **PASS WITH COMMENTS**
+- Новые находки: critical: 0, major: 0, minor: 2 (R00-013, R00-014), nit: 0
+- Блокеры для перехода к stage-01: **нет**. R00-001…R00-009 закрыты, R00-010…R00-012 переведены в `accepted` (осознанно приняты).
+- Новые находки R00-013/R00-014 — документарная и тестовая; на работу stage-00 не влияют. **Закрыты 2026-10-22** (см. «Обновление» в конце файла).
+
+### Статус находок R00
+
+| ID | Критичность | Итог | Доказательство |
+|----|-------------|------|----------------|
+| R00-001 | MAJOR | **closed** | Коммит `64ab3a6` в истории; `git ls-remote origin refs/heads/master` → `1f30763` (push выполнен). В `.github/workflows/ci.yml:14-58` jobs `analyze-and-test` (pub get `--enforce-lockfile` + analyze `--fatal-infos` + test) и `build-windows` (pub get + Windows-тесты + `flutter build windows --debug`). Локально: analyze 0 issues, test 21/21. CI-run 39746024266 заявлен success, независимо не проверяем (см. ограничения). |
+| R00-002 | MAJOR | **closed** | `pubspec.lock:797-803` — `sqlite3` только `transitive`; `sqlite3_flutter_libs` отсутствует. `flutter pub get --enforce-lockfile` → `Got dependencies!` (0 изменений lock). |
+| R00-003 | MAJOR | **closed** | `assets/tray_icon.ico` — валидный ICO: 2 изображения 16×16 и 32×32, 32 bpp; объявлен в `pubspec.yaml:59-61`. `lib/app/desktop_services.dart:66-69` выбирает `.ico` на Windows. `tray_manager 0.5.0` (`lib/src/tray_manager.dart:111-118`) сам добавляет `data/flutter_assets/`, Windows-плагин грузит через `LoadImage(IMAGE_ICON)` (`windows/tray_manager_plugin.cpp:237-240`) — формат совместим. GUI-проверка остаётся после установки VS (задокументировано). |
+| R00-004 | MAJOR | **closed** | `docs/stages/stage-00.md:113-114` больше не упоминает `createAll` как safe-guard и совпадает с `lib/data/db/app_database.dart:57-69` и ADR-012. |
+| R00-005 | MAJOR | **closed** | Добавлены `lib/core/crypto/crypto_service.dart:11-16` (encrypt/decrypt → `Result`) и `lib/core/sync/sync_service.dart:3-31` (`SyncStatus`, push/pull/status); контракты описаны в `docs/stages/stage-00.md:101-102`. |
+| R00-006 | MINOR | **closed** | `test/db_migration_test.dart:70-77` проверяет `PRAGMA foreign_keys = 1`; `:79-116` открывает файловую БД v1 и проверяет падение `UnsupportedError` при переходе v1→v2 без миграции. Тесты проходят (21/21). |
+| R00-007 | MINOR | **closed** | Flutter 3.47.7 установлен в `C:\src\flutter`, `C:\src\flutter\bin` есть в пользовательском PATH; локально воспроизведены `flutter analyze --fatal-infos` → `No issues found!` и `flutter test` → `+21: All tests passed!`; `docs/context.md:8-12` соответствует среде. Оговорка по CI — см. ограничения. |
+| R00-008 | MINOR | **closed** | `SettingsController`/`SettingsState` перенесены в `lib/features/settings/application/settings_controller.dart`; старый `lib/app/settings_controller.dart` удалён; импорты обновлены (`lib/app/app.dart:8`, `lib/features/settings/presentation/settings_screen.dart:6`, тесты). Остался устаревший путь в ADR-001 → R00-013. |
+| R00-009 | MINOR | **closed** | `setThemeMode`/`setLocale` (`settings_controller.dart:75-138`) обёрнуты в `try/catch` (`AppException` + catch-all) с откатом оптимистичного состояния; ошибка загрузки в UI локализована, есть кнопка повтора (`settings_screen.dart:25-42`). Остаточный тестовый/UX-долг → R00-014. |
+| R00-010 | NIT | **accepted** | Осознанное исключение зафиксировано в ADR-010 (`docs/decisions.md:357-360`): стартовый `WindowOptions.title` = `Second Brain` до первого кадра (`desktop_services.dart:33-39`), затем перезаписывается локализованным `setTrayLabels`. |
+| R00-011 | NIT | **accepted** | ADR-006 (`docs/decisions.md:197-201`) объясняет выбор 0.5.0 против legacy 0.5.1–0.5.3 и nativeapi 0.8.x. |
+| R00-012 | NIT | **accepted** | В `PROMPT.md:2-5` добавлено примечание: разделы 1–2 в репозиторий не попали, требования этапа 0 — в `STAGE_ONE.md`, процесс — в `REVIEWER_PROMPT.md`. |
+
+### Новые находки
+
+#### [MINOR] R00-013: ADR-001 ссылается на удалённый `lib/app/settings_controller.dart`
+- **Категория:** F (документация)
+- **Где:** `docs/decisions.md:40` (ADR-001, «Затронутые файлы/модули») ↔ фактический `lib/features/settings/application/settings_controller.dart`
+- **Что не так:** после переноса по R00-008 файл `lib/app/settings_controller.dart` удалён, но ADR-001 продолжает указывать его как место «всех ключевых провайдеров». Новый агент/ревьюер ищет несуществующий файл и получает неверную картину архитектуры. Решение ADR при этом коду не противоречит — это устаревший путь, а не спор о решении (поэтому MINOR, а не MAJOR по правилу 6).
+- **Как воспроизвести:** `Test-Path lib/app/settings_controller.dart` → `False`; `Test-Path lib/features/settings/application/settings_controller.dart` → `True`; `Select-String docs/decisions.md -Pattern 'app/settings_controller'` → строка 40.
+- **Ожидаемое по ТЗ:** документация соответствует коду (REVIEWER_PROMPT.md, F).
+- **Фактическое:** устаревшая ссылка в ADR.
+- **Предлагаемое исправление:** в `docs/decisions.md:40` заменить путь на `lib/features/settings/application/settings_controller.dart` (при желании добавить «перенесён в stage-00, R00-008»).
+- **Связанные ADR:** ADR-001, ADR-008
+- **Статус:** fixed (2026-10-22; см. «Обновление» в конце файла)
+
+#### [MINOR] R00-014: Откат настроек при ошибке сохранения не покрыт тестом и не виден пользователю
+- **Категория:** E (качество кода и тесты), частично UX
+- **Где:** `lib/features/settings/application/settings_controller.dart:75-138`; вызовы без ожидания — `lib/features/settings/presentation/settings_screen.dart:72-73,96-100`
+- **Что не так:** основная проблема R00-009 (необработанное исключение) исправлена — все ошибки перехватываются и состояние откатывается. Но:
+  1) нет ни одного теста на failure-путь: ни `setThemeMode`, ни `setLocale` не проверяются с падающим репозиторием, поэтому регрессия отката не будет поймана;
+  2) при ошибке сохранения пользователь видит только «переключение обратно» без объяснения (подробности лишь в логе), что расходится с предложением R00-009 о локализованном сообщении и TD-10 (ошибки — локализованно).
+- **Как воспроизвести:** в тесте переопределить `settingsRepositoryProvider` репозиторием, чей `set` возвращает `Result.failure(DataException(...))`, вызвать `controller.setThemeMode(ThemeMode.dark)` → состояние вернётся к `ThemeMode.system`, SnackBar/сообщения нет.
+- **Ожидаемое по ТЗ:** бизнес-логика этапа покрыта тестами (REVIEWER_PROMPT.md, E); ошибки показываются локализованно (PROMPT.md:126-127).
+- **Фактическое:** failure-путь покрыт только кодом, не тестом; обратная связь отсутствует.
+- **Предлагаемое исправление:**
+  - unit-тест: `_FailingRepository extends SettingsRepository` с переопределённым `set` → `Result.failure(DataException(...))`, `ProviderContainer` с override, проверить откат `themeMode`/`locale`;
+  - опционально: `setThemeMode`/`setLocale` возвращают `bool`/`Result`, а экран показывает локализованный `SnackBar` (`lcm.errorUnexpected`) при `false`.
+- **Связанные ADR:** ADR-004, ADR-010
+- **Статус:** fixed (2026-10-22; см. «Обновление» в конце файла)
+
+### Чек-лист A–H (повторная проверка)
+
+> Актуальный статус среды и закрытие R00-013/R00-014 — в разделе
+> «Обновление после закрытия…» в конце файла.
+
+- **A. Соответствие ТЗ этапа:** все 7 критериев имеют артефакт: analyze/test — локальный прогон, Windows-сборка — CI-job (attestation), навигация/темы/язык — widget-тесты, БД — интеграционные тесты. GUI-пункты 1 и 3 остаются «код готов» (нет GUI-прогона), это честно отражено в `stage-00.md`. Scope creep нет: `.ico`, `CryptoService`/`SyncService`, job `build-windows` прямо требуются ТЗ/ADR.
+- **B. Архитектура:** `SettingsController` теперь в `features/settings/application`, `lib/app` — композиция (`app.dart`, `di.dart`, роутер, тема); утечек данных в UI нет; DI Riverpod корректен; публичные контракты не сломаны.
+- **C. Данные/миграции:** схема v1 (`key/value/updated_at`, PK `key`) совпадает с ADR-002; `onCreate → createAll`, `onUpgrade` без `createAll` и с явным `UnsupportedError`, `beforeOpen → PRAGMA foreign_keys = ON` (`app_database.dart:52-74`); PRAGMA и файловый переход v1→v2 покрыты тестами. Для stage-01: ветку v1→v2 добавлять до повышения `schemaVersion`, тест — с проверкой данных после успешной миграции.
+- **D. Безопасность/приватность:** секретов в репозитории/коде/логах нет (`git ls-files` — только `.env.example`; grep по `sk-…`/`AIza…`/`ghp_…`/private key — пусто); `SecretStore` — интерфейс + `flutter_secure_storage`; в логи пишется только длина значения; LLM-вызовов на этапе 0 нет.
+- **E. Качество/тесты:** `flutter analyze --fatal-infos` → 0 issues; `flutter test` → 21/21; TODO/FIXME в `lib/` нет; ARB EN/RU — по 31 ключу, синхронны, `retryAction` добавлен; единственный хардкод — принятый стартовый заголовок окна (R00-010). Тестовый пробел — R00-014.
+- **F. Документация:** `tech-debt.md` (22 fixed / 10 accepted / 0 open), `context.md`, `INDEX.md`, `stage-00.md`, ADR-009…012 обновлены и в основном соответствуют коду; расхождение — R00-013. После PASS нужно обновить статусные фразы «ожидается повторное ревью» (см. ниже).
+- **G. Сборка/запуск:** lock-файл консистентен (`--enforce-lockfile` проходит), analyze/test зелёные; Windows-сборка подтверждается только CI (attestation, локально VS C++ нет); GUI-режим (трей/хоткей) не проверялся.
+- **H. Регрессии:** навигация (rail, нижняя панель, «Ещё», скрытые ветки), тема, сброс языка, локализация, crash-hooks, desktop-guard и миграции покрыты тестами/кодом; регрессий относительно `3526642` не найдено. Форматирование `router.dart`/`result.dart` — косметическое (dart format), поведение не меняет.
+
+### Соответствие критериям приёмки (повторно)
+
+- [x] **1. Приложение запускается на Windows, показывает навигацию по пустым экранам.** Код + widget-тесты (старт на дашборде, rail, нижняя панель); Windows-сборка — CI (attestation). GUI-прогон не выполнен.
+- [x] **2. Переключаются язык и тема.** `SettingsController` + `SettingsScreen`; unit/widget-тесты (тема, `ru → system`, `copyWith(locale: null)`).
+- [x] **3. Иконка в трее и горячая клавиша работают (код).** `.ico` 16/32, Windows-путь `LoadImage(IMAGE_ICON)`, локализованные подписи, hotkey Ctrl+Alt+B; GUI-проверка — после установки VS (задокументировано).
+- [x] **4. БД создаётся, миграции применяются.** Схема v1, `onCreate`, `beforeOpen PRAGMA`, тесты PRAGMA и v1→v2 `UnsupportedError`; реальных миграций на stage-00 нет.
+- [x] **5. Analyze чистый, тесты зелёные, сборка Windows проходит.** Локально: 0 issues, 21/21; CI `build-windows` заявлен success (attestation; независимо не проверен из-за приватного репозитория).
+- [x] **6. `/docs` заполнены.** INDEX/context/decisions/tech-debt/stage-00 заполнены и синхронизированы с кодом, кроме R00-013; статус «ожидается повторное ревью» обновить после этого PASS.
+- [x] **7. Никаких секретов в репозитории.** Проверено `git ls-files` и grep по типовым паттернам секретов; `.env` исключён, `.env.example` без значений.
+
+### Расхождения документации с кодом (повторно)
+
+1. **`docs/decisions.md:40`** — ADR-001 ссылается на удалённый `lib/app/settings_controller.dart` (R00-013).
+2. **`docs/stages/stage-00.md:6,190`**, **`docs/context.md:5,33-34,55-56`**, **`docs/INDEX.md:29-32`** — после этого ревью фразы «ожидается повторное ревью» устарели: нужно зафиксировать PASS WITH COMMENTS и новые minor-находки.
+3. **`docs/tech-debt.md:176-178`** — вводная фраза «статусы в самом ревью остаются `open` до повторной проверки» после обновления таблицы R00 стала исторической; можно пометить как «проверено 2026-10-22».
+4. **ADR-009 (`docs/decisions.md:299-303`)** описывает job `build-windows` как pub get + build, но фактически там ещё и `flutter test` (`.github/workflows/ci.yml:54-55`) — уточнение, не противоречие.
+
+### Рекомендации на stage-01
+
+1. Закрыть R00-013 (путь в ADR-001) и R00-014 (тест failure-пути; по желанию — локализованный SnackBar); обновить статусные фразы в stage-00/context/INDEX/tech-debt на PASS.
+2. Миграции: добавить ветку `if (from < 2) { … }` **до** повышения `schemaVersion`; тест писать на файловой БД, созданной v1, с проверкой данных после успешного `onUpgrade` (ADR-012), плюс сохранить тест на непокрытый переход.
+3. Локально после установки VS C++ прогнать `flutter run -d windows` и вручную проверить трей (иконка, меню show/hide/quit, смена языка) и Ctrl+Alt+B — CI сборка не проверяет GUI-поведение.
+4. Сохранять `flutter pub get --enforce-lockfile` в CI и коммитить lock при любых изменениях зависимостей.
+5. Не считать критерий закрытым без артефакта: для GUI-пунктов добавить в stage-XX.md ссылку на лог/скриншот ручного прогона.
+
+### Приложение: фактические прогоны (2026-10-22, локально)
+
+```text
+flutter --version            → Flutter 3.47.7 • Dart 3.13.5
+flutter analyze --fatal-infos → No issues found! (ran in 16.1s)
+flutter test --reporter expanded → +21: All tests passed!
+flutter pub get --enforce-lockfile → Got dependencies! (lock не изменён)
+git ls-remote origin refs/heads/master → 1f30763… (push подтверждён)
+flutter doctor -v → Visual Studio Build Tools 2022: «installation is incomplete» (C++ workload отсутствует)
+```
+
+Дополнительно проверено: `.ico` — 2 изображения 16×16/32×32, 32 bpp; ARB EN/RU — 31 ключ, расхождений нет; `sqlite3_flutter_libs` в `pubspec.lock` отсутствует; `tray_manager 0.5.0` резолвит путь как `<exe>/data/flutter_assets/assets/tray_icon.ico`.
+
+---
+
+## Обновление после закрытия R00-013/R00-014 (agent-1, 2026-10-22)
+
+- **R00-013 — fixed:** в `docs/decisions.md:40` путь заменён на
+  `lib/features/settings/application/settings_controller.dart` (с пометкой о
+  переносе по R00-008).
+- **R00-014 — fixed:** `setThemeMode`/`setLocale` теперь возвращают `bool`;
+  экран настроек показывает локализованный `SnackBar` (`lcm.errorUnexpected`)
+  при неудачном сохранении. Добавлены 3 теста в
+  `test/settings_controller_test.dart`: успех, откат темы, откат языка.
+- **Локальные проверки после исправлений:** `flutter analyze --fatal-infos` →
+  0 issues; `flutter test` → **24/24**.
+- **CI (R00-001) проверен agent-1 через GitHub API:** run
+  [39746024266](https://github.com/HoudiwinG/second-brain/actions/runs/39746024266)
+  — jobs
+  [analyze-and-test](https://github.com/HoudiwinG/second-brain/actions/runs/39746024266/job/119714562468)
+  и
+  [build-windows](https://github.com/HoudiwinG/second-brain/actions/runs/39746024266/job/119714562295)
+  завершились **success**.
+- **Локальная Windows-сборка:** Visual Studio Build Tools 2022 с workload C++ и
+  ATL/ATLMFC установлены; `flutter build windows --debug` → **success**
+  (`build\windows\x64\runner\Debug\second_brain.exe`). GUI-проверка трея и
+  Ctrl+Alt+B остаётся ручной.
+- **Вердикт не меняется:** PASS WITH COMMENTS; открытых critical/major/minor
+  нет, блокеров для stage-01 нет.

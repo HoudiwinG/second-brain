@@ -17,7 +17,7 @@
 5. Прочитай отчёт последнего этапа: [stages/stage-00.md](stages/stage-00.md)
 
 ## Отчёты по этапам
-- [stage-00](stages/stage-00.md) — каркас (done)
+- [stage-00](stages/stage-00.md) — каркас (done, PASS WITH COMMENTS)
 - stage-01 — ядро данных (не начат)
 
 ## Шаблоны
@@ -26,10 +26,10 @@
 - [reviews/stage-XX-review.template.md](reviews/stage-XX-review.template.md) — формат ревью
 
 ## Ревью
-- [stage-00-review](reviews/stage-00-review.md) — **FAIL** (2026-10-22, agent-2);
-  находки R00-001…R00-012 закрыты разработчиком (см.
-  [tech-debt.md](tech-debt.md#закрыто-по-ревью-stage-00-r00-2026-10-22)),
-  CI зелёный (коммит `64ab3a6`), ожидается повторное ревью
+- [stage-00-review](reviews/stage-00-review.md) — **PASS WITH COMMENTS**
+  (2026-10-22, agent-2); находки R00-001…R00-014 закрыты или осознанно приняты
+  (см. [tech-debt.md](tech-debt.md#закрыто-по-ревью-stage-00-r00-2026-10-22)),
+  CI зелёный, локальная сборка Windows подтверждена
 
 ## Решения
 - [decisions.md](decisions.md) — все ADR

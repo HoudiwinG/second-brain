@@ -72,21 +72,27 @@ class SettingsController extends AsyncNotifier<SettingsState> {
   /// Сначала применяет тему оптимистично, затем сохраняет. Любая ошибка
   /// (включая недоступную БД) откатывает UI и логируется — исключение не
   /// должно всплывать из обработчика нажатия (R00-009).
-  Future<void> setThemeMode(ThemeMode mode) async {
+  ///
+  /// Возвращает `true`, если настройка сохранена; `false` — если пришлось
+  /// откатить состояние (R00-014: UI показывает локализованную ошибку).
+  Future<bool> setThemeMode(ThemeMode mode) async {
     final current = state.value ?? const SettingsState();
     state = AsyncData(current.copyWith(themeMode: mode));
 
     try {
       final repo = await ref.read(settingsRepositoryProvider.future);
       final res = await repo.set(SettingsKeys.themeMode, mode.name);
-      res.when(
-        success: (_) =>
-            AppLogger.d('SettingsController: тема сохранена (${mode.name})'),
+      return res.when<bool>(
+        success: (_) {
+          AppLogger.d('SettingsController: тема сохранена (${mode.name})');
+          return true;
+        },
         failure: (e) {
           AppLogger.appError(e);
           state = AsyncData(
             (state.value ?? current).copyWith(themeMode: current.themeMode),
           );
+          return false;
         },
       );
     } on AppException catch (e) {
@@ -94,19 +100,21 @@ class SettingsController extends AsyncNotifier<SettingsState> {
       state = AsyncData(
         (state.value ?? current).copyWith(themeMode: current.themeMode),
       );
+      return false;
     } catch (e, s) {
       AppLogger.e('SettingsController: не удалось сохранить тему', e, s);
       state = AsyncData(
         (state.value ?? current).copyWith(themeMode: current.themeMode),
       );
+      return false;
     }
   }
 
   /// Устанавливает язык интерфейса и сохраняет выбор в БД.
   ///
   /// null — системный язык. Ошибки откатывают выбор, не покидая контроллер
-  /// (R00-009).
-  Future<void> setLocale(Locale? locale) async {
+  /// (R00-009). Возвращает `true` при успешном сохранении, иначе `false`.
+  Future<bool> setLocale(Locale? locale) async {
     final code = locale?.languageCode ?? localeSystem;
     final current = state.value ?? const SettingsState();
     state = AsyncData(current.copyWith(locale: locale));
@@ -114,14 +122,17 @@ class SettingsController extends AsyncNotifier<SettingsState> {
     try {
       final repo = await ref.read(settingsRepositoryProvider.future);
       final res = await repo.set(SettingsKeys.language, code);
-      res.when(
-        success: (_) =>
-            AppLogger.d('SettingsController: язык сохранён ($code)'),
+      return res.when<bool>(
+        success: (_) {
+          AppLogger.d('SettingsController: язык сохранён ($code)');
+          return true;
+        },
         failure: (e) {
           AppLogger.appError(e);
           state = AsyncData(
             (state.value ?? current).copyWith(locale: current.locale),
           );
+          return false;
         },
       );
     } on AppException catch (e) {
@@ -129,11 +140,13 @@ class SettingsController extends AsyncNotifier<SettingsState> {
       state = AsyncData(
         (state.value ?? current).copyWith(locale: current.locale),
       );
+      return false;
     } catch (e, s) {
       AppLogger.e('SettingsController: не удалось сохранить язык', e, s);
       state = AsyncData(
         (state.value ?? current).copyWith(locale: current.locale),
       );
+      return false;
     }
   }
 

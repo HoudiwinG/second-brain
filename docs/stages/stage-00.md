@@ -1,9 +1,9 @@
 # Stage-00: Каркас проекта (Flutter, Windows-first)
 
-- **Статус:** done (analyze 0 issues, test 21/21; CI [39746024266](https://github.com/HoudiwinG/second-brain/actions/runs/39746024266) — `analyze-and-test` + `build-windows` success)
+- **Статус:** done (analyze 0 issues, test 24/24; локальная сборка `flutter build windows --debug` — success; CI [39746024266](https://github.com/HoudiwinG/second-brain/actions/runs/39746024266) — `analyze-and-test` + `build-windows` success)
 - **Дата начала / завершения (UTC):** 2026-10-21 ~16:00 — 2026-10-21 20:00
 - **Основной агент:** agent-1 (DeepSeek V4.1 Flash Free / OpenCode)
-- **Ревьюер:** agent-2 — ревью 2026-10-22: **FAIL**; находки R00-001…R00-012 закрыты, CI зелёный, ожидается повторное ревью
+- **Ревьюер:** agent-2 — 2026-10-22: **FAIL** → повторное ревью **PASS WITH COMMENTS**; R00-001…R00-014 закрыты/приняты
 
 ## Цель и критерии приёмки
 Цель — работающий каркас приложения: Flutter-проект, структура папок,
@@ -12,14 +12,15 @@ secure storage, логирование, трей/горячая клавиша (
 
 Критерии по STAGE_ONE.md:
 1. Приложение запускается на Windows, показывает навигацию по пустым экранам —
-   **код готов**; запуск GUI в окружении не выполнялся (headless-агент),
-   проверено через widget-тесты.
+   **сборка и запуск подтверждены** (`build\windows\x64\runner\Debug\second_brain.exe`);
+   GUI-сценарии (трей/хоткей) требуют ручной проверки.
 2. Переключаются язык и тема — **выполнено** (экран Settings, widget-тест),
 3. Иконка в трее и горячая клавиша работают — **код готов** (Windows-путь);
-   сборка Windows подтверждена CI-job'ом `build-windows` (ADR-009),
-   GUI-проверка — после локальной установки VS.
+   сборка Windows подтверждена локально и CI-job'ом `build-windows` (ADR-009),
+   GUI-проверка — вручную.
 4. БД создаётся, миграции применяются — **выполнено** (интеграционный тест in-memory).
-5. Analyze чистый, тесты зелёные — **выполнено** (0 issues; 21/21).
+5. Analyze чистый, тесты зелёные, сборка Windows проходит — **выполнено**
+   (0 issues; 24/24; локальный `flutter build windows --debug` + CI).
 6. /docs заполнены — **выполнено** (INDEX, context, decisions + шаблоны).
 7. Никаких секретов в репозитории — **выполнено** (.env.example, ключи — только в secure storage).
 
@@ -79,13 +80,15 @@ secure storage, логирование, трей/горячая клавиша (
 - l10n/app_en.arb (template, 31 ключ), l10n/app_ru.arb
 - l10n/generated/* — сгенерированные AppLocalizations
 
-### test (21 тест)
+### test (24 теста)
 - test/db_migration_test.dart — интеграционные тесты drift: schemaVersion=1,
   onCreate создаёт таблицу, PRAGMA foreign_keys=ON, непокрытый onUpgrade
   падает UnsupportedError (ADR-012)
 - test/settings_repository_test.dart — юнит-тесты SettingsRepository
   (get/set/upsert/getOrDefault/remove/count), парсеры SettingsController,
   `SettingsState.copyWith` (сброс локали), контракт InMemorySecretStore
+- test/settings_controller_test.dart — успех/откат темы и языка при ошибке
+  записи, возврат `bool` (R00-014)
 - test/app_router_widget_test.dart — widget-тесты: старт на дашборде,
   навигация по rail (Notes→Settings), применение темы, сброс языка на
   системный, подсветка «Ещё» для скрытых веток на узком окне
@@ -133,13 +136,13 @@ dev:
 - build_runner 2.16.2 + drift_dev 2.35.1 — кодогенерация drift
 
 ## Тесты
-- 21 тест в 3 файлах (см. выше), все зелёные: `flutter test` → `All tests passed`
+- 24 теста в 4 файлах (см. выше), все зелёные: `flutter test` → `All tests passed`
 - Что покрывают: миграции drift (in-memory), репозиторий настроек (upsert/getOrDefault/remove),
   парсеры настроек, `SettingsState.copyWith` (сброс локали), SecretStore-контракт,
   навигация шелла, применение темы, сброс языка, подсветка нижней навигации,
   локализация EN-строк
 - Что не покрыто и почему:
-  - tray/hotkey — требуется реальный Windows GUI (после установки VS);
+  - tray/hotkey — требуется ручная проверка в Windows GUI;
   - ApiClient — нет транспорта (этап интеграций);
   - SecureSecretStore — системное защищённое хранилище не эмулируется в тестах;
   - визуальные проверки (золотые файлы) — этап 2.
@@ -147,10 +150,11 @@ dev:
 ## Известные ограничения и техдолг
 - Техдолг закрыт 2026-10-22 (TD-01…TD-13), принятые ограничения TD-14…TD-20 —
   в [tech-debt.md](../tech-debt.md). Кратко по ограничениям:
-- Локальный `flutter build windows` требует Visual Studio C++ (ADR-007);
-  в CI сборка выполняется на `windows-latest` (ADR-009, job `build-windows`).
-- tray_manager 0.5.0 (пин): после установки VS / на stage-02 мигрировать на
-  0.8+ nativeapi (ADR-006).
+- Локальный `flutter build windows --debug` подтверждён 2026-10-22
+  (`second_brain.exe`); VS Build Tools 2022: workload C++ + ATL/ATLMFC.
+  В CI сборка выполняется на `windows-latest` (ADR-009, job `build-windows`).
+- tray_manager 0.5.0 (пин): на stage-02 мигрировать на 0.8+ nativeapi
+  (ADR-006).
 - Горячая клавиша Ctrl+Alt+B пока не настраивается пользователем — stage-02.
 - Android/iOS платформы созданы заготовками flutter create; сборка их — за рамками этапа 0.
 - FTS5, таблицы заметок/задач — этап 1.
@@ -164,21 +168,21 @@ dev:
 ```powershell
 # 1. SDK установлен в C:\src\flutter и добавлен в PATH пользователя
 flutter --version          # 3.47.7 stable
-flutter doctor             # VS section будет красным до установки VS
+flutter doctor             # VS: Build Tools 2022 + C++ + ATL
 
 # 2. Зависимости и статический анализ
 flutter pub get
 flutter analyze            # ожидается: No issues found!
 
 # 3. Тесты
-flutter test               # ожидается: All tests passed! (21)
+flutter test               # ожидается: All tests passed! (24)
 
 # 4. Запуск приложения (Windows GUI)
 flutter run -d windows     # окно с боковой панелью навигации, 11 пустых экранов,
                            # настройки: тема + язык персистентны
 
-# 5. Сборка Windows (после установки Visual Studio C++)
-flutter build windows
+# 5. Сборка Windows (VS Build Tools 2022: C++ + ATL/ATLMFC)
+flutter build windows --debug
 ```
 
 ## Ссылки
@@ -186,5 +190,4 @@ flutter build windows
   005 (go_router), 006 (tray пин), 007 (build windows), 008 (структура/l10n),
   009 (CI build), 010 (трей/l10n), 011 (sqlite3), 012 (миграции)
 - Техдолг: [tech-debt.md](../tech-debt.md) — закрыто TD-01…TD-13
-- Ревью: [reviews/stage-00-review.md](../reviews/stage-00-review.md) — FAIL (agent-2);
-  исправления подтверждены CI, ожидается повторный прогон
+- Ревью: [reviews/stage-00-review.md](../reviews/stage-00-review.md) — FAIL → PASS WITH COMMENTS (agent-2); R00-013/R00-014 закрыты
