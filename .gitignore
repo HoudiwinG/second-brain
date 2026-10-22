@@ -4,6 +4,14 @@
 *.pyc
 *.swp
 .DS_Store
+
+# Environment / secrets — никогда не коммитим (см. ADR-003)
+.env
+.env.*
+!.env.example
+
+# Локальные артефакты сессий агента
+prompt-md-stage_one-md.json
 .atom/
 .build/
 .buildlog/
