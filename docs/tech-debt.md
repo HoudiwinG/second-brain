@@ -15,13 +15,14 @@
 | Статус | Кол-во |
 |--------|--------|
 | open | 0 |
-| fixed | 21 |
+| fixed | 22 |
 | accepted | 10 |
-| pending (CI/commit) | 1 |
+| pending | 0 |
 
 Проверка после закрытия (локально, Flutter 3.47.7):
 `flutter analyze --fatal-infos` → 0 issues; `flutter test` → 21/21;
-`flutter build windows --debug` → CI, job `build-windows` (R00-001).
+`flutter build windows --debug` → **success** в CI, job `build-windows`
+([run 39746024266](https://github.com/HoudiwinG/second-brain/actions/runs/39746024266)).
 
 ---
 
@@ -178,7 +179,7 @@
 
 | ID | Критичность | Находка | Действие | Статус |
 |----|-------------|---------|----------|--------|
-| R00-001 | MAJOR | изменения не закоммичены, CI не прогнан | коммит + push; дождаться `analyze-and-test` и `build-windows` | **pending** |
+| R00-001 | MAJOR | изменения не закоммичены, CI не прогнан | коммит `64ab3a6` + push; оба job'а зелёные | fixed |
 | R00-002 | MAJOR | `pubspec.lock` не обновлён после TD-07 | `flutter pub get` обновил lock; CI использует `--enforce-lockfile` | fixed |
 | R00-003 | MAJOR | трей грузит PNG через `LoadImage(IMAGE_ICON)` | добавлен `assets/tray_icon.ico` (16/32 px); Windows берёт ICO | fixed |
 | R00-004 | MAJOR | `stage-00.md` противоречил ADR-012 | абзац про `createAll` удалён, тесты обновлены | fixed |
@@ -192,8 +193,9 @@
 | R00-012 | NIT | в `PROMPT.md` нет разделов 1–2 | добавлено примечание в начале файла | accepted |
 
 Локальные доказательства: `docs/context.md` (снимок), 21 тест, 0 issues.
-CI-доказательство появится после push (R00-001) — ссылку на run добавить в
-`docs/context.md` после зелёного прогона.
+CI-доказательство (R00-001): коммит `64ab3a6`, run
+[39746024266](https://github.com/HoudiwinG/second-brain/actions/runs/39746024266) —
+`analyze-and-test` и `build-windows` завершились **success**.
 
 ---
 

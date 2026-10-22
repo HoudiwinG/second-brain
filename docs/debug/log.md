@@ -59,8 +59,10 @@
 | 2026-10-22 06:06| 0    | R00-012 | найдено  | agent-2 | -      | `PROMPT.md` начинается с обрыва (нет разделов 1–2) (NIT) |
 
 Все находки зафиксированы как `open` на момент ревью. 2026-10-22 agent-1
-закрыл R00-002…R00-012 (см. [tech-debt.md](../tech-debt.md)); R00-001
-(коммит/push/CI) закрывается после выгрузки и зелёного прогона.
+закрыл R00-001…R00-012 (см. [tech-debt.md](../tech-debt.md)):
+R00-001 — коммит `64ab3a6`, push и зелёный CI
+([run 39746024266](https://github.com/HoudiwinG/second-brain/actions/runs/39746024266),
+`analyze-and-test` + `build-windows`).
 
 ## Паттерны ошибок
 

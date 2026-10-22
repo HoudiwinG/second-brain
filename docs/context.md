@@ -2,11 +2,12 @@
 
 - **Текущий этап:** stage-00 (каркас)
 - **Статус:** done; техдолг закрыт (см. [tech-debt.md](tech-debt.md), открытых позиций 0)
-- **Последний закрытый этап:** stage-00 (PASS не подтверждён ревью — агент-2 ещё не проверял)
+- **Последний закрытый этап:** stage-00 (ревью FAIL; исправления R00 подтверждены зелёным CI, ожидается повторное ревью)
 - **Открытых CRITICAL:** 0
 - **Открытых MAJOR:** 0
-- **Сборка:** `flutter analyze` OK (0 issues); `flutter test` — 21/21; `flutter build windows`
-  проверяется job'ом `build-windows` в CI (`windows-latest`), локально — после установки VS C++
+- **Сборка:** `flutter analyze` OK (0 issues); `flutter test` — 21/21;
+  CI [run 39746024266](https://github.com/HoudiwinG/second-brain/actions/runs/39746024266)
+  — **success**: `analyze-and-test` и `build-windows` (включая Windows-тесты)
 - **Тесты:** зелёные 21/21 (`flutter test`)
 - **Flutter SDK:** 3.47.7 stable, установлен в C:\src\flutter (добавлен в PATH пользователя)
 
@@ -18,12 +19,11 @@
 - Техдолг закрыт (TD-01…TD-13), принятые позиции TD-14…TD-20 — в
   [tech-debt.md](tech-debt.md). Находки ревью R00-001…R00-012 закрыты или
   осознанно приняты (см. раздел «Закрыто по ревью stage-00»).
-- Единственный незакрытый пункт — R00-001: изменения должны быть закоммичены
-  и выгружены, а CI-прогоны `analyze-and-test` и `build-windows` — зелёными.
-  Локально уже подтверждено: analyze 0 issues, test 21/21.
-- Локальная сборка `flutter build windows` по-прежнему требует Visual Studio
-  Build Tools (workload «Desktop development with C++»); критерий этапа 0
-  подтверждается CI-job'ом `build-windows` (ADR-009).
+- R00-001 **закрыт**: коммит `64ab3a6` запушен, оба CI-job'а зелёные
+  (`analyze-and-test`, `build-windows`). Локально: analyze 0 issues, test 21/21.
+- Локальная сборка `flutter build windows` требует Visual Studio
+  Build Tools (workload «Desktop development with C++»); на машине идёт
+  установка, для критерия этапа 0 достаточно CI-job'а `build-windows` (ADR-009).
 - Миграции на этапе 0 используются только для проверки механизма; на этапе 1 —
   реальные таблицы Note/Category/Task/IdeaEntry/FinanceTransaction + FTS5
   (см. PROMPT.md). `onUpgrade` намеренно падает при неизвестном переходе —
@@ -31,7 +31,7 @@
 - tray_manager зафиксирован на 0.5.0 (ADR-006); миграция на nativeapi после
   установки VS / на stage-02.
 - Ревью stage-00 проведено агентом-2 (2026-10-22): **FAIL**, 5 major / 4 minor /
-  3 nit; повторное ревью — после push и зелёного CI.
+  3 nit; все находки закрыты, CI зелёный — ожидается повторное ревью.
 
 ## Ближайшие задачи (следующий этап — stage-01 «Ядро данных»)
 - Drift: таблицы Note, Category, Task, IdeaEntry, FinanceTransaction (+user)
@@ -52,8 +52,8 @@
 
 ## Активный агент
 - agent-1: DeepSeek V4.1 Flash Free (OpenCode), ветка master
-- agent-2: ревью stage-00 проведено 2026-10-22 (FAIL); ожидает повторного
-  прогона после push/CI
+- agent-2: ревью stage-00 проведено 2026-10-22 (FAIL); CI зелёный, ожидает
+  повторного ревью
 
 ## Ссылки
 - Последний отчёт: [stages/stage-00.md](stages/stage-00.md)
@@ -63,7 +63,13 @@
 
 ## Репозиторий
 - Удалённый: **https://github.com/HoudiwinG/second-brain** (приватный), ветка master
-- Выгрузка: 2026-10-22, коммиты 50afd6b / 58cb23b / 1265a37
+- Выгрузка: 2026-10-22, коммиты 50afd6b / 58cb23b / 1265a37 / **64ab3a6**
+  (`chore(stage-00): закрыть техдолг и находки ревью`)
+- CI-прогон для 64ab3a6:
+  https://github.com/HoudiwinG/second-brain/actions/runs/39746024266
+  — **success**; jobs:
+  [analyze-and-test](https://github.com/HoudiwinG/second-brain/actions/runs/39746024266/job/119714562468) /
+  [build-windows](https://github.com/HoudiwinG/second-brain/actions/runs/39746024266/job/119714562295)
 - CI: GitHub Actions (.github/workflows/ci.yml) — pub get --enforce-lockfile +
   analyze + test (ubuntu) + test + build windows --debug (windows-latest)
 - Секреты: `.env` исключён в .gitignore (после выгрузки добавлена гарантия

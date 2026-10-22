@@ -29,7 +29,7 @@
 - [stage-00-review](reviews/stage-00-review.md) — **FAIL** (2026-10-22, agent-2);
   находки R00-001…R00-012 закрыты разработчиком (см.
   [tech-debt.md](tech-debt.md#закрыто-по-ревью-stage-00-r00-2026-10-22)),
-  повторное ревью — после push/CI
+  CI зелёный (коммит `64ab3a6`), ожидается повторное ревью
 
 ## Решения
 - [decisions.md](decisions.md) — все ADR
