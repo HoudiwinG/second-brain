@@ -8,17 +8,19 @@
 - Этап 0 (каркас) — **done**; см. [docs/stages/stage-00.md](docs/stages/stage-00.md)
 - Точки входа документации: [docs/INDEX.md](docs/INDEX.md), [docs/context.md](docs/context.md)
 - Журнал решений: [docs/decisions.md](docs/decisions.md)
+- Техдолг: [docs/tech-debt.md](docs/tech-debt.md) (открытых позиций — 0)
 
 ## Быстрый старт
 ```powershell
 flutter pub get
 flutter analyze          # 0 issues
-flutter test             # 15 тестов
+flutter test             # 21 тест
 flutter run -d windows   # запустить desktop-версию
 ```
 
-Для сборки `flutter build windows` требуется Visual Studio (workload
-«Desktop development with C++») — см. блокеры в [docs/context.md](docs/context.md).
+Сборка `flutter build windows` проверяется в CI на `windows-latest`
+(job `build-windows`). Локально она требует Visual Studio с workload
+«Desktop development with C++» — см. [docs/context.md](docs/context.md).
 
 ## Структура
 ```

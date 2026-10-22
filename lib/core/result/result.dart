@@ -11,27 +11,19 @@ sealed class Result<T> {
 
   const factory Result.failure(AppException error) = Failure<T>;
 
-  T get valueOrDefault => switch (this) {
-        Success<T>(:final value) => value,
-        Failure<T>() => throw StateError(
-            'valueOrDefault вызван для Failure, используйте when()',
-          ),
-      };
-
   /// Разворачивает результат в значение или пробрасывает [AppException].
   T unwrap() => switch (this) {
-        Success<T>(:final value) => value,
-        Failure<T>(:final error) => throw error,
-      };
+    Success<T>(:final value) => value,
+    Failure<T>(:final error) => throw error,
+  };
 
   R when<R>({
     required R Function(T value) success,
     required R Function(AppException error) failure,
-  }) =>
-      switch (this) {
-        Success<T>(:final value) => success(value),
-        Failure<T>(:final error) => failure(error),
-      };
+  }) => switch (this) {
+    Success<T>(:final value) => success(value),
+    Failure<T>(:final error) => failure(error),
+  };
 }
 
 final class Success<T> extends Result<T> {

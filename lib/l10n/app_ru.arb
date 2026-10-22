@@ -26,6 +26,7 @@
   "emptyStateMessage": "Раздел пуст. Бизнес-логика появится на следующих этапах.",
   "moreTitle": "Дополнительные разделы",
   "errorUnexpected": "Неожиданная ошибка",
+  "retryAction": "Повторить",
   "trayMenuShow": "Показать окно",
   "trayMenuHide": "Скрыть окно",
   "trayMenuQuit": "Выход",

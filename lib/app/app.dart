@@ -1,10 +1,14 @@
+import 'dart:async';
+
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../features/settings/application/settings_controller.dart';
 import '../l10n/generated/app_localizations.dart';
+import 'desktop_services.dart';
 import 'di.dart';
-import 'settings_controller.dart';
 import 'theme.dart';
 
 /// Корневой виджет приложения: Riverpod + MaterialApp.router.
@@ -26,6 +30,8 @@ class SecondBrainApp extends ConsumerWidget {
       onGenerateTitle: (context) => AppLocalizations.of(context)!.appTitle,
       debugShowCheckedModeBanner: false,
       routerConfig: router,
+      builder: (context, child) =>
+          _DesktopLabelsSync(child: child ?? const SizedBox.shrink()),
       themeMode: state.themeMode,
       theme: AppThemes.light(),
       darkTheme: AppThemes.dark(),
@@ -39,4 +45,40 @@ class SecondBrainApp extends ConsumerWidget {
       supportedLocales: AppLocalizations.supportedLocales,
     );
   }
+}
+
+/// Передаёт локализованные подписи в системный трей и заголовок окна.
+///
+/// Живёт внутри MaterialApp (в builder), поэтому видит [AppLocalizations] и
+/// обновляет трей при смене языка без перезапуска (TD-02).
+/// На не-Windows платформах ничего не делает.
+class _DesktopLabelsSync extends StatefulWidget {
+  const _DesktopLabelsSync({required this.child});
+
+  final Widget child;
+
+  @override
+  State<_DesktopLabelsSync> createState() => _DesktopLabelsSyncState();
+}
+
+class _DesktopLabelsSyncState extends State<_DesktopLabelsSync> {
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (kIsWeb || defaultTargetPlatform != TargetPlatform.windows) return;
+    final lcm = AppLocalizations.of(context);
+    if (lcm == null) return;
+    unawaited(
+      DesktopServices.setTrayLabels(
+        windowTitle: lcm.appTitle,
+        tooltip: lcm.appTitle,
+        showWindow: lcm.trayMenuShow,
+        hideWindow: lcm.trayMenuHide,
+        quit: lcm.trayMenuQuit,
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) => widget.child;
 }

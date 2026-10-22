@@ -254,6 +254,12 @@ abstract class AppLocalizations {
   /// **'Unexpected error'**
   String get errorUnexpected;
 
+  /// No description provided for @retryAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Retry'**
+  String get retryAction;
+
   /// No description provided for @trayMenuShow.
   ///
   /// In en, this message translates to:

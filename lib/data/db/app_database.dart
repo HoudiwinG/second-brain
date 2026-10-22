@@ -35,7 +35,9 @@ class AppDatabase extends _$AppDatabase {
   /// NativeDatabase.createInBackground — запросы не блокируют UI-поток.
   static Future<AppDatabase> open() async {
     final dir = await getApplicationSupportDirectory();
-    final db = AppDatabase(NativeDatabase.createInBackground(File('${dir.path}/second_brain.db')));
+    final db = AppDatabase(
+      NativeDatabase.createInBackground(File('${dir.path}/second_brain.db')),
+    );
     AppLogger.d('AppDatabase: открыт файл ${dir.path}/second_brain.db');
     return db;
   }
@@ -48,18 +50,26 @@ class AppDatabase extends _$AppDatabase {
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
-        onCreate: (Migrator m) async {
-          AppLogger.d('AppDatabase: onCreate → создаём схему v$schemaVersion');
-          await m.createAll();
-        },
-        onUpgrade: (Migrator m, int from, int to) async {
-          AppLogger.d('AppDatabase: onUpgrade с $from до $to');
-          // Пока единственная версия схемы v1; при v1→v2 добавить alterTable.
-          await m.createAll();
-        },
-        beforeOpen: (details) async {
-          AppLogger.d('AppDatabase: beforeOpen (upgrade=${details.hadUpgrade})');
-          await customStatement('PRAGMA foreign_keys = ON');
-        },
+    onCreate: (Migrator m) async {
+      AppLogger.d('AppDatabase: onCreate → создаём схему v$schemaVersion');
+      await m.createAll();
+    },
+    // ВАЖНО: createAll() здесь не вызывается. Он создаёт только
+    // отсутствующие таблицы и молча пропускает ALTER/перенос данных,
+    // из-за чего новая версия схемы может открыться с неверной структурой.
+    // Для каждой новой версии добавляется явная ветка миграции, например:
+    //   if (from < 2) { await m.addColumn(note, note.isPrivateForLlm); }
+    // Пока перехода нет — падаем явно, чтобы ошибка выявилась в тестах.
+    onUpgrade: (Migrator m, int from, int to) async {
+      AppLogger.d('AppDatabase: onUpgrade с $from до $to');
+      throw UnsupportedError(
+        'AppDatabase: нет миграции схемы $from → $to. '
+        'Добавьте явную миграцию в onUpgrade (ADR-012).',
       );
+    },
+    beforeOpen: (details) async {
+      AppLogger.d('AppDatabase: beforeOpen (upgrade=${details.hadUpgrade})');
+      await customStatement('PRAGMA foreign_keys = ON');
+    },
+  );
 }

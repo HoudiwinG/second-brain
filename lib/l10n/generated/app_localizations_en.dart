@@ -89,6 +89,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get errorUnexpected => 'Unexpected error';
 
   @override
+  String get retryAction => 'Retry';
+
+  @override
   String get trayMenuShow => 'Show window';
 
   @override

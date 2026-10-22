@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:second_brain/app/settings_controller.dart';
+import 'package:second_brain/features/settings/application/settings_controller.dart';
 import 'package:second_brain/core/secrets/in_memory_secret_store.dart';
 import 'package:second_brain/core/secrets/secret_store.dart';
 import 'package:second_brain/data/repositories/settings_repository.dart';
@@ -89,10 +89,37 @@ void main() {
     test('parseLocale', () {
       expect(SettingsController.parseLocale('ru'), const Locale('ru'));
       expect(SettingsController.parseLocale('en'), const Locale('en'));
-      expect(SettingsController.parseLocale(
-        SettingsController.localeSystem,
-      ), isNull);
+      expect(
+        SettingsController.parseLocale(SettingsController.localeSystem),
+        isNull,
+      );
       expect(SettingsController.parseLocale('xx'), isNull);
+    });
+  });
+
+  group('SettingsState.copyWith', () {
+    test('locale сбрасывается в null (системный язык)', () {
+      const state = SettingsState(locale: Locale('ru'));
+
+      // Без аргументов — язык сохраняется.
+      expect(state.copyWith().locale, const Locale('ru'));
+
+      // Явный null должен сбросить язык, а не проигнорироваться (TD-01).
+      expect(state.copyWith(locale: null).locale, isNull);
+
+      // Смена темы не трогает язык.
+      expect(
+        state.copyWith(themeMode: ThemeMode.dark).locale,
+        const Locale('ru'),
+      );
+    });
+
+    test('value equality: одинаковые состояния равны', () {
+      const a = SettingsState(themeMode: ThemeMode.dark, locale: Locale('en'));
+      const b = SettingsState(themeMode: ThemeMode.dark, locale: Locale('en'));
+
+      expect(a, b);
+      expect(a.hashCode, b.hashCode);
     });
   });
 

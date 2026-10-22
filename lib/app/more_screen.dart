@@ -22,7 +22,7 @@ class MoreScreen extends StatelessWidget {
     final lcm = AppLocalizations.of(context)!;
     final shell = StatefulNavigationShell.of(context);
     return Scaffold(
-      appBar: AppBar(title: Text(lcm.navMore)),
+      appBar: AppBar(title: Text(lcm.moreTitle)),
       body: ListView(
         padding: const EdgeInsets.all(12),
         children: [

@@ -18,32 +18,32 @@ import 'more_screen.dart';
 
 /// Путь ветки в схеме URL роутинга.
 String pathForBranch(FeatureBranch branch) => switch (branch) {
-      FeatureBranch.dashboard => '/',
-      FeatureBranch.notes => '/notes',
-      FeatureBranch.tasks => '/tasks',
-      FeatureBranch.ideas => '/ideas',
-      FeatureBranch.finance => '/finance',
-      FeatureBranch.learning => '/learning',
-      FeatureBranch.chat => '/chat',
-      FeatureBranch.integrations => '/integrations',
-      FeatureBranch.search => '/search',
-      FeatureBranch.settings => '/settings',
-      FeatureBranch.more => '/more',
-    };
+  FeatureBranch.dashboard => '/',
+  FeatureBranch.notes => '/notes',
+  FeatureBranch.tasks => '/tasks',
+  FeatureBranch.ideas => '/ideas',
+  FeatureBranch.finance => '/finance',
+  FeatureBranch.learning => '/learning',
+  FeatureBranch.chat => '/chat',
+  FeatureBranch.integrations => '/integrations',
+  FeatureBranch.search => '/search',
+  FeatureBranch.settings => '/settings',
+  FeatureBranch.more => '/more',
+};
 
 Widget _screenForBranch(FeatureBranch branch) => switch (branch) {
-      FeatureBranch.dashboard => const DashboardScreen(),
-      FeatureBranch.notes => const NotesScreen(),
-      FeatureBranch.tasks => const TasksScreen(),
-      FeatureBranch.ideas => const IdeasScreen(),
-      FeatureBranch.finance => const FinanceScreen(),
-      FeatureBranch.learning => const LearningScreen(),
-      FeatureBranch.chat => const ChatScreen(),
-      FeatureBranch.integrations => const IntegrationsScreen(),
-      FeatureBranch.search => const SearchScreen(),
-      FeatureBranch.settings => const SettingsScreen(),
-      FeatureBranch.more => const MoreScreen(),
-    };
+  FeatureBranch.dashboard => const DashboardScreen(),
+  FeatureBranch.notes => const NotesScreen(),
+  FeatureBranch.tasks => const TasksScreen(),
+  FeatureBranch.ideas => const IdeasScreen(),
+  FeatureBranch.finance => const FinanceScreen(),
+  FeatureBranch.learning => const LearningScreen(),
+  FeatureBranch.chat => const ChatScreen(),
+  FeatureBranch.integrations => const IntegrationsScreen(),
+  FeatureBranch.search => const SearchScreen(),
+  FeatureBranch.settings => const SettingsScreen(),
+  FeatureBranch.more => const MoreScreen(),
+};
 
 /// Контроллер роутинга (go_router) поверх Riverpod.
 ///
@@ -64,7 +64,9 @@ class RouterController {
           branches: [
             for (final branch in kFeatureBranches)
               StatefulShellBranch(
-                navigatorKey: GlobalKey<NavigatorState>(debugLabel: branch.name),
+                navigatorKey: GlobalKey<NavigatorState>(
+                  debugLabel: branch.name,
+                ),
                 routes: [
                   GoRoute(
                     path: pathForBranch(branch),
@@ -107,7 +109,9 @@ class _HomeShell extends StatelessWidget {
           ],
         ),
       ),
-      bottomNavigationBar: isWide ? null : _BottomBar(navigationShell: navigationShell),
+      bottomNavigationBar: isWide
+          ? null
+          : _BottomBar(navigationShell: navigationShell),
     );
   }
 }
@@ -123,23 +127,21 @@ class _SideRail extends StatelessWidget {
     if (currentIndex >= kFeatureBranches.length) {
       AppLogger.w('Навигация: неожиданный индекс ветки $currentIndex');
     }
-    return IntrinsicHeight(
-      child: NavigationRail(
-        selectedIndex: currentIndex,
-        onDestinationSelected: (index) => navigationShell.goBranch(
-          index,
-          initialLocation: index == navigationShell.currentIndex,
-        ),
-        labelType: NavigationRailLabelType.all,
-        destinations: [
-          for (final branch in kFeatureBranches)
-            NavigationRailDestination(
-              icon: Icon(branch.icon),
-              selectedIcon: Icon(branch.icon),
-              label: Text(branch.label(AppLocalizations.of(context)!)),
-            ),
-        ],
+    return NavigationRail(
+      selectedIndex: currentIndex,
+      onDestinationSelected: (index) => navigationShell.goBranch(
+        index,
+        initialLocation: index == navigationShell.currentIndex,
       ),
+      labelType: NavigationRailLabelType.all,
+      destinations: [
+        for (final branch in kFeatureBranches)
+          NavigationRailDestination(
+            icon: Icon(branch.icon),
+            selectedIcon: Icon(branch.icon),
+            label: Text(branch.label(AppLocalizations.of(context)!)),
+          ),
+      ],
     );
   }
 }
@@ -152,9 +154,14 @@ class _BottomBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final current = kFeatureBranches[navigationShell.currentIndex];
-    final selectedIndex = kMobileNavBranches.indexOf(current);
+    final index = kMobileNavBranches.indexOf(current);
+    // Ветки вне нижней панели (settings, ideas и т.п.) открываются из «Ещё»,
+    // поэтому активной считается именно эта вкладка, а не «Дашборд» (TD-04).
+    final selectedIndex = index >= 0
+        ? index
+        : kMobileNavBranches.indexOf(FeatureBranch.more);
     return NavigationBar(
-      selectedIndex: selectedIndex < 0 ? 0 : selectedIndex,
+      selectedIndex: selectedIndex,
       destinations: [
         for (final branch in kMobileNavBranches)
           NavigationDestination(

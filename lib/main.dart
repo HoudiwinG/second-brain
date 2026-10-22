@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -16,8 +14,15 @@ Future<void> main() async {
     AppLogger.init();
     AppCrashReporter.init();
 
-    if (!kIsWeb && Platform.isWindows) {
-      await DesktopServices.init();
+    // defaultTargetPlatform вместо dart:io — точка входа остаётся
+    // совместимой с web (TD-11). Ошибки desktop-плагинов не должны мешать
+    // запуску приложения (TD-03).
+    if (!kIsWeb && defaultTargetPlatform == TargetPlatform.windows) {
+      try {
+        await DesktopServices.init();
+      } on Exception catch (e, s) {
+        AppLogger.e('main: ошибка инициализации desktop-сервисов', e, s);
+      }
     }
 
     AppLogger.i('Second Brain: запуск приложения (этап 0 — каркас)');

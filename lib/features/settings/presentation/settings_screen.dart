@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../app/settings_controller.dart';
+import '../../../core/logging/app_logger.dart';
 import '../../../l10n/generated/app_localizations.dart';
+import '../application/settings_controller.dart';
 
 /// Экран настроек (этап 0): переключатели темы и языка.
 ///
@@ -21,11 +22,31 @@ class SettingsScreen extends ConsumerWidget {
       appBar: AppBar(title: Text(lcm.settingsTitle)),
       body: settings.when(
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(child: Text('${lcm.errorUnexpected}: $e')),
+        error: (e, s) {
+          // Подробности — только в лог: исключение может содержать пути и
+          // внутренние детали БД (TD-10).
+          AppLogger.e('SettingsScreen: не удалось загрузить настройки', e, s);
+          return Center(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(lcm.errorUnexpected, textAlign: TextAlign.center),
+                const SizedBox(height: 12),
+                FilledButton(
+                  onPressed: () => ref.invalidate(settingsControllerProvider),
+                  child: Text(lcm.retryAction),
+                ),
+              ],
+            ),
+          );
+        },
         data: (state) => ListView(
           padding: const EdgeInsets.all(16),
           children: [
-            Text(lcm.settingsAppearance, style: Theme.of(context).textTheme.titleMedium),
+            Text(
+              lcm.settingsAppearance,
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
             const SizedBox(height: 8),
             Text(lcm.settingsTheme),
             const SizedBox(height: 8),
@@ -48,10 +69,14 @@ class SettingsScreen extends ConsumerWidget {
                 ),
               ],
               selected: {state.themeMode},
-              onSelectionChanged: (selection) => controller.setThemeMode(selection.first),
+              onSelectionChanged: (selection) =>
+                  controller.setThemeMode(selection.first),
             ),
             const SizedBox(height: 24),
-            Text(lcm.settingsLanguageSection, style: Theme.of(context).textTheme.titleMedium),
+            Text(
+              lcm.settingsLanguageSection,
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
             const SizedBox(height: 8),
             Text(lcm.settingsLanguage),
             const SizedBox(height: 8),
@@ -62,14 +87,8 @@ class SettingsScreen extends ConsumerWidget {
                   icon: const Icon(Icons.language),
                   label: Text(lcm.settingsLanguageSystem),
                 ),
-                ButtonSegment(
-                  value: 'ru',
-                  label: Text(lcm.settingsLanguageRu),
-                ),
-                ButtonSegment(
-                  value: 'en',
-                  label: Text(lcm.settingsLanguageEn),
-                ),
+                ButtonSegment(value: 'ru', label: Text(lcm.settingsLanguageRu)),
+                ButtonSegment(value: 'en', label: Text(lcm.settingsLanguageEn)),
               ],
               selected: {
                 state.locale?.languageCode ?? SettingsController.localeSystem,
@@ -85,7 +104,10 @@ class SettingsScreen extends ConsumerWidget {
             Card(
               child: Padding(
                 padding: const EdgeInsets.all(12),
-                child: Text(lcm.hintGlobalHotkey, style: Theme.of(context).textTheme.bodySmall),
+                child: Text(
+                  lcm.hintGlobalHotkey,
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
               ),
             ),
           ],

@@ -19,9 +19,10 @@ dependencies:
   flutter_riverpod: ^3.4.3
   go_router: ^18.1.1
 
-  # Локальная БД (Drift/SQLite)
+  # Локальная БД (Drift/SQLite).
+  # sqlite3_flutter_libs не нужен: drift 2.35 зависит от sqlite3 ^3.4,
+  # нативные бинарники подключаются через hooks (ADR-011).
   drift: ^2.35.2
-  sqlite3_flutter_libs: ^0.6.0+eol
   path_provider: ^2.1.6
 
   # Секреты и логирование
@@ -57,3 +58,4 @@ flutter:
 
   assets:
     - assets/tray_icon.png
+    - assets/tray_icon.ico

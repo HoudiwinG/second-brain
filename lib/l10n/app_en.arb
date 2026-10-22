@@ -26,6 +26,7 @@
   "emptyStateMessage": "The section is empty. The business logic will appear in the next stages.",
   "moreTitle": "More sections",
   "errorUnexpected": "Unexpected error",
+  "retryAction": "Retry",
   "trayMenuShow": "Show window",
   "trayMenuHide": "Hide window",
   "trayMenuQuit": "Quit",

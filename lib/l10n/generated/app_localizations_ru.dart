@@ -89,6 +89,9 @@ class AppLocalizationsRu extends AppLocalizations {
   String get errorUnexpected => 'Неожиданная ошибка';
 
   @override
+  String get retryAction => 'Повторить';
+
+  @override
   String get trayMenuShow => 'Показать окно';
 
   @override
