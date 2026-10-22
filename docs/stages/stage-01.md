@@ -3,7 +3,7 @@
 - **Дата:** 2026-10-22
 - **Агент:** agent-1 (DeepSeek V4.1 Flash Free, OpenCode)
 - **Ветка:** `master`
-- **Статус:** **done** (локальные проверки зелёные; CI — после push)
+- **Статус:** **done** (локальные проверки зелёные; CI run 39763804171 — success)
 - **Следующий этап:** stage-02 (UX-каркас) по `PROMPT.md`
 
 ## Цель этапа
@@ -123,6 +123,9 @@ flutter analyze --fatal-infos   # 0 issues
 flutter test                    # 44/44
 flutter build windows --debug   # success
 ```
+
+CI stage-01: [run 39763804171](https://github.com/HoudiwinG/second-brain/actions/runs/39763804171)
+— **success**: `analyze-and-test` и `build-windows`.
 
 Ключевые тесты:
 

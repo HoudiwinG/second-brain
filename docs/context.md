@@ -1,8 +1,8 @@
 # Контекст проекта (снимок состояния)
 
 - **Текущий этап:** stage-01 (ядро данных)
-- **Статус:** done локально; изменения подготовлены к коммиту/push. Техдолг:
-  открытых позиций 0, принятых — 14 (см. [tech-debt.md](tech-debt.md)).
+- **Статус:** **done**; код и документация запушены (`a75f9c0`), CI зелёный.
+  Техдолг: открытых позиций 0, принятых — 14 (см. [tech-debt.md](tech-debt.md)).
 - **Последний закрытый этап:** stage-00 (ревью: FAIL → **PASS WITH COMMENTS**;
   R00-015/R00-016 закрыты, CI зелёный)
 - **Текущий отчёт:** [stages/stage-01.md](stages/stage-01.md)
@@ -11,7 +11,9 @@
 - **Сборка:** `flutter analyze --fatal-infos` — 0 issues;
   `flutter test` — **44/44**; `flutter build windows --debug` — **success**
 - **Flutter SDK:** 3.47.7 stable, `C:\src\flutter` (Dart 3.13.5)
-- **Ветка:** `master`; CI stage-01 — после push (workflow `.github/workflows/ci.yml`)
+- **Ветка:** `master`; CI stage-01:
+  [run 39763804171](https://github.com/HoudiwinG/second-brain/actions/runs/39763804171) —
+  **success** (`analyze-and-test`, `build-windows`).
 
 ## Активные фича-флаги
 - experimental.llmChat = true (заготовка, не используется)
@@ -88,10 +90,11 @@
 
 ## Репозиторий
 - Удалённый: **https://github.com/HoudiwinG/second-brain** (приватный), ветка master
-- HEAD до stage-01: `81779a6` (`docs: закрыть техдолг stage-00`), синхронизирован
-  с `origin/master`.
-- Изменения stage-01: схема/репозитории/UI/тесты/документация — в рабочем
-  дереве (коммит и CI-run фиксируются после push).
+- HEAD до stage-01: `81779a6` (`docs: закрыть техдолг stage-00`).
+- Stage-01: `a75f9c0` (`feat(stage-01): реализовать ядро данных с FTS5 и
+  экспортом`), запушен в `origin/master`; CI run
+  [39763804171](https://github.com/HoudiwinG/second-brain/actions/runs/39763804171)
+  — **success**, job'ы `analyze-and-test` и `build-windows`.
 - CI: GitHub Actions (`.github/workflows/ci.yml`) — pub get
   `--enforce-lockfile` + analyze + test (ubuntu) + test + build windows
   --debug (windows-latest).
