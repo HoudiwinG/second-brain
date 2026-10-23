@@ -1,8 +1,10 @@
 # INDEX — карта документации
 
 ## Состояние
-- Текущий этап: stage-02 (UX-каркас) — **done**, локальные проверки зелёные
-  (2026-10-23); CI — после push
+- Текущий этап: stage-02 (UX-каркас) — **done**, локальные проверки и Windows
+  smoke зелёные (2026-10-23); CI run
+  [39919792561](https://github.com/HoudiwinG/second-brain/actions/runs/39919792561)
+  — **success**
 - Снимок состояния: [context.md](context.md)
 - Реестр техдолга: [tech-debt.md](tech-debt.md) — открытых позиций 0,
   принятых 15, исправлено 27
@@ -21,8 +23,8 @@
 ## Отчёты по этапам
 - [stage-00](stages/stage-00.md) — каркас (done, PASS WITH COMMENTS)
 - [stage-01](stages/stage-01.md) — ядро данных (done, CI зелёный)
-- [stage-02](stages/stage-02.md) — UX-каркас (done, локальные проверки;
-  CI-run фиксируется после push)
+- [stage-02](stages/stage-02.md) — UX-каркас (done, локальные проверки и
+  Windows smoke; CI run 39919792561 — success)
 - stage-03 — LLM-слой (следующий)
 
 ## Шаблоны

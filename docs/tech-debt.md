@@ -21,8 +21,9 @@
 
 Проверка после stage-02 (локально, Flutter 3.47.7):
 `flutter analyze --fatal-infos` → 0 issues; `flutter test` → 57/57;
-`flutter build windows --debug` → **success**. CI stage-02 — после push.
-CI stage-01:
+`flutter build windows --debug` → **success**. CI stage-02:
+[run 39919792561](https://github.com/HoudiwinG/second-brain/actions/runs/39919792561)
+— **success** (`analyze-and-test`, `build-windows`). CI stage-01:
 [run 39763804171](https://github.com/HoudiwinG/second-brain/actions/runs/39763804171)
 — **success** (`analyze-and-test`, `build-windows`).
 

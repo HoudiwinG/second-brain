@@ -2,8 +2,9 @@
 
 - **Текущий этап:** stage-02 (UX-каркас)
 - **Статус:** **done**; локальные проверки зелёные, Windows smoke пройден
-  (дашборд, хоткей, close-to-tray, toast), код и документация готовы к push.
-  CI stage-02 — после push.
+  (дашборд, хоткей, close-to-tray, toast). CI stage-02:
+  [run 39919792561](https://github.com/HoudiwinG/second-brain/actions/runs/39919792561)
+  — **success** (`analyze-and-test`, `build-windows`).
 - **Последний закрытый этап:** stage-01 (ядро данных) — **done**, CI run
   [39763804171](https://github.com/HoudiwinG/second-brain/actions/runs/39763804171)
   — success.
@@ -112,7 +113,9 @@
 - Удалённый: **https://github.com/HoudiwinG/second-brain** (приватный), ветка master
 - HEAD до stage-02: `6faeb90` (`fix(stage-01): убрать overflow бокового rail
   при низком окне`).
-- Stage-02: коммит и CI-run будут зафиксированы после push.
+- Stage-02: `82b04a2`; CI run
+  [39919792561](https://github.com/HoudiwinG/second-brain/actions/runs/39919792561)
+  — **success** (`analyze-and-test`, `build-windows`).
 - CI: GitHub Actions (`.github/workflows/ci.yml`) — pub get
   `--enforce-lockfile` + analyze + test (ubuntu) + test + build windows
   --debug (windows-latest).
