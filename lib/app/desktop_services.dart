@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
@@ -33,6 +34,31 @@ abstract final class DesktopServices {
 
   /// События запроса быстрого ввода (из хоткея или меню трея).
   static Stream<void> get quickCaptureRequests => _quickCaptureRequests.stream;
+
+  /// Путь к иконке трея в комплекте приложения.
+  ///
+  /// tray_manager на Windows передаёт путь в `LoadImage(..., LR_LOADFROMFILE)`,
+  /// поэтому путь обязан быть абсолютным и указывать на каталог `.exe`, а не
+  /// на текущий рабочий каталог процесса (R02-001). Файл иконки лежит в
+  /// `data/flutter_assets/assets/tray_icon.ico` рядом с исполняемым файлом.
+  @visibleForTesting
+  static String trayIconPath({
+    TargetPlatform? platform,
+    String? executablePath,
+  }) {
+    final target = platform ?? defaultTargetPlatform;
+    if (target != TargetPlatform.windows) return 'assets/tray_icon.png';
+
+    final executable = executablePath ?? Platform.resolvedExecutable;
+    final directory = File(executable).parent.path;
+    return [
+      directory,
+      'data',
+      'flutter_assets',
+      'assets',
+      'tray_icon.ico',
+    ].join(Platform.pathSeparator);
+  }
 
   /// Инициализация окна и горячей клавиши.
   ///
@@ -142,9 +168,11 @@ abstract final class DesktopServices {
       await windowManager.setTitle(windowTitle);
       // Windows tray_manager грузит иконку через LoadImage(IMAGE_ICON),
       // который не поддерживает PNG — на Windows обязателен .ico (R00-003).
-      final iconPath = defaultTargetPlatform == TargetPlatform.windows
-          ? 'assets/tray_icon.ico'
-          : 'assets/tray_icon.png';
+      final iconPath = trayIconPath();
+      if (defaultTargetPlatform == TargetPlatform.windows &&
+          !File(iconPath).existsSync()) {
+        throw Exception('DesktopServices: иконка трея не найдена: $iconPath');
+      }
       await trayManager.setIcon(iconPath);
       await trayManager.setToolTip(tooltip);
       await trayManager.setContextMenu(

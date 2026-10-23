@@ -85,6 +85,10 @@ class FinanceSummary {
 }
 
 abstract interface class FinanceRepository {
+  /// Возвращает операции в диапазоне [from, to).
+  ///
+  /// [to] не включается: границы месяца/дня передаются как начало
+  /// следующего периода.
   Future<Result<List<FinanceTransaction>>> list({
     DateTime? from,
     DateTime? to,
@@ -107,6 +111,7 @@ abstract interface class FinanceRepository {
 
   Future<Result<void>> restore(int id);
 
+  /// Сводка по операциям в диапазоне [from, to); [to] не включается.
   Future<Result<FinanceSummary>> summary({
     DateTime? from,
     DateTime? to,

@@ -200,7 +200,10 @@ class DriftFinanceRepository implements FinanceRepository {
       query.where((t) => t.date.isBiggerOrEqualValue(from));
     }
     if (to != null) {
-      query.where((t) => t.date.isSmallerOrEqualValue(to));
+      // Верхняя граница эксклюзивна: диапазон [from, to). Это позволяет
+      // передавать начало следующего месяца/дня без риска захватить 00:00
+      // следующего периода (R02-005).
+      query.where((t) => t.date.isSmallerThanValue(to));
     }
     if (type != null) {
       query.where((t) => t.type.equals(type.name));

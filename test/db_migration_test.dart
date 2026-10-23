@@ -179,6 +179,93 @@ void main() {
     });
   });
 
+  group('Защита миграций (R02-004)', () {
+    test(
+      'v2 → v4 падает до DDL и не оставляет файл в промежуточном виде',
+      () async {
+        final dir = await Directory.systemTemp.createTemp('second_brain_db_');
+        addTearDown(() async {
+          if (dir.existsSync()) await dir.delete(recursive: true);
+        });
+        final file = File('${dir.path}/v2_to_v4.sqlite');
+        await _seedV2(file);
+
+        final v4 = _AppDatabaseV4(NativeDatabase(file));
+        await expectLater(
+          () => v4.select(v4.appSettings).get(),
+          throwsA(isA<UnsupportedError>()),
+        );
+        try {
+          await v4.close();
+        } on Object {
+          // Соединение могло остаться в незавершённой миграции.
+        }
+
+        final raw = sqlite.sqlite3.open(file.path);
+        final columns = raw
+            .select('PRAGMA table_info(tasks)')
+            .map((row) => row['name'])
+            .toList();
+        final version = raw.userVersion;
+        raw.close();
+
+        expect(columns, isNot(contains('reminder_sent_at')));
+        expect(version, 2);
+
+        // Файл должен остаться пригодным для штатной миграции v2 → v3.
+        final recovered = AppDatabase(NativeDatabase(file));
+        addTearDown(recovered.close);
+        final task = await recovered.select(recovered.tasks).getSingle();
+        expect(task.reminderSentAt, isNull);
+      },
+    );
+
+    test('v4 → v3 падает и не перезаписывает user_version', () async {
+      final dir = await Directory.systemTemp.createTemp('second_brain_db_');
+      addTearDown(() async {
+        if (dir.existsSync()) await dir.delete(recursive: true);
+      });
+      final file = File('${dir.path}/v4_to_v3.sqlite');
+
+      final seed = AppDatabase(NativeDatabase(file));
+      await seed
+          .into(seed.appSettings)
+          .insert(
+            AppSettingsCompanion.insert(
+              key: 'keep.me',
+              value: 'v3',
+              updatedAt: DateTime.utc(2026, 1, 1),
+            ),
+          );
+      await seed.close();
+
+      final raw = sqlite.sqlite3.open(file.path);
+      raw.userVersion = 4;
+      raw.close();
+
+      final db = AppDatabase(NativeDatabase(file));
+      await expectLater(
+        () => db.select(db.appSettings).get(),
+        throwsA(isA<UnsupportedError>()),
+      );
+      try {
+        await db.close();
+      } on Object {
+        // Соединение могло остаться в незавершённой миграции.
+      }
+
+      final check = sqlite.sqlite3.open(file.path);
+      expect(check.userVersion, 4);
+      expect(
+        check.select('SELECT value FROM app_settings WHERE key = ?', [
+          'keep.me',
+        ]).single['value'],
+        'v3',
+      );
+      check.close();
+    });
+  });
+
   group('Миграция v2 → v3', () {
     test('добавляет reminder_sent_at и сохраняет задачи', () async {
       final dir = await Directory.systemTemp.createTemp('second_brain_db_');
@@ -225,4 +312,24 @@ void main() {
       expect(index, isNotNull);
     });
   });
+}
+
+/// Готовит файл схемы v2: задачи уже есть, `reminder_sent_at` и его индекс
+/// отсутствуют, `user_version = 2`.
+Future<void> _seedV2(File file) async {
+  final seed = AppDatabase(NativeDatabase(file));
+  await seed
+      .into(seed.tasks)
+      .insert(
+        TasksCompanion.insert(
+          title: 'Напоминание после миграции',
+          remindAt: Value(DateTime.utc(2026, 2, 1, 10)),
+          createdAt: DateTime.utc(2026, 1, 1),
+          updatedAt: DateTime.utc(2026, 1, 1),
+        ),
+      );
+  await seed.customStatement('DROP INDEX IF EXISTS idx_tasks_remind');
+  await seed.customStatement('ALTER TABLE tasks DROP COLUMN reminder_sent_at');
+  await seed.customStatement('PRAGMA user_version = 2');
+  await seed.close();
 }

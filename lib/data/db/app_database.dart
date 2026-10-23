@@ -260,6 +260,16 @@ class AppDatabase extends _$AppDatabase {
     // Для каждой новой версии добавляется явная ветка миграции (ADR-012).
     onUpgrade: (Migrator m, int from, int to) async {
       AppLogger.d('AppDatabase: onUpgrade с $from до $to');
+      // Проверяем поддержку перехода до любых DDL. Иначе v2 → v4 успевает
+      // добавить колонку и индекс, а затем падает, оставляя файл в
+      // промежуточном состоянии; downgrade v4 → v3 и вовсе молча
+      // перезаписывал user_version (R02-004).
+      if (from > to || from > 3 || to > 3) {
+        throw UnsupportedError(
+          'AppDatabase: нет миграции схемы $from → $to. '
+          'Добавьте явную миграцию в onUpgrade (ADR-012).',
+        );
+      }
       if (from < 2) {
         // Порядок важен: сначала родительские таблицы, затем связи.
         // createTable(tasks) сразу создаёт колонки текущей схемы, поэтому
@@ -278,12 +288,6 @@ class AppDatabase extends _$AppDatabase {
         // v3: защита от повторных напоминаний после перезапуска.
         await m.addColumn(tasks, tasks.reminderSentAt);
         await _createIndexes();
-      }
-      if (to > 3) {
-        throw UnsupportedError(
-          'AppDatabase: нет миграции схемы $from → $to. '
-          'Добавьте явную миграцию в onUpgrade (ADR-012).',
-        );
       }
     },
     beforeOpen: (details) async {

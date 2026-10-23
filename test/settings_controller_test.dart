@@ -13,31 +13,42 @@ import 'package:second_brain/features/settings/application/settings_controller.d
 
 /// Репозиторий с управляемой ошибкой записи (R00-014).
 class _FakeSettingsRepository implements SettingsRepository {
-  _FakeSettingsRepository({this.failWrites = false});
+  _FakeSettingsRepository({
+    this.failWrites = false,
+    Map<String, String>? initial,
+  }) : _values = {...?initial};
 
   final bool failWrites;
+  final Map<String, String> _values;
+  final List<String> writes = [];
+
+  Map<String, String> get values => Map.unmodifiable(_values);
 
   @override
-  Future<Result<String?>> get(String key) async => const Result.success(null);
+  Future<Result<String?>> get(String key) async => Result.success(_values[key]);
 
   @override
   Future<Result<String>> getOrDefault(String key, String fallback) async =>
-      Result.success(fallback);
+      Result.success(_values[key] ?? fallback);
 
   @override
   Future<Result<void>> set(String key, String value) async {
     if (failWrites) {
       return const Result.failure(DataException('тест: запись запрещена'));
     }
+    _values[key] = value;
+    writes.add(key);
     return const Result<void>.success(null);
   }
 
   @override
-  Future<Result<void>> remove(String key) async =>
-      const Result<void>.success(null);
+  Future<Result<void>> remove(String key) async {
+    _values.remove(key);
+    return const Result<void>.success(null);
+  }
 
   @override
-  Future<int> count() async => 0;
+  Future<int> count() async => _values.length;
 }
 
 void main() {
@@ -107,6 +118,36 @@ void main() {
         );
       },
     );
+
+    test('startup: занятая сохранённая комбинация откатывается на default (R02-003)', () async {
+      const saved = QuickHotkey(
+        key: LogicalKeyboardKey.keyN,
+        modifiers: [HotKeyModifier.control, HotKeyModifier.shift],
+      );
+      final repo = _FakeSettingsRepository(
+        initial: {SettingsKeys.quickCaptureHotkey: saved.encode()},
+      );
+      final applied = <QuickHotkey>[];
+      final container = ProviderContainer.test(
+        overrides: [
+          settingsRepositoryProvider.overrideWith((ref) async => repo),
+          quickHotkeyApplierProvider.overrideWithValue((hotkey) async {
+            applied.add(hotkey);
+            return hotkey == QuickHotkey.defaultBinding;
+          }),
+        ],
+      );
+
+      final state = await container.read(settingsControllerProvider.future);
+
+      expect(state.quickHotkey, QuickHotkey.defaultBinding);
+      expect(applied, [saved, QuickHotkey.defaultBinding]);
+      expect(repo.writes, contains(SettingsKeys.quickCaptureHotkey));
+      expect(
+        repo.values[SettingsKeys.quickCaptureHotkey],
+        QuickHotkey.defaultBinding.encode(),
+      );
+    });
 
     test('setQuickHotkey регистрирует и сохраняет комбинацию', () async {
       final applied = <QuickHotkey>[];

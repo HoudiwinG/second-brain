@@ -9,10 +9,14 @@ import 'helpers/in_memory_db.dart';
 
 class _RecordingNotifier implements ReminderNotifier {
   final List<ReminderMessage> messages = [];
+  bool succeeds = true;
+  bool throws = false;
 
   @override
-  Future<void> show(ReminderMessage message) async {
+  Future<bool> show(ReminderMessage message) async {
     messages.add(message);
+    if (throws) throw StateError('тест: toast недоступен');
+    return succeeds;
   }
 }
 
@@ -43,10 +47,7 @@ void main() {
       ),
     )).unwrap();
     await repo.create(
-      TaskDraft(
-        title: 'Будущее',
-        remindAt: now.add(const Duration(hours: 1)),
-      ),
+      TaskDraft(title: 'Будущее', remindAt: now.add(const Duration(hours: 1))),
     );
     final done = (await repo.create(
       TaskDraft(
@@ -94,6 +95,44 @@ void main() {
     await service.checkNow();
     expect(notifier.messages, hasLength(2));
     expect(notifier.messages.last.taskId, task.id);
+  });
+
+  test('не помечает sent, если notifier вернул false (R02-002)', () async {
+    final task = (await repo.create(
+      TaskDraft(
+        title: 'Toast недоступен',
+        remindAt: now.subtract(const Duration(minutes: 1)),
+      ),
+    )).unwrap();
+    notifier.succeeds = false;
+
+    final service = scheduler();
+    addTearDown(service.dispose);
+
+    await service.checkNow();
+
+    expect(notifier.messages, hasLength(1));
+    expect((await repo.getById(task.id)).unwrap()!.reminderSentAt, isNull);
+    expect((await repo.dueReminders(now)).unwrap(), hasLength(1));
+  });
+
+  test('не помечает sent, если notifier бросил исключение', () async {
+    final task = (await repo.create(
+      TaskDraft(
+        title: 'Ошибка toast',
+        remindAt: now.subtract(const Duration(minutes: 1)),
+      ),
+    )).unwrap();
+    notifier.throws = true;
+
+    final service = scheduler();
+    addTearDown(service.dispose);
+
+    await service.checkNow();
+
+    expect(notifier.messages, hasLength(1));
+    expect((await repo.getById(task.id)).unwrap()!.reminderSentAt, isNull);
+    expect((await repo.dueReminders(now)).unwrap(), hasLength(1));
   });
 
   test('markReminderSent не помечает задачу при другом remind_at', () async {

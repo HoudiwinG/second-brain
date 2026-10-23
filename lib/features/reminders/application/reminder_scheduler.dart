@@ -71,13 +71,21 @@ class ReminderScheduler {
     final remindAt = task.remindAt;
     if (remindAt == null) return;
     try {
-      await _notifier.show(
+      final shown = await _notifier.show(
         ReminderMessage(
           taskId: task.id,
           title: task.title,
           body: task.description,
         ),
       );
+      if (!shown) {
+        // Не помечаем отправленным: при следующем тике попробуем снова.
+        AppLogger.w(
+          'ReminderScheduler: уведомление task-${task.id} не показано, '
+          'повтор при следующем тике',
+        );
+        return;
+      }
       final marked = await repository.markReminderSent(
         task.id,
         remindAt: remindAt,

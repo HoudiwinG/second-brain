@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../app/di.dart';
 import '../../../app/widgets/data_ui.dart';
+import '../../../core/error/app_exception.dart';
+import '../../../core/logging/app_logger.dart';
 import '../../../core/result/result.dart';
 import '../../../l10n/generated/app_localizations.dart';
 import '../../finance/domain/finance_transaction.dart';
@@ -81,7 +83,9 @@ class _QuickCaptureDialogState extends ConsumerState<QuickCaptureDialog> {
   }
 
   Future<void> _pickDate({required bool finance}) async {
-    final initial = finance ? _date.toLocal() : (_dueAt?.toLocal() ?? DateTime.now());
+    final initial = finance
+        ? _date.toLocal()
+        : (_dueAt?.toLocal() ?? DateTime.now());
     final picked = await showDatePicker(
       context: context,
       initialDate: initial,
@@ -106,93 +110,111 @@ class _QuickCaptureDialogState extends ConsumerState<QuickCaptureDialog> {
       _error = null;
     });
 
-    Result<Object?> result;
-    switch (_kind) {
-      case QuickCaptureKind.note:
-        final title = _title.text.trim().isNotEmpty
-            ? _title.text.trim()
-            : _body.text.trim().split('\n').first.trim();
-        if (title.isEmpty) {
-          _required(lcm);
-          return;
-        }
-        final repo = await ref.read(notesRepositoryProvider.future);
-        result = await repo.create(
-          NoteDraft(
-            title: title,
-            body: _body.text,
-            tags: parseTags(_tags.text),
-            isPrivateForLlm: _isPrivate,
-          ),
-        );
-      case QuickCaptureKind.task:
-        final title = _title.text.trim();
-        if (title.isEmpty) {
-          _required(lcm);
-          return;
-        }
-        final repo = await ref.read(tasksRepositoryProvider.future);
-        result = await repo.create(
-          TaskDraft(
-            title: title,
-            description: _body.text,
-            dueAt: _dueAt,
-            tags: parseTags(_tags.text),
-            isPrivateForLlm: _isPrivate,
-          ),
-        );
-      case QuickCaptureKind.idea:
-        final text = _body.text.trim();
-        if (text.isEmpty) {
-          _required(lcm);
-          return;
-        }
-        final repo = await ref.read(ideasRepositoryProvider.future);
-        result = await repo.create(
-          IdeaDraft(
-            text: text,
-            tags: parseTags(_tags.text),
-            isPrivateForLlm: _isPrivate,
-          ),
-        );
-      case QuickCaptureKind.finance:
-        final amount = double.tryParse(
-          _amount.text.trim().replaceAll(',', '.'),
-        );
-        if (amount == null || amount <= 0) {
-          _required(lcm);
-          return;
-        }
-        final repo = await ref.read(financeRepositoryProvider.future);
-        result = await repo.create(
-          FinanceDraft(
-            amount: amount,
-            type: _financeType,
-            date: _date,
-            category: _category.text,
-            note: _note.text,
-            isPrivateForLlm: _isPrivate,
-          ),
-        );
-    }
+    var closing = false;
+    try {
+      Result<Object?> result;
+      switch (_kind) {
+        case QuickCaptureKind.note:
+          final title = _title.text.trim().isNotEmpty
+              ? _title.text.trim()
+              : _body.text.trim().split('\n').first.trim();
+          if (title.isEmpty) {
+            _required(lcm);
+            return;
+          }
+          final repo = await ref.read(notesRepositoryProvider.future);
+          result = await repo.create(
+            NoteDraft(
+              title: title,
+              body: _body.text,
+              tags: parseTags(_tags.text),
+              isPrivateForLlm: _isPrivate,
+            ),
+          );
+        case QuickCaptureKind.task:
+          final title = _title.text.trim();
+          if (title.isEmpty) {
+            _required(lcm);
+            return;
+          }
+          final repo = await ref.read(tasksRepositoryProvider.future);
+          result = await repo.create(
+            TaskDraft(
+              title: title,
+              description: _body.text,
+              dueAt: _dueAt,
+              tags: parseTags(_tags.text),
+              isPrivateForLlm: _isPrivate,
+            ),
+          );
+        case QuickCaptureKind.idea:
+          final text = _body.text.trim();
+          if (text.isEmpty) {
+            _required(lcm);
+            return;
+          }
+          final repo = await ref.read(ideasRepositoryProvider.future);
+          result = await repo.create(
+            IdeaDraft(
+              text: text,
+              tags: parseTags(_tags.text),
+              isPrivateForLlm: _isPrivate,
+            ),
+          );
+        case QuickCaptureKind.finance:
+          final amount = double.tryParse(
+            _amount.text.trim().replaceAll(',', '.'),
+          );
+          if (amount == null || amount <= 0) {
+            _required(lcm);
+            return;
+          }
+          final repo = await ref.read(financeRepositoryProvider.future);
+          result = await repo.create(
+            FinanceDraft(
+              amount: amount,
+              type: _financeType,
+              date: _date,
+              category: _category.text,
+              note: _note.text,
+              isPrivateForLlm: _isPrivate,
+            ),
+          );
+      }
 
-    if (!mounted) return;
-    result.when(
-      success: (_) => Navigator.of(context).pop(true),
-      failure: (error) {
-        setState(() {
-          _saving = false;
-          _error = '${lcm.errorDetails}: ${error.message}';
-        });
-      },
-    );
+      if (!mounted) return;
+      result.when(
+        success: (_) {
+          closing = true;
+          Navigator.of(context).pop(true);
+        },
+        failure: (error) {
+          setState(() {
+            _error = '${lcm.errorDetails}: ${error.message}';
+          });
+        },
+      );
+    } on Object catch (e, s) {
+      if (!mounted) return;
+      if (e is AppException) {
+        AppLogger.appError(e, s);
+      } else {
+        AppLogger.e('QuickCaptureDialog: не удалось сохранить запись', e, s);
+      }
+      setState(() {
+        _error = lcm.errorUnexpected;
+      });
+    } finally {
+      // Сбрасываем блокировку на всех путях, кроме успешного закрытия диалога.
+      // Иначе после ошибки кнопки остаются disabled (R02-006).
+      if (!closing && mounted) {
+        setState(() => _saving = false);
+      }
+    }
   }
 
   void _required(AppLocalizations lcm) {
-    setState(() {
-      _saving = false;
-      _error = lcm.quickCaptureRequired;
-    });
+    setState(() => _error = lcm.quickCaptureRequired);
   }
 
   @override
@@ -413,8 +435,6 @@ class _QuickCaptureDialogState extends ConsumerState<QuickCaptureDialog> {
     contentPadding: EdgeInsets.zero,
     title: Text(lcm.fieldPrivate),
     value: _isPrivate,
-    onChanged: _saving
-        ? null
-        : (value) => setState(() => _isPrivate = value),
+    onChanged: _saving ? null : (value) => setState(() => _isPrivate = value),
   );
 }

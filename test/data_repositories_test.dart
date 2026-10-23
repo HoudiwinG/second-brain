@@ -271,6 +271,33 @@ void main() {
       expect((await repo.list()).unwrap(), hasLength(2));
     });
 
+    test('верхняя граница to эксклюзивна (R02-005)', () async {
+      await repo.create(
+        FinanceDraft(
+          amount: 100,
+          type: FinanceTransactionType.income,
+          date: DateTime.utc(2026, 10, 31, 23, 59),
+        ),
+      );
+      await repo.create(
+        FinanceDraft(
+          amount: 200,
+          type: FinanceTransactionType.income,
+          date: DateTime.utc(2026, 11, 1),
+        ),
+      );
+
+      final from = DateTime.utc(2026, 10, 1);
+      final to = DateTime.utc(2026, 11, 1);
+      final summary = (await repo.summary(from: from, to: to)).unwrap();
+      expect(summary.transactions, 1);
+      expect(summary.income, 100);
+
+      final list = (await repo.list(from: from, to: to)).unwrap();
+      expect(list, hasLength(1));
+      expect(list.single.date.toUtc(), DateTime.utc(2026, 10, 31, 23, 59));
+    });
+
     test('валидация суммы и валюты', () async {
       final zero = await repo.create(
         FinanceDraft(

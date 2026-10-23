@@ -8,8 +8,12 @@ import '../../../core/logging/app_logger.dart';
 import '../domain/reminder_message.dart';
 
 /// Показывает системное уведомление о задаче.
+///
+/// Возвращает `true`, только если уведомление действительно показано.
+/// При `false` планировщик не помечает напоминание отправленным и повторит
+/// попытку на следующем тике (R02-002).
 abstract interface class ReminderNotifier {
-  Future<void> show(ReminderMessage message);
+  Future<bool> show(ReminderMessage message);
 }
 
 /// Заглушка для тестов и не-Windows платформ.
@@ -17,7 +21,7 @@ class NoopReminderNotifier implements ReminderNotifier {
   const NoopReminderNotifier();
 
   @override
-  Future<void> show(ReminderMessage message) async {}
+  Future<bool> show(ReminderMessage message) async => true;
 }
 
 /// Windows-уведомления через WinToast (local_notifier).
@@ -45,10 +49,10 @@ class LocalReminderNotifier implements ReminderNotifier {
   }
 
   @override
-  Future<void> show(ReminderMessage message) async {
-    if (kIsWeb || defaultTargetPlatform != TargetPlatform.windows) return;
+  Future<bool> show(ReminderMessage message) async {
+    if (kIsWeb || defaultTargetPlatform != TargetPlatform.windows) return false;
     await initialize();
-    if (!_initialized) return;
+    if (!_initialized) return false;
 
     try {
       final notification = LocalNotification(
@@ -63,9 +67,13 @@ class LocalReminderNotifier implements ReminderNotifier {
       };
       notification.onClose = (_) => unawaited(notification.destroy());
       await notification.show();
-      AppLogger.d('ReminderNotifier: показано напоминание task-${message.taskId}');
+      AppLogger.d(
+        'ReminderNotifier: показано напоминание task-${message.taskId}',
+      );
+      return true;
     } on Object catch (e, s) {
       AppLogger.e('ReminderNotifier: не удалось показать уведомление', e, s);
+      return false;
     }
   }
 }

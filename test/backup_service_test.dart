@@ -60,11 +60,16 @@ void main() {
       final task = (await tasks.create(
         TaskDraft(
           title: 'Связанная задача',
+          remindAt: DateTime.utc(2026, 10, 4, 9),
           linkedNoteId: note.id,
           tags: const ['план'],
           priority: TaskPriority.high,
         ),
       )).unwrap();
+      await tasks
+          .markReminderSent(task.id, remindAt: DateTime.utc(2026, 10, 4, 9))
+          .then((r) => r.unwrap());
+      final sentAt = (await tasks.getById(task.id)).unwrap()!.reminderSentAt!;
       final idea = (await ideas.create(
         const IdeaDraft(text: 'Идея для бэкапа', tags: ['идеи']),
       )).unwrap();
@@ -106,6 +111,11 @@ void main() {
       expect(restoredTasks.single.linkedNoteId, note.id);
       expect(restoredTasks.single.tags, ['план']);
       expect(restoredTasks.single.priority, TaskPriority.high);
+      expect(
+        restoredTasks.single.remindAt?.toUtc(),
+        DateTime.utc(2026, 10, 4, 9),
+      );
+      expect(restoredTasks.single.reminderSentAt?.toUtc(), sentAt.toUtc());
 
       final restoredIdeas = (await ideas.list()).unwrap();
       expect(restoredIdeas, hasLength(1));

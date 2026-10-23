@@ -76,17 +76,58 @@ class SettingsController extends AsyncNotifier<SettingsState> {
     );
     final langRaw = langRes.unwrap();
     final hotkeyRes = await repo.get(SettingsKeys.quickCaptureHotkey);
-    final hotkey = QuickHotkey.decode(hotkeyRes.unwrap()) ??
-        QuickHotkey.defaultBinding;
+    final hotkey =
+        QuickHotkey.decode(hotkeyRes.unwrap()) ?? QuickHotkey.defaultBinding;
 
     // Применяем сохранённую комбинацию при старте. В тестах и на не-Windows
-    // платформах provider возвращает no-op.
-    unawaited(ref.read(quickHotkeyApplierProvider)(hotkey));
+    // платформах provider возвращает no-op. Если комбинация занята, состояние
+    // должно отражать реально зарегистрированную комбинацию, иначе настройки
+    // показывают одно, а срабатывает другое (R02-003).
+    final apply = ref.read(quickHotkeyApplierProvider);
+    var effectiveHotkey = hotkey;
+    final applied = await apply(hotkey);
+    if (!applied) {
+      AppLogger.w(
+        'SettingsController: не удалось применить сохранённую комбинацию '
+        '${hotkey.label}',
+      );
+      if (hotkey != QuickHotkey.defaultBinding) {
+        effectiveHotkey = QuickHotkey.defaultBinding;
+        final fallbackApplied = await apply(effectiveHotkey);
+        if (!fallbackApplied) {
+          AppLogger.w(
+            'SettingsController: не удалось применить резервную комбинацию '
+            '${effectiveHotkey.label}',
+          );
+        }
+        // Сохраняем фактически выбранную комбинацию, чтобы после перезапуска
+        // состояние снова не расходилось с плагином.
+        try {
+          final saved = await repo.set(
+            SettingsKeys.quickCaptureHotkey,
+            effectiveHotkey.encode(),
+          );
+          saved.when(
+            success: (_) => AppLogger.d(
+              'SettingsController: сохранена резервная комбинация '
+              '${effectiveHotkey.label}',
+            ),
+            failure: (e) => AppLogger.appError(e),
+          );
+        } on Object catch (e, s) {
+          AppLogger.e(
+            'SettingsController: не удалось сохранить резервную комбинацию',
+            e,
+            s,
+          );
+        }
+      }
+    }
 
     return SettingsState(
       themeMode: parseThemeMode(themeRaw),
       locale: parseLocale(langRaw),
-      quickHotkey: hotkey,
+      quickHotkey: effectiveHotkey,
     );
   }
 
@@ -180,8 +221,10 @@ class SettingsController extends AsyncNotifier<SettingsState> {
   Future<bool> setQuickHotkey(QuickHotkey hotkey) async {
     if (!hotkey.isValid) return false;
     final current = state.value ?? const SettingsState();
-    if (current.quickHotkey == hotkey) return true;
 
+    // Не выходим раньше при совпадении с state: предыдущая попытка могла
+    // не зарегистрировать комбинацию, и пользователь должен иметь возможность
+    // повторить применение (R02-003).
     state = AsyncData(current.copyWith(quickHotkey: hotkey));
 
     final apply = ref.read(quickHotkeyApplierProvider);
@@ -195,7 +238,10 @@ class SettingsController extends AsyncNotifier<SettingsState> {
 
     try {
       final repo = await ref.read(settingsRepositoryProvider.future);
-      final res = await repo.set(SettingsKeys.quickCaptureHotkey, hotkey.encode());
+      final res = await repo.set(
+        SettingsKeys.quickCaptureHotkey,
+        hotkey.encode(),
+      );
       return res.when<bool>(
         success: (_) {
           AppLogger.d(

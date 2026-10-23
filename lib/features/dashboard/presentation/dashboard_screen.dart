@@ -12,6 +12,7 @@ import '../../ideas/domain/idea_entry.dart';
 import '../../notes/domain/note.dart';
 import '../../quick_capture/presentation/quick_capture_dialog.dart';
 import '../../tasks/domain/task_item.dart';
+import '../domain/dashboard_period.dart';
 
 /// Главный экран: сводка дня, быстрые действия и последние записи.
 class DashboardScreen extends ConsumerStatefulWidget {
@@ -32,10 +33,10 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
 
   Future<_DashboardData> _load() async {
     final now = DateTime.now();
-    final dayStart = DateTime(now.year, now.month, now.day);
-    final dayEnd = dayStart.add(const Duration(days: 1));
-    final monthStart = DateTime(now.year, now.month);
-    final monthEnd = DateTime(now.year, now.month + 1);
+    final day = localDayBounds(now);
+    final dayStart = day.start;
+    final dayEnd = day.end;
+    final month = localMonthBounds(now);
 
     final tasksRepo = await ref.read(tasksRepositoryProvider.future);
     final notesRepo = await ref.read(notesRepositoryProvider.future);
@@ -46,8 +47,8 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     final notes = (await notesRepo.list()).unwrap();
     final ideas = (await ideasRepo.list()).unwrap();
     final summary = (await financeRepo.summary(
-      from: monthStart.toUtc(),
-      to: monthEnd.toUtc(),
+      from: month.start.toUtc(),
+      to: month.end.toUtc(),
     )).unwrap();
 
     final open = tasks.where(
@@ -69,8 +70,8 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
         today.add(task);
       }
     }
-    int byDate(TaskItem a, TaskItem b) => (a.dueAt ?? a.remindAt!)
-        .compareTo(b.dueAt ?? b.remindAt!);
+    int byDate(TaskItem a, TaskItem b) =>
+        (a.dueAt ?? a.remindAt!).compareTo(b.dueAt ?? b.remindAt!);
     overdue.sort(byDate);
     today.sort(byDate);
 
@@ -137,9 +138,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
               physics: const AlwaysScrollableScrollPhysics(),
               children: [
                 Text(
-                  MaterialLocalizations.of(
-                    context,
-                  ).formatFullDate(data.now),
+                  MaterialLocalizations.of(context).formatFullDate(data.now),
                   style: Theme.of(context).textTheme.titleMedium,
                 ),
                 const SizedBox(height: 16),
@@ -178,15 +177,15 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                 _SectionHeader(
                   title: lcm.dashboardTodayTasks,
                   actionLabel: lcm.dashboardAll,
-                  onAction: () => context.go(pathForBranch(FeatureBranch.tasks)),
+                  onAction: () =>
+                      context.go(pathForBranch(FeatureBranch.tasks)),
                 ),
                 if (data.overdueTasks.isNotEmpty) ...[
                   const SizedBox(height: 8),
                   Text(
                     lcm.dashboardOverdueTasks(data.overdueTasks.length),
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: Theme.of(context).colorScheme.error,
-                    ),
+                    style: Theme.of(context).textTheme.bodySmall
+                        ?.copyWith(color: Theme.of(context).colorScheme.error),
                   ),
                 ],
                 const SizedBox(height: 8),
@@ -207,7 +206,8 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                 _SectionHeader(
                   title: lcm.dashboardRecentNotes,
                   actionLabel: lcm.dashboardAll,
-                  onAction: () => context.go(pathForBranch(FeatureBranch.notes)),
+                  onAction: () =>
+                      context.go(pathForBranch(FeatureBranch.notes)),
                 ),
                 const SizedBox(height: 8),
                 if (data.recentNotes.isEmpty)
@@ -218,7 +218,8 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                 _SectionHeader(
                   title: lcm.dashboardRecentIdeas,
                   actionLabel: lcm.dashboardAll,
-                  onAction: () => context.go(pathForBranch(FeatureBranch.ideas)),
+                  onAction: () =>
+                      context.go(pathForBranch(FeatureBranch.ideas)),
                 ),
                 const SizedBox(height: 8),
                 if (data.recentIdeas.isEmpty)
@@ -312,10 +313,7 @@ class _SectionHeader extends StatelessWidget {
     return Row(
       children: [
         Expanded(
-          child: Text(
-            title,
-            style: Theme.of(context).textTheme.titleMedium,
-          ),
+          child: Text(title, style: Theme.of(context).textTheme.titleMedium),
         ),
         TextButton(onPressed: onAction, child: Text(actionLabel)),
       ],
@@ -459,9 +457,8 @@ class _FinanceCell extends StatelessWidget {
           const SizedBox(height: 4),
           Text(
             value,
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-              color: color,
-            ),
+            style: Theme.of(context).textTheme.titleMedium
+                ?.copyWith(color: color),
           ),
         ],
       ),
@@ -480,9 +477,8 @@ class _EmptyHint extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 12),
       child: Text(
         text,
-        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-          color: Theme.of(context).colorScheme.outline,
-        ),
+        style: Theme.of(context).textTheme.bodyMedium
+            ?.copyWith(color: Theme.of(context).colorScheme.outline),
       ),
     );
   }
