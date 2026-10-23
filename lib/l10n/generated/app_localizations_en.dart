@@ -102,7 +102,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get hintGlobalHotkey =>
-      'Global hotkey: Ctrl+Alt+B opens the app window.';
+      'The hotkey opens quick capture from any app. Default: Ctrl+Alt+B.';
 
   @override
   String get actionAdd => 'Add';
@@ -308,4 +308,94 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get dateNotSet => 'Not set';
+
+  @override
+  String get trayMenuQuickCapture => 'Quick capture';
+
+  @override
+  String get settingsHotkeySection => 'Global hotkey';
+
+  @override
+  String get settingsQuickCaptureHotkey => 'Quick capture';
+
+  @override
+  String get actionChangeHotkey => 'Change';
+
+  @override
+  String get hotkeyRecorderTitle => 'New shortcut';
+
+  @override
+  String get hotkeyRecorderHint =>
+      'Press a combination with Ctrl, Alt, Shift or Win. For example, Ctrl+Alt+B.';
+
+  @override
+  String get hotkeyRecorderInvalid =>
+      'A modifier plus a regular key is required.';
+
+  @override
+  String get hotkeyBusyError =>
+      'The shortcut is busy or unavailable. Try another one.';
+
+  @override
+  String get fieldReminder => 'Reminder';
+
+  @override
+  String get fieldNoReminder => 'No reminder';
+
+  @override
+  String get quickCaptureTitle => 'Quick capture';
+
+  @override
+  String get quickCaptureNote => 'Note';
+
+  @override
+  String get quickCaptureTask => 'Task';
+
+  @override
+  String get quickCaptureIdea => 'Idea';
+
+  @override
+  String get quickCaptureFinance => 'Transaction';
+
+  @override
+  String get quickCaptureHint =>
+      'Save with the button below. Press Esc to cancel.';
+
+  @override
+  String get quickCaptureRequired => 'Fill in the required field.';
+
+  @override
+  String get quickCaptureSaved => 'Entry saved';
+
+  @override
+  String get dashboardQuickActions => 'Quick actions';
+
+  @override
+  String get dashboardTodayTasks => 'Today\'s tasks';
+
+  @override
+  String get dashboardAll => 'All';
+
+  @override
+  String dashboardOverdueTasks(int count) {
+    return 'Overdue: $count';
+  }
+
+  @override
+  String get dashboardTasksEmpty => 'No tasks for today';
+
+  @override
+  String get dashboardRecentNotes => 'Recent notes';
+
+  @override
+  String get dashboardNotesEmpty => 'No notes yet';
+
+  @override
+  String get dashboardRecentIdeas => 'Recent ideas';
+
+  @override
+  String get dashboardIdeasEmpty => 'No ideas yet';
+
+  @override
+  String get dashboardFinanceMonth => 'This month\'s finance';
 }

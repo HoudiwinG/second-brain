@@ -1,7 +1,10 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../app/di.dart';
+import '../../../app/quick_hotkey.dart';
 import '../../../core/error/app_exception.dart';
 import '../../../core/logging/app_logger.dart';
 import '../../../data/repositories/settings_repository.dart';
@@ -11,7 +14,11 @@ const Object _unset = Object();
 
 /// Снимок UI-настроек (тема и язык).
 final class SettingsState {
-  const SettingsState({this.themeMode = ThemeMode.system, this.locale});
+  const SettingsState({
+    this.themeMode = ThemeMode.system,
+    this.locale,
+    this.quickHotkey = QuickHotkey.defaultBinding,
+  });
 
   /// Режим темы: системная / светлая / тёмная.
   final ThemeMode themeMode;
@@ -19,26 +26,34 @@ final class SettingsState {
   /// Язык интерфейса. null — следовать системному.
   final Locale? locale;
 
+  /// Глобальная комбинация быстрого ввода.
+  final QuickHotkey quickHotkey;
+
   /// Копия состояния.
   ///
   /// [locale] — nullable, поэтому используется sentinel [_unset]:
   /// `copyWith()` сохраняет язык, `copyWith(locale: null)` сбрасывает его
   /// на системный (см. TD-01).
-  SettingsState copyWith({ThemeMode? themeMode, Object? locale = _unset}) =>
-      SettingsState(
-        themeMode: themeMode ?? this.themeMode,
-        locale: identical(locale, _unset) ? this.locale : locale as Locale?,
-      );
+  SettingsState copyWith({
+    ThemeMode? themeMode,
+    Object? locale = _unset,
+    QuickHotkey? quickHotkey,
+  }) => SettingsState(
+    themeMode: themeMode ?? this.themeMode,
+    locale: identical(locale, _unset) ? this.locale : locale as Locale?,
+    quickHotkey: quickHotkey ?? this.quickHotkey,
+  );
 
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       other is SettingsState &&
           other.themeMode == themeMode &&
-          other.locale == locale;
+          other.locale == locale &&
+          other.quickHotkey == quickHotkey;
 
   @override
-  int get hashCode => Object.hash(themeMode, locale);
+  int get hashCode => Object.hash(themeMode, locale, quickHotkey);
 }
 
 /// Контроллер UI-настроек: тема и язык, персистентность в Drift.
@@ -60,10 +75,18 @@ class SettingsController extends AsyncNotifier<SettingsState> {
       localeSystem,
     );
     final langRaw = langRes.unwrap();
+    final hotkeyRes = await repo.get(SettingsKeys.quickCaptureHotkey);
+    final hotkey = QuickHotkey.decode(hotkeyRes.unwrap()) ??
+        QuickHotkey.defaultBinding;
+
+    // Применяем сохранённую комбинацию при старте. В тестах и на не-Windows
+    // платформах provider возвращает no-op.
+    unawaited(ref.read(quickHotkeyApplierProvider)(hotkey));
 
     return SettingsState(
       themeMode: parseThemeMode(themeRaw),
       locale: parseLocale(langRaw),
+      quickHotkey: hotkey,
     );
   }
 
@@ -148,6 +171,62 @@ class SettingsController extends AsyncNotifier<SettingsState> {
       );
       return false;
     }
+  }
+
+  /// Регистрирует новую комбинацию быстрого ввода и сохраняет её.
+  ///
+  /// Сначала проверяется регистрация (комбинация может быть занята), затем
+  /// настройка пишется в БД. При любой ошибке состояние откатывается.
+  Future<bool> setQuickHotkey(QuickHotkey hotkey) async {
+    if (!hotkey.isValid) return false;
+    final current = state.value ?? const SettingsState();
+    if (current.quickHotkey == hotkey) return true;
+
+    state = AsyncData(current.copyWith(quickHotkey: hotkey));
+
+    final apply = ref.read(quickHotkeyApplierProvider);
+    final applied = await apply(hotkey);
+    if (!applied) {
+      // Возвращаем прежнюю комбинацию в плагин, если новая оказалась занята.
+      await apply(current.quickHotkey);
+      state = AsyncData(current);
+      return false;
+    }
+
+    try {
+      final repo = await ref.read(settingsRepositoryProvider.future);
+      final res = await repo.set(SettingsKeys.quickCaptureHotkey, hotkey.encode());
+      return res.when<bool>(
+        success: (_) {
+          AppLogger.d(
+            'SettingsController: горячая клавиша сохранена (${hotkey.label})',
+          );
+          return true;
+        },
+        failure: (e) {
+          AppLogger.appError(e);
+          unawaited(_rollbackHotkey(current));
+          return false;
+        },
+      );
+    } on AppException catch (e) {
+      AppLogger.appError(e);
+      await _rollbackHotkey(current);
+      return false;
+    } catch (e, s) {
+      AppLogger.e(
+        'SettingsController: не удалось сохранить горячую клавишу',
+        e,
+        s,
+      );
+      await _rollbackHotkey(current);
+      return false;
+    }
+  }
+
+  Future<void> _rollbackHotkey(SettingsState previous) async {
+    state = AsyncData(previous);
+    await ref.read(quickHotkeyApplierProvider)(previous.quickHotkey);
   }
 
   /// Парсит сохранённый режим темы.

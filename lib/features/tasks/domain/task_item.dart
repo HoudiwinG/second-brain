@@ -37,6 +37,7 @@ class TaskItem {
     required this.priority,
     required this.dueAt,
     required this.remindAt,
+    required this.reminderSentAt,
     required this.status,
     required this.tags,
     required this.linkedNoteId,
@@ -53,6 +54,10 @@ class TaskItem {
   final TaskPriority priority;
   final DateTime? dueAt;
   final DateTime? remindAt;
+
+  /// Когда напоминание уже показано; null — ещё не показано.
+  final DateTime? reminderSentAt;
+
   final TaskStatus status;
   final List<String> tags;
   final int? linkedNoteId;
@@ -106,6 +111,15 @@ abstract interface class TasksRepository {
   Future<Result<TaskItem>> update(int id, TaskDraft draft);
 
   Future<Result<TaskItem>> setStatus(int id, TaskStatus status);
+
+  /// Задачи, у которых наступило время напоминания и оно ещё не показано.
+  Future<Result<List<TaskItem>>> dueReminders(DateTime now);
+
+  /// Фиксирует факт показа напоминания.
+  ///
+  /// [remindAt] — ожидаемое время: если пользователь успел изменить его между
+  /// выборкой и показом, запись не помечается и напоминание не теряется.
+  Future<Result<void>> markReminderSent(int id, {required DateTime remindAt});
 
   Future<Result<void>> softDelete(int id);
 

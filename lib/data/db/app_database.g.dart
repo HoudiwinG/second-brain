@@ -1680,6 +1680,18 @@ class $TasksTable extends Tasks with TableInfo<$TasksTable, Task> {
     type: DriftSqlType.dateTime,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _reminderSentAtMeta = const VerificationMeta(
+    'reminderSentAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> reminderSentAt =
+      GeneratedColumn<DateTime>(
+        'reminder_sent_at',
+        aliasedName,
+        true,
+        type: DriftSqlType.dateTime,
+        requiredDuringInsert: false,
+      );
   static const VerificationMeta _statusMeta = const VerificationMeta('status');
   @override
   late final GeneratedColumn<String> status = GeneratedColumn<String>(
@@ -1771,6 +1783,7 @@ class $TasksTable extends Tasks with TableInfo<$TasksTable, Task> {
     priority,
     dueAt,
     remindAt,
+    reminderSentAt,
     status,
     linkedNoteId,
     isPrivateForLlm,
@@ -1827,6 +1840,15 @@ class $TasksTable extends Tasks with TableInfo<$TasksTable, Task> {
       context.handle(
         _remindAtMeta,
         remindAt.isAcceptableOrUnknown(data['remind_at']!, _remindAtMeta),
+      );
+    }
+    if (data.containsKey('reminder_sent_at')) {
+      context.handle(
+        _reminderSentAtMeta,
+        reminderSentAt.isAcceptableOrUnknown(
+          data['reminder_sent_at']!,
+          _reminderSentAtMeta,
+        ),
       );
     }
     if (data.containsKey('status')) {
@@ -1914,6 +1936,10 @@ class $TasksTable extends Tasks with TableInfo<$TasksTable, Task> {
         DriftSqlType.dateTime,
         data['${effectivePrefix}remind_at'],
       ),
+      reminderSentAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}reminder_sent_at'],
+      ),
       status: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}status'],
@@ -1961,6 +1987,11 @@ class Task extends DataClass implements Insertable<Task> {
   final DateTime? dueAt;
   final DateTime? remindAt;
 
+  /// Время, когда напоминание уже показано пользователю.
+  ///
+  /// Защищает от повторных системных уведомлений после перезапуска.
+  final DateTime? reminderSentAt;
+
   /// todo | in_progress | done | cancelled.
   final String status;
   final int? linkedNoteId;
@@ -1978,6 +2009,7 @@ class Task extends DataClass implements Insertable<Task> {
     required this.priority,
     this.dueAt,
     this.remindAt,
+    this.reminderSentAt,
     required this.status,
     this.linkedNoteId,
     required this.isPrivateForLlm,
@@ -1998,6 +2030,9 @@ class Task extends DataClass implements Insertable<Task> {
     }
     if (!nullToAbsent || remindAt != null) {
       map['remind_at'] = Variable<DateTime>(remindAt);
+    }
+    if (!nullToAbsent || reminderSentAt != null) {
+      map['reminder_sent_at'] = Variable<DateTime>(reminderSentAt);
     }
     map['status'] = Variable<String>(status);
     if (!nullToAbsent || linkedNoteId != null) {
@@ -2027,6 +2062,9 @@ class Task extends DataClass implements Insertable<Task> {
       remindAt: remindAt == null && nullToAbsent
           ? const Value.absent()
           : Value(remindAt),
+      reminderSentAt: reminderSentAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(reminderSentAt),
       status: Value(status),
       linkedNoteId: linkedNoteId == null && nullToAbsent
           ? const Value.absent()
@@ -2055,6 +2093,7 @@ class Task extends DataClass implements Insertable<Task> {
       priority: serializer.fromJson<String>(json['priority']),
       dueAt: serializer.fromJson<DateTime?>(json['dueAt']),
       remindAt: serializer.fromJson<DateTime?>(json['remindAt']),
+      reminderSentAt: serializer.fromJson<DateTime?>(json['reminderSentAt']),
       status: serializer.fromJson<String>(json['status']),
       linkedNoteId: serializer.fromJson<int?>(json['linkedNoteId']),
       isPrivateForLlm: serializer.fromJson<bool>(json['isPrivateForLlm']),
@@ -2074,6 +2113,7 @@ class Task extends DataClass implements Insertable<Task> {
       'priority': serializer.toJson<String>(priority),
       'dueAt': serializer.toJson<DateTime?>(dueAt),
       'remindAt': serializer.toJson<DateTime?>(remindAt),
+      'reminderSentAt': serializer.toJson<DateTime?>(reminderSentAt),
       'status': serializer.toJson<String>(status),
       'linkedNoteId': serializer.toJson<int?>(linkedNoteId),
       'isPrivateForLlm': serializer.toJson<bool>(isPrivateForLlm),
@@ -2091,6 +2131,7 @@ class Task extends DataClass implements Insertable<Task> {
     String? priority,
     Value<DateTime?> dueAt = const Value.absent(),
     Value<DateTime?> remindAt = const Value.absent(),
+    Value<DateTime?> reminderSentAt = const Value.absent(),
     String? status,
     Value<int?> linkedNoteId = const Value.absent(),
     bool? isPrivateForLlm,
@@ -2105,6 +2146,9 @@ class Task extends DataClass implements Insertable<Task> {
     priority: priority ?? this.priority,
     dueAt: dueAt.present ? dueAt.value : this.dueAt,
     remindAt: remindAt.present ? remindAt.value : this.remindAt,
+    reminderSentAt: reminderSentAt.present
+        ? reminderSentAt.value
+        : this.reminderSentAt,
     status: status ?? this.status,
     linkedNoteId: linkedNoteId.present ? linkedNoteId.value : this.linkedNoteId,
     isPrivateForLlm: isPrivateForLlm ?? this.isPrivateForLlm,
@@ -2123,6 +2167,9 @@ class Task extends DataClass implements Insertable<Task> {
       priority: data.priority.present ? data.priority.value : this.priority,
       dueAt: data.dueAt.present ? data.dueAt.value : this.dueAt,
       remindAt: data.remindAt.present ? data.remindAt.value : this.remindAt,
+      reminderSentAt: data.reminderSentAt.present
+          ? data.reminderSentAt.value
+          : this.reminderSentAt,
       status: data.status.present ? data.status.value : this.status,
       linkedNoteId: data.linkedNoteId.present
           ? data.linkedNoteId.value
@@ -2148,6 +2195,7 @@ class Task extends DataClass implements Insertable<Task> {
           ..write('priority: $priority, ')
           ..write('dueAt: $dueAt, ')
           ..write('remindAt: $remindAt, ')
+          ..write('reminderSentAt: $reminderSentAt, ')
           ..write('status: $status, ')
           ..write('linkedNoteId: $linkedNoteId, ')
           ..write('isPrivateForLlm: $isPrivateForLlm, ')
@@ -2167,6 +2215,7 @@ class Task extends DataClass implements Insertable<Task> {
     priority,
     dueAt,
     remindAt,
+    reminderSentAt,
     status,
     linkedNoteId,
     isPrivateForLlm,
@@ -2185,6 +2234,7 @@ class Task extends DataClass implements Insertable<Task> {
           other.priority == this.priority &&
           other.dueAt == this.dueAt &&
           other.remindAt == this.remindAt &&
+          other.reminderSentAt == this.reminderSentAt &&
           other.status == this.status &&
           other.linkedNoteId == this.linkedNoteId &&
           other.isPrivateForLlm == this.isPrivateForLlm &&
@@ -2201,6 +2251,7 @@ class TasksCompanion extends UpdateCompanion<Task> {
   final Value<String> priority;
   final Value<DateTime?> dueAt;
   final Value<DateTime?> remindAt;
+  final Value<DateTime?> reminderSentAt;
   final Value<String> status;
   final Value<int?> linkedNoteId;
   final Value<bool> isPrivateForLlm;
@@ -2215,6 +2266,7 @@ class TasksCompanion extends UpdateCompanion<Task> {
     this.priority = const Value.absent(),
     this.dueAt = const Value.absent(),
     this.remindAt = const Value.absent(),
+    this.reminderSentAt = const Value.absent(),
     this.status = const Value.absent(),
     this.linkedNoteId = const Value.absent(),
     this.isPrivateForLlm = const Value.absent(),
@@ -2230,6 +2282,7 @@ class TasksCompanion extends UpdateCompanion<Task> {
     this.priority = const Value.absent(),
     this.dueAt = const Value.absent(),
     this.remindAt = const Value.absent(),
+    this.reminderSentAt = const Value.absent(),
     this.status = const Value.absent(),
     this.linkedNoteId = const Value.absent(),
     this.isPrivateForLlm = const Value.absent(),
@@ -2247,6 +2300,7 @@ class TasksCompanion extends UpdateCompanion<Task> {
     Expression<String>? priority,
     Expression<DateTime>? dueAt,
     Expression<DateTime>? remindAt,
+    Expression<DateTime>? reminderSentAt,
     Expression<String>? status,
     Expression<int>? linkedNoteId,
     Expression<bool>? isPrivateForLlm,
@@ -2262,6 +2316,7 @@ class TasksCompanion extends UpdateCompanion<Task> {
       if (priority != null) 'priority': priority,
       if (dueAt != null) 'due_at': dueAt,
       if (remindAt != null) 'remind_at': remindAt,
+      if (reminderSentAt != null) 'reminder_sent_at': reminderSentAt,
       if (status != null) 'status': status,
       if (linkedNoteId != null) 'linked_note_id': linkedNoteId,
       if (isPrivateForLlm != null) 'is_private_for_llm': isPrivateForLlm,
@@ -2279,6 +2334,7 @@ class TasksCompanion extends UpdateCompanion<Task> {
     Value<String>? priority,
     Value<DateTime?>? dueAt,
     Value<DateTime?>? remindAt,
+    Value<DateTime?>? reminderSentAt,
     Value<String>? status,
     Value<int?>? linkedNoteId,
     Value<bool>? isPrivateForLlm,
@@ -2294,6 +2350,7 @@ class TasksCompanion extends UpdateCompanion<Task> {
       priority: priority ?? this.priority,
       dueAt: dueAt ?? this.dueAt,
       remindAt: remindAt ?? this.remindAt,
+      reminderSentAt: reminderSentAt ?? this.reminderSentAt,
       status: status ?? this.status,
       linkedNoteId: linkedNoteId ?? this.linkedNoteId,
       isPrivateForLlm: isPrivateForLlm ?? this.isPrivateForLlm,
@@ -2324,6 +2381,9 @@ class TasksCompanion extends UpdateCompanion<Task> {
     }
     if (remindAt.present) {
       map['remind_at'] = Variable<DateTime>(remindAt.value);
+    }
+    if (reminderSentAt.present) {
+      map['reminder_sent_at'] = Variable<DateTime>(reminderSentAt.value);
     }
     if (status.present) {
       map['status'] = Variable<String>(status.value);
@@ -2358,6 +2418,7 @@ class TasksCompanion extends UpdateCompanion<Task> {
           ..write('priority: $priority, ')
           ..write('dueAt: $dueAt, ')
           ..write('remindAt: $remindAt, ')
+          ..write('reminderSentAt: $reminderSentAt, ')
           ..write('status: $status, ')
           ..write('linkedNoteId: $linkedNoteId, ')
           ..write('isPrivateForLlm: $isPrivateForLlm, ')
@@ -5965,6 +6026,7 @@ typedef $$TasksTableCreateCompanionBuilder = TasksCompanion Function({
   Value<String> priority,
   Value<DateTime?> dueAt,
   Value<DateTime?> remindAt,
+  Value<DateTime?> reminderSentAt,
   Value<String> status,
   Value<int?> linkedNoteId,
   Value<bool> isPrivateForLlm,
@@ -5980,6 +6042,7 @@ typedef $$TasksTableUpdateCompanionBuilder = TasksCompanion Function({
   Value<String> priority,
   Value<DateTime?> dueAt,
   Value<DateTime?> remindAt,
+  Value<DateTime?> reminderSentAt,
   Value<String> status,
   Value<int?> linkedNoteId,
   Value<bool> isPrivateForLlm,
@@ -6065,6 +6128,11 @@ class $$TasksTableFilterComposer extends Composer<_$AppDatabase, $TasksTable> {
 
   ColumnFilters<DateTime> get remindAt => $composableBuilder(
     column: $table.remindAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get reminderSentAt => $composableBuilder(
+    column: $table.reminderSentAt,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -6186,6 +6254,11 @@ class $$TasksTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<DateTime> get reminderSentAt => $composableBuilder(
+    column: $table.reminderSentAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<String> get status => $composableBuilder(
     column: $table.status,
     builder: (column) => ColumnOrderings(column),
@@ -6268,6 +6341,11 @@ class $$TasksTableAnnotationComposer
 
   GeneratedColumn<DateTime> get remindAt =>
       $composableBuilder(column: $table.remindAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get reminderSentAt => $composableBuilder(
+    column: $table.reminderSentAt,
+    builder: (column) => column,
+  );
 
   GeneratedColumn<String> get status =>
       $composableBuilder(column: $table.status, builder: (column) => column);
@@ -6374,6 +6452,7 @@ class $$TasksTableTableManager
                 Value<String> priority = const Value.absent(),
                 Value<DateTime?> dueAt = const Value.absent(),
                 Value<DateTime?> remindAt = const Value.absent(),
+                Value<DateTime?> reminderSentAt = const Value.absent(),
                 Value<String> status = const Value.absent(),
                 Value<int?> linkedNoteId = const Value.absent(),
                 Value<bool> isPrivateForLlm = const Value.absent(),
@@ -6388,6 +6467,7 @@ class $$TasksTableTableManager
                 priority: priority,
                 dueAt: dueAt,
                 remindAt: remindAt,
+                reminderSentAt: reminderSentAt,
                 status: status,
                 linkedNoteId: linkedNoteId,
                 isPrivateForLlm: isPrivateForLlm,
@@ -6404,6 +6484,7 @@ class $$TasksTableTableManager
                 Value<String> priority = const Value.absent(),
                 Value<DateTime?> dueAt = const Value.absent(),
                 Value<DateTime?> remindAt = const Value.absent(),
+                Value<DateTime?> reminderSentAt = const Value.absent(),
                 Value<String> status = const Value.absent(),
                 Value<int?> linkedNoteId = const Value.absent(),
                 Value<bool> isPrivateForLlm = const Value.absent(),
@@ -6418,6 +6499,7 @@ class $$TasksTableTableManager
                 priority: priority,
                 dueAt: dueAt,
                 remindAt: remindAt,
+                reminderSentAt: reminderSentAt,
                 status: status,
                 linkedNoteId: linkedNoteId,
                 isPrivateForLlm: isPrivateForLlm,

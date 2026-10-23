@@ -102,7 +102,7 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get hintGlobalHotkey =>
-      'Глобальная горячая клавиша: Ctrl+Alt+B открывает окно приложения.';
+      'Горячая клавиша открывает быстрый ввод из любого приложения. По умолчанию Ctrl+Alt+B.';
 
   @override
   String get actionAdd => 'Добавить';
@@ -309,4 +309,93 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get dateNotSet => 'Не задано';
+
+  @override
+  String get trayMenuQuickCapture => 'Быстрый ввод';
+
+  @override
+  String get settingsHotkeySection => 'Глобальная горячая клавиша';
+
+  @override
+  String get settingsQuickCaptureHotkey => 'Быстрый ввод';
+
+  @override
+  String get actionChangeHotkey => 'Изменить';
+
+  @override
+  String get hotkeyRecorderTitle => 'Новая комбинация';
+
+  @override
+  String get hotkeyRecorderHint =>
+      'Нажмите комбинацию с Ctrl, Alt, Shift или Win. Например, Ctrl+Alt+B.';
+
+  @override
+  String get hotkeyRecorderInvalid =>
+      'Нужна комбинация с модификатором и обычной клавишей.';
+
+  @override
+  String get hotkeyBusyError =>
+      'Комбинация занята или недоступна. Попробуйте другую.';
+
+  @override
+  String get fieldReminder => 'Напоминание';
+
+  @override
+  String get fieldNoReminder => 'Без напоминания';
+
+  @override
+  String get quickCaptureTitle => 'Быстрый ввод';
+
+  @override
+  String get quickCaptureNote => 'Заметка';
+
+  @override
+  String get quickCaptureTask => 'Задача';
+
+  @override
+  String get quickCaptureIdea => 'Идея';
+
+  @override
+  String get quickCaptureFinance => 'Операция';
+
+  @override
+  String get quickCaptureHint => 'Сохраните запись кнопкой ниже. Отмена — Esc.';
+
+  @override
+  String get quickCaptureRequired => 'Заполните обязательное поле.';
+
+  @override
+  String get quickCaptureSaved => 'Запись сохранена';
+
+  @override
+  String get dashboardQuickActions => 'Быстрые действия';
+
+  @override
+  String get dashboardTodayTasks => 'Задачи на сегодня';
+
+  @override
+  String get dashboardAll => 'Все';
+
+  @override
+  String dashboardOverdueTasks(int count) {
+    return 'Просрочено: $count';
+  }
+
+  @override
+  String get dashboardTasksEmpty => 'На сегодня задач нет';
+
+  @override
+  String get dashboardRecentNotes => 'Последние заметки';
+
+  @override
+  String get dashboardNotesEmpty => 'Заметок пока нет';
+
+  @override
+  String get dashboardRecentIdeas => 'Последние идеи';
+
+  @override
+  String get dashboardIdeasEmpty => 'Идей пока нет';
+
+  @override
+  String get dashboardFinanceMonth => 'Финансы за месяц';
 }

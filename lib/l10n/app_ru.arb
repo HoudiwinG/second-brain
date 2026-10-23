@@ -98,5 +98,41 @@
   "importWarning": "Импорт заменит все локальные данные. Продолжить?",
   "errorDetails": "Операция не выполнена",
   "tagsLabel": "Теги",
-  "dateNotSet": "Не задано"
+  "dateNotSet": "Не задано",
+  "trayMenuQuickCapture": "Быстрый ввод",
+  "settingsHotkeySection": "Глобальная горячая клавиша",
+  "settingsQuickCaptureHotkey": "Быстрый ввод",
+  "actionChangeHotkey": "Изменить",
+  "hotkeyRecorderTitle": "Новая комбинация",
+  "hotkeyRecorderHint": "Нажмите комбинацию с Ctrl, Alt, Shift или Win. Например, Ctrl+Alt+B.",
+  "hotkeyRecorderInvalid": "Нужна комбинация с модификатором и обычной клавишей.",
+  "hotkeyBusyError": "Комбинация занята или недоступна. Попробуйте другую.",
+  "fieldReminder": "Напоминание",
+  "fieldNoReminder": "Без напоминания",
+  "quickCaptureTitle": "Быстрый ввод",
+  "quickCaptureNote": "Заметка",
+  "quickCaptureTask": "Задача",
+  "quickCaptureIdea": "Идея",
+  "quickCaptureFinance": "Операция",
+  "quickCaptureHint": "Сохраните запись кнопкой ниже. Отмена — Esc.",
+  "quickCaptureRequired": "Заполните обязательное поле.",
+  "quickCaptureSaved": "Запись сохранена",
+  "dashboardQuickActions": "Быстрые действия",
+  "dashboardTodayTasks": "Задачи на сегодня",
+  "dashboardAll": "Все",
+  "dashboardOverdueTasks": "Просрочено: {count}",
+  "@dashboardOverdueTasks": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "dashboardTasksEmpty": "На сегодня задач нет",
+  "dashboardRecentNotes": "Последние заметки",
+  "dashboardNotesEmpty": "Заметок пока нет",
+  "dashboardRecentIdeas": "Последние идеи",
+  "dashboardIdeasEmpty": "Идей пока нет",
+  "dashboardFinanceMonth": "Финансы за месяц",
+  "hintGlobalHotkey": "Горячая клавиша открывает быстрый ввод из любого приложения. По умолчанию Ctrl+Alt+B."
 }

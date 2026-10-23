@@ -104,6 +104,7 @@ class DriftTasksRepository implements TasksRepository {
         throw ValidationException('TasksRepository: задача $id не найдена');
       }
       final now = DateTime.now().toUtc();
+      final reminderChanged = !_sameInstant(current.remindAt, draft.remindAt);
       late TaskItem updated;
       await _db.transaction(() async {
         await (_db.update(_db.tasks)..where((t) => t.id.equals(id))).write(
@@ -113,6 +114,10 @@ class DriftTasksRepository implements TasksRepository {
             priority: Value(draft.priority.name),
             dueAt: Value(draft.dueAt),
             remindAt: Value(draft.remindAt),
+            // Изменение времени напоминания снова разрешает показ.
+            reminderSentAt: reminderChanged
+                ? const Value(null)
+                : const Value.absent(),
             status: Value(draft.status.dbValue),
             linkedNoteId: Value(draft.linkedNoteId),
             isPrivateForLlm: Value(draft.isPrivateForLlm),
@@ -147,6 +152,50 @@ class DriftTasksRepository implements TasksRepository {
       });
       final row = await _find(id);
       return _toDomain(row!, await tagsForTask(_db, id));
+    });
+  }
+
+  @override
+  Future<Result<List<TaskItem>>> dueReminders(DateTime now) {
+    return RepositoryGuard.guard('TasksRepository.dueReminders', () async {
+      final query = _db.select(_db.tasks)
+        ..where((t) => t.deletedAt.isNull())
+        ..where((t) => t.remindAt.isNotNull())
+        ..where((t) => t.remindAt.isSmallerOrEqualValue(now.toUtc()))
+        ..where((t) => t.reminderSentAt.isNull())
+        ..where(
+          (t) => t.status.isIn([
+            TaskStatus.todo.dbValue,
+            TaskStatus.inProgress.dbValue,
+          ]),
+        )
+        ..orderBy([(t) => OrderingTerm.asc(t.remindAt)]);
+      final rows = await query.get();
+      return [
+        for (final row in rows) _toDomain(row, await tagsForTask(_db, row.id)),
+      ];
+    });
+  }
+
+  @override
+  Future<Result<void>> markReminderSent(
+    int id, {
+    required DateTime remindAt,
+  }) {
+    return RepositoryGuard.guard('TasksRepository.markReminderSent', () async {
+      final now = DateTime.now().toUtc();
+      await (_db.update(_db.tasks)..where(
+            (t) =>
+                t.id.equals(id) &
+                t.remindAt.equals(remindAt.toUtc()) &
+                t.reminderSentAt.isNull(),
+          ))
+          .write(
+            db.TasksCompanion(
+              reminderSentAt: Value(now),
+              updatedAt: Value(now),
+            ),
+          );
     });
   }
 
@@ -194,6 +243,11 @@ class DriftTasksRepository implements TasksRepository {
     return query.getSingleOrNull();
   }
 
+  static bool _sameInstant(DateTime? a, DateTime? b) {
+    if (a == null || b == null) return a == b;
+    return a.toUtc() == b.toUtc();
+  }
+
   TaskItem _toDomain(db.Task row, List<String> tags) => TaskItem(
     id: row.id,
     title: row.title,
@@ -201,6 +255,7 @@ class DriftTasksRepository implements TasksRepository {
     priority: TaskPriority.fromDb(row.priority),
     dueAt: row.dueAt,
     remindAt: row.remindAt,
+    reminderSentAt: row.reminderSentAt,
     status: TaskStatus.fromDb(row.status),
     tags: List.unmodifiable(tags),
     linkedNoteId: row.linkedNoteId,

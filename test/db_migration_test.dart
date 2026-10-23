@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:drift/drift.dart' show Value;
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:second_brain/data/db/app_database.dart';
@@ -15,20 +16,20 @@ import 'helpers/in_memory_db.dart';
 ///
 /// Нужна, чтобы проверить политику ADR-012: непокрытый переход onUpgrade
 /// обязан падать, а не молча создавать недостающие таблицы.
-final class _AppDatabaseV3 extends AppDatabase {
-  _AppDatabaseV3(super.executor);
+final class _AppDatabaseV4 extends AppDatabase {
+  _AppDatabaseV4(super.executor);
 
   @override
-  int get schemaVersion => 3;
+  int get schemaVersion => 4;
 }
 
 /// Интеграционные тесты миграций drift.
 void main() {
-  group('AppDatabase схема v2', () {
-    test('schemaVersion = 2 (ядро данных stage-01)', () {
+  group('AppDatabase схема v3', () {
+    test('schemaVersion = 3 (ядро данных stage-01 + напоминания)', () {
       final db = InMemoryDbFactory.open();
       addTearDown(db.close);
-      expect(db.schemaVersion, 2);
+      expect(db.schemaVersion, 3);
     });
 
     test('onCreate создаёт app_settings и таблицы ядра', () async {
@@ -99,36 +100,36 @@ void main() {
         });
         final file = File('${dir.path}/migration.sqlite');
 
-        final v2 = AppDatabase(NativeDatabase(file));
-        await v2
-            .into(v2.appSettings)
+        final v3 = AppDatabase(NativeDatabase(file));
+        await v3
+            .into(v3.appSettings)
             .insert(
               AppSettingsCompanion.insert(
                 key: 'keep.me',
-                value: 'v2',
+                value: 'v3',
                 updatedAt: DateTime.utc(2026, 1, 1),
               ),
             );
-        await v2.close();
+        await v3.close();
 
-        final v3 = _AppDatabaseV3(NativeDatabase(file));
+        final v4 = _AppDatabaseV4(NativeDatabase(file));
         addTearDown(() async {
           try {
-            await v3.close();
+            await v4.close();
           } on Object {
             // Соединение могло остаться в незавершённой миграции.
           }
         });
 
         await expectLater(
-          () => v3.select(v3.appSettings).get(),
+          () => v4.select(v4.appSettings).get(),
           throwsA(isA<UnsupportedError>()),
         );
       },
     );
   });
 
-  group('Миграция v1 → v2', () {
+  group('Миграция v1 → v3', () {
     test('сохраняет app_settings и создаёт таблицы ядра + FTS', () async {
       final dir = await Directory.systemTemp.createTemp('second_brain_db_');
       addTearDown(() async {
@@ -174,7 +175,54 @@ void main() {
       final hits = (await search.search('миграции')).unwrap();
       expect(hits, hasLength(1));
       expect(hits.single.entityId, note.id);
-      expect(db.schemaVersion, 2);
+      expect(db.schemaVersion, 3);
+    });
+  });
+
+  group('Миграция v2 → v3', () {
+    test('добавляет reminder_sent_at и сохраняет задачи', () async {
+      final dir = await Directory.systemTemp.createTemp('second_brain_db_');
+      addTearDown(() async {
+        if (dir.existsSync()) await dir.delete(recursive: true);
+      });
+      final file = File('${dir.path}/v2.sqlite');
+
+      // Готовим полноценную БД, затем откатываем её до схемы v2:
+      // удаляем новую колонку и индекс и выставляем user_version = 2.
+      final seed = AppDatabase(NativeDatabase(file));
+      await seed
+          .into(seed.tasks)
+          .insert(
+            TasksCompanion.insert(
+              title: 'Напоминание после миграции',
+              remindAt: Value(DateTime.utc(2026, 2, 1, 10)),
+              createdAt: DateTime.utc(2026, 1, 1),
+              updatedAt: DateTime.utc(2026, 1, 1),
+            ),
+          );
+      await seed.customStatement('DROP INDEX IF EXISTS idx_tasks_remind');
+      await seed.customStatement(
+        'ALTER TABLE tasks DROP COLUMN reminder_sent_at',
+      );
+      await seed.customStatement('PRAGMA user_version = 2');
+      await seed.close();
+
+      final db = AppDatabase(NativeDatabase(file));
+      addTearDown(db.close);
+      expect(db.schemaVersion, 3);
+
+      final task = await db.select(db.tasks).getSingle();
+      expect(task.title, 'Напоминание после миграции');
+      expect(task.reminderSentAt, isNull);
+      expect(task.remindAt?.toUtc(), DateTime.utc(2026, 2, 1, 10));
+
+      final index = await db
+          .customSelect(
+            "SELECT name FROM sqlite_master WHERE type = 'index' "
+            "AND name = 'idx_tasks_remind'",
+          )
+          .getSingleOrNull();
+      expect(index, isNotNull);
     });
   });
 }

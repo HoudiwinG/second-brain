@@ -5,10 +5,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:path_provider/path_provider.dart';
 
 import '../../../app/di.dart';
+import '../../../app/quick_hotkey.dart';
 import '../../../app/widgets/data_ui.dart';
 import '../../../core/logging/app_logger.dart';
 import '../../../l10n/generated/app_localizations.dart';
 import '../application/settings_controller.dart';
+import 'hotkey_recorder_dialog.dart';
 
 /// Экран настроек (этап 0): переключатели темы и языка.
 ///
@@ -192,6 +194,26 @@ class SettingsScreen extends ConsumerWidget {
     }
   }
 
+  Future<void> _changeHotkey(
+    BuildContext context,
+    WidgetRef ref,
+    AppLocalizations lcm,
+    SettingsState state,
+  ) async {
+    final selected = await showDialog<QuickHotkey>(
+      context: context,
+      builder: (dialogContext) =>
+          HotkeyRecorderDialog(current: state.quickHotkey),
+    );
+    if (selected == null || !context.mounted) return;
+    final saved = await ref
+        .read(settingsControllerProvider.notifier)
+        .setQuickHotkey(selected);
+    if (!saved && context.mounted) {
+      showMessageSnackBar(context, lcm.hotkeyBusyError);
+    }
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final lcm = AppLocalizations.of(context)!;
@@ -292,14 +314,28 @@ class SettingsScreen extends ConsumerWidget {
               },
             ),
             const SizedBox(height: 24),
+            Text(
+              lcm.settingsHotkeySection,
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
+            const SizedBox(height: 8),
             Card(
-              child: Padding(
-                padding: const EdgeInsets.all(12),
-                child: Text(
-                  lcm.hintGlobalHotkey,
-                  style: Theme.of(context).textTheme.bodySmall,
+              child: ListTile(
+                leading: const Icon(Icons.keyboard_outlined),
+                title: Text(lcm.settingsQuickCaptureHotkey),
+                subtitle: Text(state.quickHotkey.label),
+                trailing: OutlinedButton.icon(
+                  onPressed: () =>
+                      _changeHotkey(context, ref, lcm, state),
+                  icon: const Icon(Icons.edit_outlined),
+                  label: Text(lcm.actionChangeHotkey),
                 ),
               ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              lcm.hintGlobalHotkey,
+              style: Theme.of(context).textTheme.bodySmall,
             ),
             const SizedBox(height: 24),
             Text(

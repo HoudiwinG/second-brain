@@ -5,9 +5,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:second_brain/app/app.dart';
 import 'package:second_brain/app/di.dart';
 import 'package:second_brain/app/feature_directions.dart';
+import 'package:second_brain/features/dashboard/presentation/dashboard_screen.dart';
 import 'package:second_brain/features/notes/presentation/notes_screen.dart';
 import 'package:second_brain/features/settings/application/settings_controller.dart';
-import 'package:second_brain/app/widgets/placeholder_section_screen.dart';
 import 'package:second_brain/data/db/app_database.dart';
 
 import 'helpers/in_memory_db.dart';
@@ -49,8 +49,8 @@ void main() {
 
     await pumpApp(tester);
 
-    // Дашборд — пустой экран первой ветки.
-    expect(find.byType(PlaceholderSectionScreen), findsOneWidget);
+    // Дашборд — сводка дня, а не заглушка stage-00.
+    expect(find.byType(DashboardScreen), findsOneWidget);
     // Заголовок первой ветки виден и в AppBar, и в rail.
     expect(find.text('Dashboard'), findsAtLeastNWidgets(2));
   });

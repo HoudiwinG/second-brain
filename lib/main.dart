@@ -6,6 +6,7 @@ import 'app/app.dart';
 import 'app/desktop_services.dart';
 import 'core/crash/app_crash_reporter.dart';
 import 'core/logging/app_logger.dart';
+import 'features/reminders/application/reminder_notifier.dart';
 
 /// Точка входа «Second Brain + AI Assistant» (этап 0 — каркас).
 Future<void> main() async {
@@ -20,6 +21,7 @@ Future<void> main() async {
     if (!kIsWeb && defaultTargetPlatform == TargetPlatform.windows) {
       try {
         await DesktopServices.init();
+        await LocalReminderNotifier.initialize();
       } on Exception catch (e, s) {
         AppLogger.e('main: ошибка инициализации desktop-сервисов', e, s);
       }

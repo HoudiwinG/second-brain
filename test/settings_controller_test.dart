@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:hotkey_manager/hotkey_manager.dart';
 
 import 'package:second_brain/app/di.dart';
+import 'package:second_brain/app/quick_hotkey.dart';
 import 'package:second_brain/core/error/app_exception.dart';
 import 'package:second_brain/core/result/result.dart';
 import 'package:second_brain/data/repositories/settings_repository.dart';
@@ -104,5 +107,61 @@ void main() {
         );
       },
     );
+
+    test('setQuickHotkey регистрирует и сохраняет комбинацию', () async {
+      final applied = <QuickHotkey>[];
+      final container = ProviderContainer.test(
+        overrides: [
+          settingsRepositoryProvider.overrideWith(
+            (ref) async => _FakeSettingsRepository(),
+          ),
+          quickHotkeyApplierProvider.overrideWithValue((hotkey) async {
+            applied.add(hotkey);
+            return true;
+          }),
+        ],
+      );
+      await container.read(settingsControllerProvider.future);
+      applied.clear();
+      final controller = container.read(settingsControllerProvider.notifier);
+
+      const binding = QuickHotkey(
+        key: LogicalKeyboardKey.keyN,
+        modifiers: [HotKeyModifier.control, HotKeyModifier.shift],
+      );
+      final saved = await controller.setQuickHotkey(binding);
+
+      expect(saved, isTrue);
+      expect(
+        container.read(settingsControllerProvider).value?.quickHotkey,
+        binding,
+      );
+      expect(applied, contains(binding));
+    });
+
+    test('занятая комбинация не меняет настройку', () async {
+      final container = ProviderContainer.test(
+        overrides: [
+          settingsRepositoryProvider.overrideWith(
+            (ref) async => _FakeSettingsRepository(),
+          ),
+          quickHotkeyApplierProvider.overrideWithValue((_) async => false),
+        ],
+      );
+      await container.read(settingsControllerProvider.future);
+      final controller = container.read(settingsControllerProvider.notifier);
+
+      const binding = QuickHotkey(
+        key: LogicalKeyboardKey.keyN,
+        modifiers: [HotKeyModifier.control],
+      );
+      final saved = await controller.setQuickHotkey(binding);
+
+      expect(saved, isFalse);
+      expect(
+        container.read(settingsControllerProvider).value?.quickHotkey,
+        QuickHotkey.defaultBinding,
+      );
+    });
   });
 }

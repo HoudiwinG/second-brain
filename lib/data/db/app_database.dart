@@ -104,6 +104,11 @@ class Tasks extends Table {
 
   DateTimeColumn get remindAt => dateTime().nullable()();
 
+  /// Время, когда напоминание уже показано пользователю.
+  ///
+  /// Защищает от повторных системных уведомлений после перезапуска.
+  DateTimeColumn get reminderSentAt => dateTime().nullable()();
+
   /// todo | in_progress | done | cancelled.
   TextColumn get status => text().withDefault(const Constant('todo'))();
 
@@ -203,7 +208,8 @@ class FinanceTransactions extends Table {
 
 /// Локальная БД SQLite (Drift).
 ///
-/// Схема v2 — ядро данных stage-01. Полнотекстовый индекс `search_index`
+/// Схема v3 — ядро данных stage-01 + состояние напоминаний stage-02.
+/// Полнотекстовый индекс `search_index`
 /// создаётся отдельными SQL-командами: FTS5 — виртуальная таблица, которую
 /// Drift не описывает декларативно (ADR-013).
 @DriftDatabase(
@@ -239,7 +245,7 @@ class AppDatabase extends _$AppDatabase {
   static AppDatabase inMemory() => AppDatabase(NativeDatabase.memory());
 
   @override
-  int get schemaVersion => 2;
+  int get schemaVersion => 3;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -256,6 +262,8 @@ class AppDatabase extends _$AppDatabase {
       AppLogger.d('AppDatabase: onUpgrade с $from до $to');
       if (from < 2) {
         // Порядок важен: сначала родительские таблицы, затем связи.
+        // createTable(tasks) сразу создаёт колонки текущей схемы, поэтому
+        // отдельный addColumn для v3 в этой ветке не нужен.
         await m.createTable(categories);
         await m.createTable(tags);
         await m.createTable(notes);
@@ -266,8 +274,12 @@ class AppDatabase extends _$AppDatabase {
         await m.createTable(ideaTags);
         await m.createTable(financeTransactions);
         await _createSearchSchema();
+      } else if (from < 3) {
+        // v3: защита от повторных напоминаний после перезапуска.
+        await m.addColumn(tasks, tasks.reminderSentAt);
+        await _createIndexes();
       }
-      if (to > 2) {
+      if (to > 3) {
         throw UnsupportedError(
           'AppDatabase: нет миграции схемы $from → $to. '
           'Добавьте явную миграцию в onUpgrade (ADR-012).',
@@ -312,6 +324,10 @@ class AppDatabase extends _$AppDatabase {
     );
     await customStatement(
       'CREATE INDEX IF NOT EXISTS idx_tasks_due ON tasks(due_at)',
+    );
+    await customStatement(
+      'CREATE INDEX IF NOT EXISTS idx_tasks_remind '
+      'ON tasks(remind_at, reminder_sent_at)',
     );
     await customStatement(
       'CREATE INDEX IF NOT EXISTS idx_ideas_deleted ON idea_entries(deleted_at)',

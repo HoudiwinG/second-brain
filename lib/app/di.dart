@@ -1,3 +1,6 @@
+import 'dart:async';
+
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../core/secrets/secret_store.dart';
@@ -17,8 +20,12 @@ import '../features/ideas/domain/idea_entry.dart';
 import '../features/notes/domain/category.dart';
 import '../features/notes/domain/note.dart';
 import '../features/notes/domain/tag.dart';
+import '../features/reminders/application/reminder_notifier.dart';
+import '../features/reminders/application/reminder_scheduler.dart';
 import '../features/search/domain/search_hit.dart';
 import '../features/tasks/domain/task_item.dart';
+import 'desktop_services.dart';
+import 'quick_hotkey.dart';
 import 'router.dart';
 
 /// DI-контейнеры Riverpod.
@@ -87,3 +94,41 @@ final secretStoreProvider = Provider<SecretStore>((ref) => SecureSecretStore());
 
 /// Роутер приложения.
 final routerProvider = Provider<RouterController>((ref) => RouterController());
+
+/// Применяет глобальную комбинацию быстрого ввода.
+///
+/// На не-Windows платформах (и в widget-тестах) это no-op: настройка остаётся
+/// кроссплатформенной, а плагин горячих клавиш не вызывается.
+typedef QuickHotkeyApplier = Future<bool> Function(QuickHotkey hotkey);
+
+final quickHotkeyApplierProvider = Provider<QuickHotkeyApplier>((ref) {
+  if (kIsWeb || defaultTargetPlatform != TargetPlatform.windows) {
+    return (_) async => true;
+  }
+  return DesktopServices.setQuickCaptureHotkey;
+});
+
+/// Системные уведомления. На не-Windows — no-op.
+final reminderNotifierProvider = Provider<ReminderNotifier>((ref) {
+  if (kIsWeb || defaultTargetPlatform != TargetPlatform.windows) {
+    return const NoopReminderNotifier();
+  }
+  return LocalReminderNotifier();
+});
+
+/// Планировщик напоминаний. На не-Windows не создаётся.
+///
+/// В приложении провайдер читается из `SecondBrainApp`, поэтому таймер живёт
+/// столько же, сколько ProviderScope. В тестах платформа — Android, поэтому
+/// фоновый таймер не запускается и не мешает `flutter_test`.
+final reminderSchedulerProvider = Provider<ReminderScheduler?>((ref) {
+  if (kIsWeb || defaultTargetPlatform != TargetPlatform.windows) return null;
+  final repository = ref.watch(tasksRepositoryProvider.future);
+  final scheduler = ReminderScheduler(
+    repository: () => repository,
+    notifier: ref.watch(reminderNotifierProvider),
+  );
+  unawaited(scheduler.start());
+  ref.onDispose(scheduler.dispose);
+  return scheduler;
+});

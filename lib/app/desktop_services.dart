@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:hotkey_manager/hotkey_manager.dart';
@@ -8,20 +10,29 @@ import 'package:tray_manager/tray_manager.dart';
 import 'package:window_manager/window_manager.dart';
 
 import '../core/logging/app_logger.dart';
+import 'quick_hotkey.dart';
 
 /// Системная интеграция Windows: окно, трей, глобальная горячая клавиша.
 ///
 /// Вызывается только при Platform.isWindows (см. main) — десктопные плагины
-/// не инициализируются на мобильных. Требования: STAGE_ONE п.12, ТЗ модуль 13.
+/// не инициализируются на мобильных. Требования: STAGE_ONE п.12, ТЗ модуль 13,
+/// stage-02 — быстрый ввод из трея/хоткея и закрытие в трей.
 abstract final class DesktopServices {
-  /// Глобальная горячая клавиша по умолчанию: Ctrl+Alt+B (Second Brain).
-  static const String hotkeyLabel = 'Ctrl+Alt+B';
-
+  static const String _kQuickCapture = 'quick_capture';
   static const String _kShowWindow = 'show_window';
   static const String _kHideWindow = 'hide_window';
   static const String _kQuit = 'quit';
 
   static bool _trayReady = false;
+  static bool _windowListenerReady = false;
+  static bool _quitting = false;
+  static QuickHotkey? _currentHotkey;
+
+  static final StreamController<void> _quickCaptureRequests =
+      StreamController<void>.broadcast();
+
+  /// События запроса быстрого ввода (из хоткея или меню трея).
+  static Stream<void> get quickCaptureRequests => _quickCaptureRequests.stream;
 
   /// Инициализация окна и горячей клавиши.
   ///
@@ -43,8 +54,75 @@ abstract final class DesktopServices {
       await windowManager.focus();
     });
 
-    await _initHotkey();
+    if (!_windowListenerReady) {
+      _windowListenerReady = true;
+      windowManager.addListener(_WindowListener());
+    }
+
+    await setQuickCaptureHotkey(QuickHotkey.defaultBinding);
     AppLogger.d('DesktopServices: окно и горячая клавиша инициализированы');
+  }
+
+  /// Регистрирует глобальную комбинацию быстрого ввода.
+  ///
+  /// Возвращает false, если комбинация занята другим приложением или плагин
+  /// недоступен. Ошибка не прерывает запуск (TD-03).
+  static Future<bool> setQuickCaptureHotkey(QuickHotkey binding) async {
+    if (kIsWeb || defaultTargetPlatform != TargetPlatform.windows) {
+      return true;
+    }
+    try {
+      await hotKeyManager.unregisterAll();
+      await hotKeyManager.register(
+        binding.toHotKey(),
+        keyDownHandler: (_) => unawaited(requestQuickCapture()),
+      );
+      _currentHotkey = binding;
+      AppLogger.d(
+        'DesktopServices: горячая клавиша ${binding.label} зарегистрирована',
+      );
+      return true;
+    } on Exception catch (e, s) {
+      AppLogger.e(
+        'DesktopServices: не удалось зарегистрировать ${binding.label}',
+        e,
+        s,
+      );
+      // Старая комбинация уже снята — возвращаем её, чтобы не потерять
+      // глобальный быстрый ввод из-за занятой новой комбинации.
+      final previous = _currentHotkey;
+      if (previous != null) {
+        try {
+          await hotKeyManager.register(
+            previous.toHotKey(),
+            keyDownHandler: (_) => unawaited(requestQuickCapture()),
+          );
+          _currentHotkey = previous;
+        } on Exception catch (restoreError, restoreStack) {
+          _currentHotkey = null;
+          AppLogger.e(
+            'DesktopServices: не удалось восстановить ${previous.label}',
+            restoreError,
+            restoreStack,
+          );
+        }
+      }
+      return false;
+    }
+  }
+
+  /// Показывает окно и просит UI открыть диалог быстрого ввода.
+  static Future<void> requestQuickCapture() async {
+    try {
+      await windowManager.show();
+      await windowManager.focus();
+    } on Exception catch (e, s) {
+      // Окно могло быть уже уничтожено при выходе.
+      AppLogger.e('DesktopServices: не удалось показать окно', e, s);
+    }
+    if (!_quickCaptureRequests.isClosed) {
+      _quickCaptureRequests.add(null);
+    }
   }
 
   /// Обновляет локализованные подписи трея и заголовок окна.
@@ -55,6 +133,7 @@ abstract final class DesktopServices {
   static Future<void> setTrayLabels({
     required String windowTitle,
     required String tooltip,
+    required String quickCapture,
     required String showWindow,
     required String hideWindow,
     required String quit,
@@ -71,6 +150,8 @@ abstract final class DesktopServices {
       await trayManager.setContextMenu(
         Menu(
           items: [
+            MenuItem(key: _kQuickCapture, label: quickCapture),
+            MenuItem.separator(),
             MenuItem(key: _kShowWindow, label: showWindow),
             MenuItem(key: _kHideWindow, label: hideWindow),
             MenuItem.separator(),
@@ -82,6 +163,8 @@ abstract final class DesktopServices {
         _trayReady = true;
         // trayManager хранит ссылку на слушателя сам.
         trayManager.addListener(_TrayListener());
+        // Крестик окна сворачивает приложение в трей, выход — через меню.
+        await windowManager.setPreventClose(true);
       }
       AppLogger.d('DesktopServices: подписи трея обновлены');
     } on Exception catch (e, s) {
@@ -90,33 +173,36 @@ abstract final class DesktopServices {
     }
   }
 
-  /// Регистрирует глобальную горячую клавишу.
-  ///
-  /// Ошибка (например, комбинация занята другим приложением) логируется и не
-  /// прерывает запуск приложения (TD-03).
-  static Future<void> _initHotkey() async {
+  /// Полный выход из приложения (в обход close-to-tray).
+  static Future<void> quit() async {
+    _quitting = true;
     try {
-      await hotKeyManager.unregisterAll();
-      await hotKeyManager.register(
-        HotKey(
-          key: LogicalKeyboardKey.keyB,
-          modifiers: [HotKeyModifier.control, HotKeyModifier.alt],
-        ),
-        keyDownHandler: (_) async {
-          // Требование: горячая клавиша = «открыть окно».
-          await windowManager.show();
-          await windowManager.focus();
-        },
-      );
-      AppLogger.d(
-        'DesktopServices: глобальная горячая клавиша $hotkeyLabel зарегистрирована',
-      );
+      await windowManager.setPreventClose(false);
+      await windowManager.close();
     } on Exception catch (e, s) {
-      AppLogger.e(
-        'DesktopServices: не удалось зарегистрировать $hotkeyLabel',
-        e,
-        s,
-      );
+      AppLogger.e('DesktopServices: не удалось закрыть окно', e, s);
+    }
+  }
+
+  static Future<void> _showWindow() async {
+    try {
+      await windowManager.show();
+      await windowManager.focus();
+    } on Exception catch (e, s) {
+      AppLogger.e('DesktopServices: не удалось показать окно', e, s);
+    }
+  }
+
+  static Future<void> _hideOrClose() async {
+    if (_quitting) return;
+    if (!_trayReady) {
+      await quit();
+      return;
+    }
+    try {
+      await windowManager.hide();
+    } on Exception catch (e, s) {
+      AppLogger.e('DesktopServices: не удалось скрыть окно', e, s);
     }
   }
 }
@@ -124,7 +210,7 @@ abstract final class DesktopServices {
 /// Обработка событий трея через legacy-API tray_manager.
 class _TrayListener with TrayListener {
   @override
-  void onTrayIconMouseDown() => windowManager.show();
+  void onTrayIconMouseDown() => unawaited(DesktopServices._showWindow());
 
   @override
   void onTrayIconRightMouseDown() => trayManager.popUpContextMenu();
@@ -132,12 +218,20 @@ class _TrayListener with TrayListener {
   @override
   void onTrayMenuItemClick(MenuItem menuItem) {
     switch (menuItem.key) {
+      case DesktopServices._kQuickCapture:
+        unawaited(DesktopServices.requestQuickCapture());
       case DesktopServices._kShowWindow:
-        windowManager.show();
+        unawaited(DesktopServices._showWindow());
       case DesktopServices._kHideWindow:
-        windowManager.hide();
+        unawaited(windowManager.hide());
       case DesktopServices._kQuit:
-        windowManager.close();
+        unawaited(DesktopServices.quit());
     }
   }
+}
+
+/// Закрытие окна крестиком: скрываем в трей, а не завершаем процесс.
+class _WindowListener extends WindowListener {
+  @override
+  void onWindowClose() => unawaited(DesktopServices._hideOrClose());
 }

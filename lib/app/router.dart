@@ -52,10 +52,10 @@ Widget _screenForBranch(FeatureBranch branch) => switch (branch) {
 /// изменение (см. decisions.md).
 class RouterController {
   RouterController() {
-    final rootNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'root');
+    navigatorKey = GlobalKey<NavigatorState>(debugLabel: 'root');
 
     router = GoRouter(
-      navigatorKey: rootNavigatorKey,
+      navigatorKey: navigatorKey,
       initialLocation: pathForBranch(FeatureBranch.dashboard),
       routes: [
         StatefulShellRoute.indexedStack(
@@ -83,6 +83,9 @@ class RouterController {
     );
     AppLogger.d('RouterController: go_router инициализирован');
   }
+
+  /// Корневой навигатор: используется глобальным быстрым вводом и диалогами.
+  late final GlobalKey<NavigatorState> navigatorKey;
 
   late final GoRouter router;
 }

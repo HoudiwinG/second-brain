@@ -235,6 +235,7 @@ class BackupService {
             'priority': row.priority,
             'due_at': _iso(row.dueAt),
             'remind_at': _iso(row.remindAt),
+            'reminder_sent_at': _iso(row.reminderSentAt),
             'status': row.status,
             'tags': await tagsForTask(_db, row.id),
             'linked_note_id': row.linkedNoteId,
@@ -457,6 +458,7 @@ class BackupService {
               priority: Value(_stringOr(task['priority'], 'normal')),
               dueAt: Value(_dateOrNull(task['due_at'])),
               remindAt: Value(_dateOrNull(task['remind_at'])),
+              reminderSentAt: Value(_dateOrNull(task['reminder_sent_at'])),
               status: Value(_stringOr(task['status'], 'todo')),
               linkedNoteId: Value(
                 linkedNoteId != null && noteIds.contains(linkedNoteId)

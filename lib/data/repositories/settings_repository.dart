@@ -10,6 +10,9 @@ abstract final class SettingsKeys {
 
   /// Код языка интерфейса: system | ru | en.
   static const String language = 'language.code';
+
+  /// JSON-описание глобальной комбинации быстрого ввода.
+  static const String quickCaptureHotkey = 'hotkey.quick_capture';
 }
 
 /// Типизированный доступ к key-value настройкам (таблица app_settings).

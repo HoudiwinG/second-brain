@@ -167,6 +167,7 @@ class _TaskEditorDialogState extends State<_TaskEditorDialog> {
   late TaskPriority _priority;
   late TaskStatus _status;
   DateTime? _dueAt;
+  DateTime? _remindAt;
   late bool _isPrivate;
 
   @override
@@ -178,6 +179,7 @@ class _TaskEditorDialogState extends State<_TaskEditorDialog> {
     _priority = widget.task?.priority ?? TaskPriority.normal;
     _status = widget.task?.status ?? TaskStatus.todo;
     _dueAt = widget.task?.dueAt;
+    _remindAt = widget.task?.remindAt;
     _isPrivate = widget.task?.isPrivateForLlm ?? false;
   }
 
@@ -200,6 +202,33 @@ class _TaskEditorDialogState extends State<_TaskEditorDialog> {
     if (picked == null || !mounted) return;
     setState(() {
       _dueAt = DateTime(picked.year, picked.month, picked.day, 12).toUtc();
+    });
+  }
+
+  Future<void> _pickReminder() async {
+    final initial = _remindAt?.toLocal() ?? DateTime.now().add(
+      const Duration(hours: 1),
+    );
+    final date = await showDatePicker(
+      context: context,
+      initialDate: initial,
+      firstDate: DateTime(2000),
+      lastDate: DateTime(2100),
+    );
+    if (date == null || !mounted) return;
+    final time = await showTimePicker(
+      context: context,
+      initialTime: TimeOfDay.fromDateTime(initial),
+    );
+    if (time == null || !mounted) return;
+    setState(() {
+      _remindAt = DateTime(
+        date.year,
+        date.month,
+        date.day,
+        time.hour,
+        time.minute,
+      ).toUtc();
     });
   }
 
@@ -281,6 +310,32 @@ class _TaskEditorDialogState extends State<_TaskEditorDialog> {
                 ),
               ),
               const SizedBox(height: 12),
+              InputDecorator(
+                decoration: dataFieldDecoration(lcm.fieldReminder),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        _remindAt == null
+                            ? lcm.fieldNoReminder
+                            : formatDateTime(context, _remindAt!),
+                      ),
+                    ),
+                    if (_remindAt != null)
+                      IconButton(
+                        tooltip: lcm.fieldNoReminder,
+                        onPressed: () => setState(() => _remindAt = null),
+                        icon: const Icon(Icons.clear),
+                      ),
+                    IconButton(
+                      tooltip: lcm.fieldReminder,
+                      onPressed: _pickReminder,
+                      icon: const Icon(Icons.alarm_outlined),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 12),
               TextField(
                 controller: _tags,
                 decoration: dataFieldDecoration(lcm.fieldTags),
@@ -308,6 +363,7 @@ class _TaskEditorDialogState extends State<_TaskEditorDialog> {
               description: _description.text,
               priority: _priority,
               dueAt: _dueAt,
+              remindAt: _remindAt,
               status: _status,
               tags: parseTags(_tags.text),
               isPrivateForLlm: _isPrivate,
@@ -385,6 +441,12 @@ class _TaskCard extends StatelessWidget {
                     label: Text(formatDate(context, task.dueAt)),
                     visualDensity: VisualDensity.compact,
                     avatar: const Icon(Icons.event_outlined, size: 16),
+                  ),
+                if (task.remindAt != null)
+                  Chip(
+                    label: Text(formatDateTime(context, task.remindAt!)),
+                    visualDensity: VisualDensity.compact,
+                    avatar: const Icon(Icons.alarm_outlined, size: 16),
                   ),
                 for (final tag in task.tags)
                   Chip(label: Text(tag), visualDensity: VisualDensity.compact),

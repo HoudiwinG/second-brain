@@ -98,5 +98,41 @@
   "importWarning": "Import replaces all local data. Continue?",
   "errorDetails": "Operation failed",
   "tagsLabel": "Tags",
-  "dateNotSet": "Not set"
+  "dateNotSet": "Not set",
+  "trayMenuQuickCapture": "Quick capture",
+  "settingsHotkeySection": "Global hotkey",
+  "settingsQuickCaptureHotkey": "Quick capture",
+  "actionChangeHotkey": "Change",
+  "hotkeyRecorderTitle": "New shortcut",
+  "hotkeyRecorderHint": "Press a combination with Ctrl, Alt, Shift or Win. For example, Ctrl+Alt+B.",
+  "hotkeyRecorderInvalid": "A modifier plus a regular key is required.",
+  "hotkeyBusyError": "The shortcut is busy or unavailable. Try another one.",
+  "fieldReminder": "Reminder",
+  "fieldNoReminder": "No reminder",
+  "quickCaptureTitle": "Quick capture",
+  "quickCaptureNote": "Note",
+  "quickCaptureTask": "Task",
+  "quickCaptureIdea": "Idea",
+  "quickCaptureFinance": "Transaction",
+  "quickCaptureHint": "Save with the button below. Press Esc to cancel.",
+  "quickCaptureRequired": "Fill in the required field.",
+  "quickCaptureSaved": "Entry saved",
+  "dashboardQuickActions": "Quick actions",
+  "dashboardTodayTasks": "Today's tasks",
+  "dashboardAll": "All",
+  "dashboardOverdueTasks": "Overdue: {count}",
+  "@dashboardOverdueTasks": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "dashboardTasksEmpty": "No tasks for today",
+  "dashboardRecentNotes": "Recent notes",
+  "dashboardNotesEmpty": "No notes yet",
+  "dashboardRecentIdeas": "Recent ideas",
+  "dashboardIdeasEmpty": "No ideas yet",
+  "dashboardFinanceMonth": "This month's finance",
+  "hintGlobalHotkey": "The hotkey opens quick capture from any app. Default: Ctrl+Alt+B."
 }

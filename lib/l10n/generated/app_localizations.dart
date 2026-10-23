@@ -281,7 +281,7 @@ abstract class AppLocalizations {
   /// No description provided for @hintGlobalHotkey.
   ///
   /// In en, this message translates to:
-  /// **'Global hotkey: Ctrl+Alt+B opens the app window.'**
+  /// **'The hotkey opens quick capture from any app. Default: Ctrl+Alt+B.'**
   String get hintGlobalHotkey;
 
   /// No description provided for @actionAdd.
@@ -691,6 +691,174 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Not set'**
   String get dateNotSet;
+
+  /// No description provided for @trayMenuQuickCapture.
+  ///
+  /// In en, this message translates to:
+  /// **'Quick capture'**
+  String get trayMenuQuickCapture;
+
+  /// No description provided for @settingsHotkeySection.
+  ///
+  /// In en, this message translates to:
+  /// **'Global hotkey'**
+  String get settingsHotkeySection;
+
+  /// No description provided for @settingsQuickCaptureHotkey.
+  ///
+  /// In en, this message translates to:
+  /// **'Quick capture'**
+  String get settingsQuickCaptureHotkey;
+
+  /// No description provided for @actionChangeHotkey.
+  ///
+  /// In en, this message translates to:
+  /// **'Change'**
+  String get actionChangeHotkey;
+
+  /// No description provided for @hotkeyRecorderTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'New shortcut'**
+  String get hotkeyRecorderTitle;
+
+  /// No description provided for @hotkeyRecorderHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Press a combination with Ctrl, Alt, Shift or Win. For example, Ctrl+Alt+B.'**
+  String get hotkeyRecorderHint;
+
+  /// No description provided for @hotkeyRecorderInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'A modifier plus a regular key is required.'**
+  String get hotkeyRecorderInvalid;
+
+  /// No description provided for @hotkeyBusyError.
+  ///
+  /// In en, this message translates to:
+  /// **'The shortcut is busy or unavailable. Try another one.'**
+  String get hotkeyBusyError;
+
+  /// No description provided for @fieldReminder.
+  ///
+  /// In en, this message translates to:
+  /// **'Reminder'**
+  String get fieldReminder;
+
+  /// No description provided for @fieldNoReminder.
+  ///
+  /// In en, this message translates to:
+  /// **'No reminder'**
+  String get fieldNoReminder;
+
+  /// No description provided for @quickCaptureTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Quick capture'**
+  String get quickCaptureTitle;
+
+  /// No description provided for @quickCaptureNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Note'**
+  String get quickCaptureNote;
+
+  /// No description provided for @quickCaptureTask.
+  ///
+  /// In en, this message translates to:
+  /// **'Task'**
+  String get quickCaptureTask;
+
+  /// No description provided for @quickCaptureIdea.
+  ///
+  /// In en, this message translates to:
+  /// **'Idea'**
+  String get quickCaptureIdea;
+
+  /// No description provided for @quickCaptureFinance.
+  ///
+  /// In en, this message translates to:
+  /// **'Transaction'**
+  String get quickCaptureFinance;
+
+  /// No description provided for @quickCaptureHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Save with the button below. Press Esc to cancel.'**
+  String get quickCaptureHint;
+
+  /// No description provided for @quickCaptureRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Fill in the required field.'**
+  String get quickCaptureRequired;
+
+  /// No description provided for @quickCaptureSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Entry saved'**
+  String get quickCaptureSaved;
+
+  /// No description provided for @dashboardQuickActions.
+  ///
+  /// In en, this message translates to:
+  /// **'Quick actions'**
+  String get dashboardQuickActions;
+
+  /// No description provided for @dashboardTodayTasks.
+  ///
+  /// In en, this message translates to:
+  /// **'Today\'s tasks'**
+  String get dashboardTodayTasks;
+
+  /// No description provided for @dashboardAll.
+  ///
+  /// In en, this message translates to:
+  /// **'All'**
+  String get dashboardAll;
+
+  /// No description provided for @dashboardOverdueTasks.
+  ///
+  /// In en, this message translates to:
+  /// **'Overdue: {count}'**
+  String dashboardOverdueTasks(int count);
+
+  /// No description provided for @dashboardTasksEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No tasks for today'**
+  String get dashboardTasksEmpty;
+
+  /// No description provided for @dashboardRecentNotes.
+  ///
+  /// In en, this message translates to:
+  /// **'Recent notes'**
+  String get dashboardRecentNotes;
+
+  /// No description provided for @dashboardNotesEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No notes yet'**
+  String get dashboardNotesEmpty;
+
+  /// No description provided for @dashboardRecentIdeas.
+  ///
+  /// In en, this message translates to:
+  /// **'Recent ideas'**
+  String get dashboardRecentIdeas;
+
+  /// No description provided for @dashboardIdeasEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No ideas yet'**
+  String get dashboardIdeasEmpty;
+
+  /// No description provided for @dashboardFinanceMonth.
+  ///
+  /// In en, this message translates to:
+  /// **'This month\'s finance'**
+  String get dashboardFinanceMonth;
 }
 
 class _AppLocalizationsDelegate
