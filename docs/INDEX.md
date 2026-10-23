@@ -1,13 +1,19 @@
 # INDEX — карта документации
 
 ## Состояние
-- Текущий этап: stage-02 (UX-каркас) — **done**, локальные проверки и Windows
-  smoke зелёные (2026-10-23); CI run
+- Текущий этап: stage-02 (UX-каркас) — **done с исправлениями по ревью**.
+  Исходное ревью — **FAIL** (2 MAJOR, 6 MINOR), но все находки R02-001…R02-008
+  исправлены в `8956179`; ожидается повторное ревью без MAJOR. Stage-03
+  заблокирован до него. Локально: analyze 0, test 69/69, Windows debug build
+  success (2026-10-23); CI run
   [39919792561](https://github.com/HoudiwinG/second-brain/actions/runs/39919792561)
-  — **success**
+  для `82b04a2` заявлен **success** (независимо не проверен: private repo).
 - Снимок состояния: [context.md](context.md)
+- Ревью stage-02: **FAIL**, critical 0, major 2, minor 6, nit 0;
+  см. [reviews/stage-02-review.md](reviews/stage-02-review.md); исправления —
+  [reviews/stage-02-review-results.md](reviews/stage-02-review-results.md)
 - Реестр техдолга: [tech-debt.md](tech-debt.md) — открытых позиций 0,
-  принятых 15, исправлено 27
+  принятых 15, исправлено 35 (включая R02-001…R02-008)
 
 ## Процесс
 - Исходные промпты (в корне репозитория): PROMPT.md (ТЗ), STAGE_ONE.md (этап 0),
@@ -23,9 +29,11 @@
 ## Отчёты по этапам
 - [stage-00](stages/stage-00.md) — каркас (done, PASS WITH COMMENTS)
 - [stage-01](stages/stage-01.md) — ядро данных (done, CI зелёный)
-- [stage-02](stages/stage-02.md) — UX-каркас (done, локальные проверки и
-  Windows smoke; CI run 39919792561 — success)
-- stage-03 — LLM-слой (следующий)
+- [stage-02](stages/stage-02.md) — UX-каркас (done с исправлениями R02;
+  локальные проверки 69/69 и Windows smoke; CI run 39919792561 — success;
+  исходное ревью — **FAIL**, все 8 находок исправлены, ожидается повторное
+  ревью)
+- stage-03 — LLM-слой (следующий, после повторного ревью stage-02)
 
 ## Шаблоны
 - [decisions.template.md](decisions.template.md) — формат ADR
@@ -41,7 +49,12 @@
 - [stage-00-review-results](reviews/stage-00-review-results.md) — краткие
   результаты повторного ревью №2 и задачи для agent-1 (2026-10-22)
 - Ревью stage-01 — не проводилось.
-- Ревью stage-02 — не проводилось.
+- [stage-02-review](reviews/stage-02-review.md) — **FAIL** (2026-10-23,
+  agent-2); critical 0, major 2 (R02-001/R02-002), minor 6; на момент ревью это
+  были блокеры stage-03.
+- [stage-02-review-results](reviews/stage-02-review-results.md) — self-check
+  agent-1: все R02-001…R02-008 исправлены, тесты 69/69, smoke из каталога
+  `.exe`; это не повторное ревью, вердикт остаётся за agent-2.
 
 ## Решения
 - [decisions.md](decisions.md) — все ADR

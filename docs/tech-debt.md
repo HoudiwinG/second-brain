@@ -15,15 +15,23 @@
 | Статус | Кол-во |
 |--------|--------|
 | open | 0 |
-| fixed | 27 |
+| fixed | 35 |
 | accepted | 15 |
 | pending | 0 |
 
+> **Ревью stage-02 (2026-10-23):** открыты 2 MAJOR и 6 MINOR
+> (R02-001…R02-008). Все 8 находок исправлены agent-1 (код-коммит `8956179`);
+> источник: [reviews/stage-02-review.md](reviews/stage-02-review.md),
+> результаты: [reviews/stage-02-review-results.md](reviews/stage-02-review-results.md).
+> Повторное ревью ещё не проводилось.
+
 Проверка после stage-02 (локально, Flutter 3.47.7):
-`flutter analyze --fatal-infos` → 0 issues; `flutter test` → 57/57;
+`flutter analyze --fatal-infos` → 0 issues; `flutter test` → 69/69;
 `flutter build windows --debug` → **success**. CI stage-02:
 [run 39919792561](https://github.com/HoudiwinG/second-brain/actions/runs/39919792561)
-— **success** (`analyze-and-test`, `build-windows`). CI stage-01:
+для `82b04a2` — заявлен **success** (`analyze-and-test`, `build-windows`);
+независимо не проверен (private repo). CI для `8956179` проверяется после
+push. CI stage-01:
 [run 39763804171](https://github.com/HoudiwinG/second-brain/actions/runs/39763804171)
 — **success** (`analyze-and-test`, `build-windows`).
 
@@ -235,6 +243,31 @@ GitHub API: job'ы
 - **Тесты:** `test/quick_hotkey_test.dart` (сериализация, валидация, equality);
   `test/settings_controller_test.dart` (успех и занятая комбинация).
 - **Статус:** fixed (ADR-016)
+
+---
+
+## Закрыто по ревью stage-02 (R02, 2026-10-23)
+
+Ревьюер agent-2 открыл 2 MAJOR и 6 MINOR (см.
+[reviews/stage-02-review.md](reviews/stage-02-review.md)). Agent-1 исправил все
+8 находок код-коммитом `8956179`; подробные доказательства —
+[reviews/stage-02-review-results.md](reviews/stage-02-review-results.md).
+Повторное ревью не проводилось.
+
+| ID | Критичность | Находка | Действие | Статус |
+|----|-------------|---------|----------|--------|
+| R02-001 | MAJOR | относительный путь к иконке трея; `_trayReady=true` без проверки загрузки | абсолютный путь от `Platform.resolvedExecutable`, `File.existsSync()`, `_trayReady` только после успешной установки; smoke из каталога `.exe` | fixed |
+| R02-002 | MAJOR | ошибка toast проглатывалась, `reminder_sent_at` ставился | `ReminderNotifier.show → Future<bool>`; отметка только при `true`, иначе повтор на следующем тике; failing-тесты | fixed |
+| R02-003 | MINOR | startup-apply хоткея не ожидался, `false` игнорировался, early return мешал retry | `await` + fallback default + сохранение фактической комбинации; early return удалён; тест | fixed |
+| R02-004 | MINOR | guard `to > 3` после DDL; downgrade принимался | guard `from > to || from > 3 || to > 3` до DDL; тесты `v2 → v4`, `v4 → v3` | fixed |
+| R02-005 | MINOR | `to` включителен, операция 1-го числа попадала в прошлый месяц | контракт `[from, to)`, `isSmallerThanValue`; тест границы | fixed |
+| R02-006 | MINOR | ошибка quick capture оставляла `_saving=true` без сообщения | `try/catch/finally`, локализованная ошибка, сброс `_saving`; widget-тест | fixed |
+| R02-007 | MINOR | не было regression-тестов на найденные сценарии | добавлены failing notifier/startup/backup/границы/миграции/quick capture/трей; 69/69 | fixed |
+| R02-008 | MINOR | `dayEnd = dayStart + 24h` ломался на DST | календарные границы в `dashboard_period.dart`; тест | fixed |
+
+Локальные доказательства: `flutter analyze --fatal-infos` — 0 issues;
+`flutter test` — 69/69; `flutter build windows --debug` — success; smoke
+close-to-tray из каталога `.exe` — процесс остался жив после WM_CLOSE.
 
 ---
 

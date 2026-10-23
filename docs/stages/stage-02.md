@@ -3,12 +3,17 @@
 - **Дата:** 2026-10-23
 - **Агент:** agent-1 (DeepSeek V4.1 Flash Free, OpenCode)
 - **Ветка:** `master`
-- **Коммит:** `82b04a2` (`feat(stage-02): реализовать UX-каркас с быстрым вводом
-  и напоминаниями`)
-- **Статус:** **done** (локальные проверки зелёные; Windows smoke — см. ниже;
-  CI run [39919792561](https://github.com/HoudiwinG/second-brain/actions/runs/39919792561)
-  — **success**)
-- **Следующий этап:** stage-03 (LLM-слой) по `PROMPT.md`
+- **Коммит:** `82b04a2` (базовая реализация),
+  `8956179` (исправления R02-001…R02-008)
+- **Статус:** **done с исправлениями по ревью**; исходное ревью — **FAIL**
+  (2 MAJOR, 6 MINOR), все находки исправлены. Ожидается повторное ревью без
+  MAJOR. Локально: analyze — 0 issues, test — 69/69, Windows debug build —
+  success. CI run
+  [39919792561](https://github.com/HoudiwinG/second-brain/actions/runs/39919792561)
+  для `82b04a2` — **success**; CI для `8956179` не проверен независимо
+  (private repo).
+- **Следующий этап:** stage-03 (LLM-слой) по `PROMPT.md` — только после
+  повторного ревью без MAJOR.
 
 ## Цель этапа
 
@@ -45,7 +50,10 @@
 - доход/расход/баланс за текущий месяц;
 - быстрые действия «Заметка», «Задача», «Идея», «Операция»;
 - переходы «Все» в соответствующие разделы, обновление списка и pull-to-refresh;
-- пустые состояния и обработка ошибок загрузки.
+- пустые состояния и обработка ошибок загрузки;
+- границы дня и месяца считаются календарными конструкторами
+  (`DateTime(year, month, day + 1)`), а не `+ Duration(days: 1)`, чтобы не
+  смещаться в дни перехода на летнее/зимнее время (R02-008).
 
 ### Быстрый ввод
 
@@ -56,6 +64,9 @@
 - переключение типа через `SegmentedButton` без потери уже введённых полей;
 - обязательная валидация заголовка/суммы, приватность, теги, срок задачи,
   дата операции;
+- `_save` обёрнут в `try/catch/finally`: ошибка провайдера/репозитория
+  показывает локализованное сообщение и снова включает кнопку сохранения,
+  а не оставляет диалог с `_saving = true` (R02-006);
 - `showQuickCaptureDialog(...)` возвращает `true`, если запись сохранена.
 
 `lib/app/app.dart`:
@@ -81,6 +92,10 @@
 - «Выход» снимает close-to-tray и завершает приложение;
 - если трей не удалось поднять, закрытие окна завершает процесс, а не оставляет
   невидимое приложение;
+- на Windows иконка грузится по абсолютному пути от
+  `Platform.resolvedExecutable` (`data/flutter_assets/assets/tray_icon.ico`);
+  перед загрузкой проверяется существование файла, а `_trayReady` становится
+  `true` только после успешной установки иконки/меню (R02-001);
 - подписи трея и заголовок окна обновляются из ARB при смене языка.
 
 ### Настраиваемая горячая клавиша
@@ -95,6 +110,12 @@
 - `SettingsController.setQuickHotkey` сначала регистрирует комбинацию, затем
   сохраняет её. Если комбинация занята, состояние и прежняя регистрация
   откатываются, пользователь видит локализованную ошибку.
+- при старте применение сохранённой комбинации ожидается; если плагин вернул
+  `false`, применяется `QuickHotkey.defaultBinding`, фактическая комбинация
+  сохраняется в `app_settings`, а состояние UI отражает реально
+  зарегистрированное значение (R02-003);
+- ранний выход при совпадении с текущим state удалён: повторное применение
+  нужно, если предыдущая попытка не удалась;
 - `quickHotkeyApplierProvider` на не-Windows платформах и в тестах — no-op.
 
 ### Напоминания
@@ -111,6 +132,9 @@
   `reminder_sent_at` сбрасывается — перенесённое напоминание сработает снова.
 - `ReminderScheduler` проверяет БД сразу при старте и затем раз в 30 секунд;
   ошибки логируются и не останавливают приложение.
+- `ReminderNotifier.show` возвращает `Future<bool>`; `markReminderSent`
+  вызывается только при `true`. Если WinToast недоступен или показ завершился
+  ошибкой, напоминание не теряется и повторяется на следующем тике (R02-002).
 - `LocalReminderNotifier` показывает Windows toast через `local_notifier`
   (WinToast), на других платформах используется no-op; клик по уведомлению
   показывает и фокусирует окно приложения.
@@ -126,6 +150,9 @@
   создание индекса `idx_tasks_remind`.
 - Миграция `v1 → v3` создаёт таблицы текущей схемы (включая
   `reminder_sent_at`) и FTS5-индекс.
+- Guard `from > to || from > 3 || to > 3` стоит в начале `onUpgrade`, до любых
+  DDL: неподдерживаемый `v2 → v4` падает, не оставляя частичную миграцию, а
+  downgrade `v4 → v3`/`v3 → v2` не перезаписывает `user_version` (R02-004).
 - JSON-экспорт/импорт переносит `reminder_sent_at`; старые JSON-файлы без поля
   импортируются с `NULL`.
 
@@ -144,10 +171,12 @@
 - `SettingsController.quickHotkey` / `setQuickHotkey(...)`.
 - `TasksRepository.dueReminders(DateTime now)` и
   `markReminderSent(int id, {required DateTime remindAt})`.
-- `ReminderNotifier` / `NoopReminderNotifier` / `LocalReminderNotifier` /
-  `ReminderScheduler`.
+- `FinanceRepository.list/summary` — диапазон `[from, to)`, верхняя граница
+  эксклюзивна (R02-005).
+- `ReminderNotifier.show(...) → Future<bool>` /
+  `NoopReminderNotifier` / `LocalReminderNotifier` / `ReminderScheduler`.
 - `DesktopServices.quickCaptureRequests`, `setQuickCaptureHotkey(...)`,
-  `setTrayLabels(...)`, `requestQuickCapture()`, `quit()`.
+  `setTrayLabels(...)`, `trayIconPath(...)`, `requestQuickCapture()`, `quit()`.
 - `showQuickCaptureDialog(...)` и `QuickCaptureKind`.
 - `RouterController.navigatorKey` — корневой навигатор для глобальных диалогов.
 
@@ -162,8 +191,8 @@
 | `PRAGMA user_version` | `3` |
 
 Явные миграции: `v1 → v3` (создание ядра + FTS5), `v2 → v3` (`addColumn` +
-индекс). Непокрытый переход `to > 3` по-прежнему падает с `UnsupportedError`
-(ADR-012).
+индекс). Непокрытые переходы (`from > to`, `from > 3`, `to > 3`) падают с
+`UnsupportedError` до выполнения DDL (ADR-012, R02-004).
 
 ## Зависимости, добавленные на этапе
 
@@ -181,7 +210,7 @@
 ```powershell
 flutter pub get --enforce-lockfile   # OK
 flutter analyze --fatal-infos        # 0 issues
-flutter test                         # 57/57
+flutter test                         # 69/69
 flutter build windows --debug        # success
 ```
 
@@ -192,13 +221,26 @@ flutter build windows --debug        # success
   `hashCode` без учёта порядка;
 - `test/reminder_scheduler_test.dart` — выборка наступивших напоминаний,
   однократная отправка, пропуск выполненных задач, повтор после изменения
-  `remind_at`, защита от устаревшего `markReminderSent`;
+  `remind_at`, защита от устаревшего `markReminderSent`, отсутствие отметки
+  при `false`/исключении notifier (R02-002);
 - `test/dashboard_widget_test.dart` — сводка дашборда (задачи, заметки, идеи,
   финансы) и создание задачи через быстрый ввод;
 - `test/db_migration_test.dart` — схема v3, `v1 → v3`, откат до v2 через
   `DROP COLUMN` и проверка `v2 → v3`, сохранность задачи и индекса,
-  `UnsupportedError` для непокрытой будущей версии;
-- `test/settings_controller_test.dart` — сохранение и откат горячей клавиши;
+  `UnsupportedError` для `v2 → v4` без частичного DDL и для downgrade
+  `v4 → v3` без перезаписи `user_version` (R02-004);
+- `test/settings_controller_test.dart` — сохранение и откат горячей клавиши,
+  startup-fallback на default при `apply=false` (R02-003);
+- `test/data_repositories_test.dart` — эксклюзивная верхняя граница финансового
+  диапазона (R02-005);
+- `test/backup_service_test.dart` — JSON round-trip `remindAt` и
+  `reminderSentAt` (R02-007);
+- `test/quick_capture_dialog_test.dart` — ошибка репозитория разблокирует
+  сохранение и показывает сообщение (R02-006);
+- `test/desktop_services_test.dart` — абсолютный путь к иконке трея на Windows
+  и PNG-путь на других платформах (R02-001);
+- `test/dashboard_period_test.dart` — календарные границы дня и месяца
+  (R02-008);
 - `test/app_router_widget_test.dart` — стартовый экран `DashboardScreen`.
 
 Не покрыто автоматическими тестами (требует Windows GUI):
@@ -229,6 +271,18 @@ Windows 11. Проверено:
 overflow Windows); эта часть опирается на код и widget/unit-тесты, а
 close-to-tray проверен фактически.
 
+### Smoke после исправления R02-001 (2026-10-23)
+
+- Сборка запускалась с рабочим каталогом
+  `build\windows\x64\runner\Debug`, то есть не из корня репозитория.
+- В каталоге `.exe` существует
+  `data\flutter_assets\assets\tray_icon.ico`; путь строится от
+  `Platform.resolvedExecutable`.
+- После `taskkill /PID <pid>` без `/F` (WM_CLOSE) процесс оставался жив
+  минимум 3 секунды — окно скрылось в трей, приложение не завершилось.
+  Затем процесс был принудительно остановлен.
+- Визуальная проверка меню/иконки в overflow трея не выполнялась.
+
 ## Известные ограничения и техдолг
 
 - Напоминания работают, пока запущен процесс приложения (в том числе свёрнутый
@@ -240,7 +294,12 @@ close-to-tray проверен фактически.
   действий «Отложить/Выполнено» в уведомлении нет — TD-26.
 - Уведомления реализованы только для Windows; на других платформах — no-op.
 - Если WinToast не инициализировался, ошибка логируется, а приложение
-  продолжает работать без системных напоминаний.
+  продолжает работать; `reminder_sent_at` не выставляется, поэтому попытка
+  повторится на следующем тике, пока toast не станет доступен.
+- DST-переход (23/25-часовые сутки) локально не воспроизводился: тест
+  проверяет календарную семантику границ, но не смену часового пояса.
+- Повторное ревью после исправлений R02 не проводилось; формальный вердикт
+  исходного ревью остаётся **FAIL** до проверки agent-2.
 - Нет golden-тестов (TD-18) и file-picker/корзины (TD-23/TD-24).
 - `dart format` для всего дерева не включён в CI: текущий formatter даёт шум
   на legacy-файлах (TD-20).
@@ -274,3 +333,5 @@ flutter build windows --debug
 - [ADR-016](../decisions.md)
 - [Техдолг](../tech-debt.md)
 - [Контекст](../context.md)
+- [Ревью stage-02](../reviews/stage-02-review.md)
+- [Результаты исправлений R02](../reviews/stage-02-review-results.md)
