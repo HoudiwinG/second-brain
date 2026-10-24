@@ -58,6 +58,9 @@
 - [stage-02-review-results](reviews/stage-02-review-results.md) — self-check
   agent-1: все R02-001…R02-008 исправлены, тесты 69/69, smoke из каталога
   `.exe`; фактические результаты проверены в повторном ревью №2.
+- [stage-02-fix-tasks](reviews/stage-02-fix-tasks.md) — задачи для agent-1 по
+  R02-009…R02-013 и патч-предложения (2026-10-24, agent-2); R02-009 —
+  блокер stage-03.
 
 ## Решения
 - [decisions.md](decisions.md) — все ADR
