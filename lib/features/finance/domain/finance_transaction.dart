@@ -52,12 +52,18 @@ class FinanceDraft {
     required this.amount,
     required this.type,
     required this.date,
-    this.currency = 'RUB',
+    this.currency = defaultCurrency,
     this.category,
     this.account,
     this.note,
     this.isPrivateForLlm = false,
   });
+
+  /// Валюта по умолчанию для новых операций и сводок (R02-011).
+  ///
+  /// Единый источник: сводка дашборда не смешивает валюты и считает только
+  /// операции в этой валюте, пока мультивалютные отчёты не поддержаны (TD-21).
+  static const String defaultCurrency = 'RUB';
 
   final double amount;
   final String currency;

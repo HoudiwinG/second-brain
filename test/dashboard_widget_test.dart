@@ -1,8 +1,11 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:second_brain/app/app.dart';
 import 'package:second_brain/app/di.dart';
+import 'package:second_brain/core/result/result.dart';
 import 'package:second_brain/data/repositories/finance_repository.dart';
 import 'package:second_brain/data/repositories/ideas_repository.dart';
 import 'package:second_brain/data/repositories/notes_repository.dart';
@@ -14,6 +17,28 @@ import 'package:second_brain/features/quick_capture/presentation/quick_capture_d
 import 'package:second_brain/features/tasks/domain/task_item.dart';
 
 import 'helpers/in_memory_db.dart';
+
+/// Репозиторий, который позволяет придержать загрузку (R02-012).
+class _GatedTasksRepository extends DriftTasksRepository {
+  _GatedTasksRepository(super.db);
+
+  Completer<void>? gate;
+
+  @override
+  Future<Result<List<TaskItem>>> list({
+    TaskStatus? status,
+    bool includeDeleted = false,
+    bool forLlm = false,
+  }) async {
+    final pending = gate;
+    if (pending != null) await pending.future;
+    return super.list(
+      status: status,
+      includeDeleted: includeDeleted,
+      forLlm: forLlm,
+    );
+  }
+}
 
 /// Widget-тест дашборда: сводка дня и быстрый ввод поверх in-memory БД.
 void main() {
@@ -38,13 +63,20 @@ void main() {
     await notes.create(
       const NoteDraft(title: 'Заметка для дашборда', body: 'Текст заметки'),
     );
-    await tasks.create(
-      TaskDraft(title: 'Позвонить клиенту', dueAt: noon),
-    );
+    await tasks.create(TaskDraft(title: 'Позвонить клиенту', dueAt: noon));
     await ideas.create(const IdeaDraft(text: 'Идея для дашборда'));
     await finance.create(
       FinanceDraft(
         amount: 1000,
+        type: FinanceTransactionType.income,
+        date: now.toUtc(),
+      ),
+    );
+    // Операция в другой валюте не должна попадать в сводку (R02-011).
+    await finance.create(
+      FinanceDraft(
+        amount: 500,
+        currency: 'USD',
         type: FinanceTransactionType.income,
         date: now.toUtc(),
       ),
@@ -72,6 +104,12 @@ void main() {
     expect(find.text('Идея для дашборда'), findsOneWidget);
     expect(find.text("This month's finance"), findsOneWidget);
 
+    // Сводка только в RUB и с явной подписью валюты.
+    expect(find.text('Income · RUB'), findsOneWidget);
+    expect(find.text('1000.00'), findsNWidgets(2)); // доход и баланс
+    expect(find.text('1500.00'), findsNothing);
+    expect(find.text('500.00'), findsNothing);
+
     // Быстрое действие «Task» открывает общий диалог и сохраняет задачу.
     await tester.tap(find.text('Task').first);
     await tester.pumpAndSettle();
@@ -84,5 +122,47 @@ void main() {
     expect(find.byType(QuickCaptureDialog), findsNothing);
     final saved = (await tasks.list()).unwrap();
     expect(saved.map((task) => task.title), contains('Задача из диалога'));
+  });
+
+  testWidgets('RefreshIndicator ждёт завершения загрузки (R02-012)', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(1400, 900);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.reset);
+
+    final db = InMemoryDbFactory.open();
+    addTearDown(db.close);
+    final tasks = _GatedTasksRepository(db);
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          appDatabaseProvider.overrideWith((ref) => Future.value(db)),
+          tasksRepositoryProvider.overrideWith((ref) async => tasks),
+          reminderSchedulerProvider.overrideWithValue(null),
+        ],
+        child: const SecondBrainApp(),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final indicator = tester.widget<RefreshIndicator>(
+      find.byType(RefreshIndicator),
+    );
+
+    tasks.gate = Completer<void>();
+    var completed = false;
+    final refresh = indicator.onRefresh().then((_) => completed = true);
+
+    await tester.pump();
+    expect(completed, isFalse);
+
+    tasks.gate!.complete();
+    await tester.pumpAndSettle();
+    await refresh;
+
+    expect(completed, isTrue);
+    expect(find.text("Today's tasks"), findsOneWidget);
   });
 }

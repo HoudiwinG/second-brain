@@ -77,6 +77,17 @@
   "financeExpense": "Expense",
   "financeBalance": "Balance",
   "financeTransactions": "Transactions",
+  "financeAmountWithCurrency": "{label} · {currency}",
+  "@financeAmountWithCurrency": {
+    "placeholders": {
+      "label": {
+        "type": "String"
+      },
+      "currency": {
+        "type": "String"
+      }
+    }
+  },
   "notesEmpty": "No notes yet",
   "tasksEmpty": "No tasks yet",
   "ideasEmpty": "No ideas yet",

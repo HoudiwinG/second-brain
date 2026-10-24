@@ -8,7 +8,7 @@ import 'core/crash/app_crash_reporter.dart';
 import 'core/logging/app_logger.dart';
 import 'features/reminders/application/reminder_notifier.dart';
 
-/// Точка входа «Second Brain + AI Assistant» (этап 0 — каркас).
+/// Точка входа «Second Brain + AI Assistant».
 Future<void> main() async {
   Future<void> runAppInternal() async {
     WidgetsFlutterBinding.ensureInitialized();
@@ -27,7 +27,7 @@ Future<void> main() async {
       }
     }
 
-    AppLogger.i('Second Brain: запуск приложения (этап 0 — каркас)');
+    AppLogger.i('Second Brain: приложение запущено');
     runApp(const ProviderScope(child: SecondBrainApp()));
   }
 

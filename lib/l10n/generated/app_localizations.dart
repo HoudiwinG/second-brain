@@ -560,6 +560,12 @@ abstract class AppLocalizations {
   /// **'Transactions'**
   String get financeTransactions;
 
+  /// No description provided for @financeAmountWithCurrency.
+  ///
+  /// In en, this message translates to:
+  /// **'{label} · {currency}'**
+  String financeAmountWithCurrency(String label, String currency);
+
   /// No description provided for @notesEmpty.
   ///
   /// In en, this message translates to:

@@ -298,6 +298,34 @@ void main() {
       expect(list.single.date.toUtc(), DateTime.utc(2026, 10, 31, 23, 59));
     });
 
+    test('summary учитывает только выбранную валюту (R02-011)', () async {
+      await repo.create(
+        FinanceDraft(
+          amount: 100,
+          type: FinanceTransactionType.income,
+          date: DateTime.utc(2026, 10, 15),
+        ),
+      );
+      await repo.create(
+        FinanceDraft(
+          amount: 200,
+          currency: 'USD',
+          type: FinanceTransactionType.income,
+          date: DateTime.utc(2026, 10, 16),
+        ),
+      );
+
+      expect(FinanceDraft.defaultCurrency, 'RUB');
+      final rub = (await repo.summary(currency: FinanceDraft.defaultCurrency))
+          .unwrap();
+      expect(rub.transactions, 1);
+      expect(rub.income, 100);
+
+      final usd = (await repo.summary(currency: 'USD')).unwrap();
+      expect(usd.transactions, 1);
+      expect(usd.income, 200);
+    });
+
     test('валидация суммы и валюты', () async {
       final zero = await repo.create(
         FinanceDraft(

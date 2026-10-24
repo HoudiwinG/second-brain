@@ -243,6 +243,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get financeTransactions => 'Transactions';
 
   @override
+  String financeAmountWithCurrency(String label, String currency) {
+    return '$label · $currency';
+  }
+
+  @override
   String get notesEmpty => 'No notes yet';
 
   @override

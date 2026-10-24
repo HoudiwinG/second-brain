@@ -77,6 +77,17 @@
   "financeExpense": "Расход",
   "financeBalance": "Баланс",
   "financeTransactions": "Операции",
+  "financeAmountWithCurrency": "{label} · {currency}",
+  "@financeAmountWithCurrency": {
+    "placeholders": {
+      "label": {
+        "type": "String"
+      },
+      "currency": {
+        "type": "String"
+      }
+    }
+  },
   "notesEmpty": "Заметок пока нет",
   "tasksEmpty": "Задач пока нет",
   "ideasEmpty": "Идей пока нет",

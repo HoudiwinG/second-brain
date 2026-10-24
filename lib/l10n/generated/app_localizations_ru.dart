@@ -243,6 +243,11 @@ class AppLocalizationsRu extends AppLocalizations {
   String get financeTransactions => 'Операции';
 
   @override
+  String financeAmountWithCurrency(String label, String currency) {
+    return '$label · $currency';
+  }
+
+  @override
   String get notesEmpty => 'Заметок пока нет';
 
   @override

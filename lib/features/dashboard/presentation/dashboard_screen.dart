@@ -49,6 +49,9 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     final summary = (await financeRepo.summary(
       from: month.start.toUtc(),
       to: month.end.toUtc(),
+      // Не смешиваем валюты: карточка показывает суммы только в валюте
+      // по умолчанию и явно подписывает её (R02-011).
+      currency: FinanceDraft.defaultCurrency,
     )).unwrap();
 
     final open = tasks.where(
@@ -85,16 +88,27 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     );
   }
 
-  void _reload() {
+  /// Перезагружает данные и завершается только после фактической загрузки.
+  ///
+  /// `RefreshIndicator` ждёт возвращённый Future, поэтому индикатор не
+  /// пропадает раньше, чем обновится содержимое (R02-012). Ошибку показывает
+  /// `FutureBuilder` через `ErrorState`, здесь её не дублируем.
+  Future<void> _reload() async {
+    final future = _load();
     setState(() {
-      _future = _load();
+      _future = future;
     });
+    try {
+      await future;
+    } on Object {
+      // Ошибка отображается FutureBuilder (ErrorState).
+    }
   }
 
   Future<void> _quickCapture(QuickCaptureKind kind) async {
     final saved = await showQuickCaptureDialog(context, initialKind: kind);
     if (saved == true && mounted) {
-      _reload();
+      await _reload();
     }
   }
 
@@ -132,7 +146,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
           }
           final data = snapshot.data!;
           return RefreshIndicator(
-            onRefresh: () async => _reload(),
+            onRefresh: _reload,
             child: ListView(
               padding: const EdgeInsets.fromLTRB(20, 20, 20, 96),
               physics: const AlwaysScrollableScrollPhysics(),
@@ -234,7 +248,10 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                       context.go(pathForBranch(FeatureBranch.finance)),
                 ),
                 const SizedBox(height: 8),
-                _FinanceCard(summary: data.finance),
+                _FinanceCard(
+                  summary: data.finance,
+                  currency: FinanceDraft.defaultCurrency,
+                ),
               ],
             ),
           );
@@ -400,31 +417,33 @@ class _IdeaRow extends StatelessWidget {
 }
 
 class _FinanceCard extends StatelessWidget {
-  const _FinanceCard({required this.summary});
+  const _FinanceCard({required this.summary, required this.currency});
 
   final FinanceSummary summary;
+  final String currency;
 
   @override
   Widget build(BuildContext context) {
     final lcm = AppLocalizations.of(context)!;
     final error = Theme.of(context).colorScheme.error;
+    String label(String base) => lcm.financeAmountWithCurrency(base, currency);
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Row(
           children: [
             _FinanceCell(
-              label: lcm.financeIncome,
+              label: label(lcm.financeIncome),
               value: summary.income.toStringAsFixed(2),
               color: Colors.green.shade700,
             ),
             _FinanceCell(
-              label: lcm.financeExpense,
+              label: label(lcm.financeExpense),
               value: summary.expense.toStringAsFixed(2),
               color: error,
             ),
             _FinanceCell(
-              label: lcm.financeBalance,
+              label: label(lcm.financeBalance),
               value: summary.balance.toStringAsFixed(2),
               color: summary.balance >= 0
                   ? Theme.of(context).colorScheme.primary
