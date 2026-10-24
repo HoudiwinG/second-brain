@@ -206,9 +206,90 @@ class FinanceTransactions extends Table {
   DateTimeColumn get deletedAt => dateTime().nullable()();
 }
 
+/// Конфигурация LLM-провайдера.
+///
+/// Сам API-ключ здесь не хранится: [secretRef] — имя записи в
+/// [SecretStore] (secure storage). Это позволяет делать бэкап БД без утечки
+/// секретов и не логировать ключи.
+class LlmProviderConfigs extends Table {
+  IntColumn get id => integer().autoIncrement()();
+
+  /// openai | openai_compatible | anthropic | google.
+  TextColumn get providerType => text()();
+
+  TextColumn get displayName => text().withLength(min: 1, max: 100)();
+
+  /// Базовый URL API (без завершающего слэша).
+  TextColumn get baseUrl => text()();
+
+  TextColumn get model => text().withLength(min: 1, max: 200)();
+
+  /// Жёсткий лимит токенов ответа (защита от больших счетов).
+  IntColumn get maxTokens => integer().withDefault(const Constant(1024))();
+
+  /// Имя секрета в secure storage, например `llm.api_key.1`.
+  TextColumn get secretRef => text().unique()();
+
+  /// Провайдер по умолчанию для новых чатов.
+  BoolColumn get isDefault => boolean().withDefault(const Constant(false))();
+
+  DateTimeColumn get createdAt => dateTime()();
+
+  DateTimeColumn get updatedAt => dateTime()();
+}
+
+/// Тред чата с LLM. История доступна офлайн.
+class ChatThreads extends Table {
+  IntColumn get id => integer().autoIncrement()();
+
+  TextColumn get title => text().withLength(min: 1, max: 200)();
+
+  /// Конфигурация провайдера на момент создания треда.
+  /// Удаление конфигурации не удаляет историю.
+  IntColumn get providerConfigId => integer().nullable().references(
+    LlmProviderConfigs,
+    #id,
+    onDelete: KeyAction.setNull,
+  )();
+
+  TextColumn get model => text().withLength(min: 1, max: 200)();
+
+  DateTimeColumn get createdAt => dateTime()();
+
+  DateTimeColumn get updatedAt => dateTime()();
+
+  DateTimeColumn get archivedAt => dateTime().nullable()();
+}
+
+/// Сообщение чата. Частичный стриминговый ответ не сохраняется:
+/// в БД попадает только завершённое сообщение (или ошибка без контента).
+class ChatMessages extends Table {
+  IntColumn get id => integer().autoIncrement()();
+
+  IntColumn get threadId => integer().references(
+    ChatThreads,
+    #id,
+    onDelete: KeyAction.cascade,
+  )();
+
+  /// user | assistant | system.
+  TextColumn get role => text()();
+
+  TextColumn get content => text()();
+
+  IntColumn get promptTokens => integer().nullable()();
+
+  IntColumn get completionTokens => integer().nullable()();
+
+  /// Код ошибки провайдера (без текста ответа и секретов).
+  TextColumn get errorCode => text().nullable()();
+
+  DateTimeColumn get createdAt => dateTime()();
+}
+
 /// Локальная БД SQLite (Drift).
 ///
-/// Схема v3 — ядро данных stage-01 + состояние напоминаний stage-02.
+/// Схема v4 — ядро данных stage-01 + напоминания stage-02 + LLM-слой stage-03.
 /// Полнотекстовый индекс `search_index`
 /// создаётся отдельными SQL-командами: FTS5 — виртуальная таблица, которую
 /// Drift не описывает декларативно (ADR-013).
@@ -224,6 +305,9 @@ class FinanceTransactions extends Table {
     IdeaEntries,
     IdeaTags,
     FinanceTransactions,
+    LlmProviderConfigs,
+    ChatThreads,
+    ChatMessages,
   ],
 )
 class AppDatabase extends _$AppDatabase {
@@ -245,7 +329,7 @@ class AppDatabase extends _$AppDatabase {
   static AppDatabase inMemory() => AppDatabase(NativeDatabase.memory());
 
   @override
-  int get schemaVersion => 3;
+  int get schemaVersion => 4;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -253,6 +337,7 @@ class AppDatabase extends _$AppDatabase {
       AppLogger.d('AppDatabase: onCreate → создаём схему v$schemaVersion');
       await m.createAll();
       await _createSearchSchema();
+      await _createIndexes();
     },
     // ВАЖНО: createAll() в onUpgrade не используется. Он создаёт только
     // отсутствующие таблицы и молча пропускает ALTER/перенос данных,
@@ -264,7 +349,7 @@ class AppDatabase extends _$AppDatabase {
       // добавить колонку и индекс, а затем падает, оставляя файл в
       // промежуточном состоянии; downgrade v4 → v3 и вовсе молча
       // перезаписывал user_version (R02-004).
-      if (from > to || from > 3 || to > 3) {
+      if (from > to || from > 4 || to > 4) {
         throw UnsupportedError(
           'AppDatabase: нет миграции схемы $from → $to. '
           'Добавьте явную миграцию в onUpgrade (ADR-012).',
@@ -287,6 +372,13 @@ class AppDatabase extends _$AppDatabase {
       } else if (from < 3) {
         // v3: защита от повторных напоминаний после перезапуска.
         await m.addColumn(tasks, tasks.reminderSentAt);
+      }
+      if (from < 4) {
+        // v4: конфигурации LLM и офлайн-история чата.
+        // createTable создаёт текущую структуру таблиц; отдельных ALTER нет.
+        await m.createTable(llmProviderConfigs);
+        await m.createTable(chatThreads);
+        await m.createTable(chatMessages);
         await _createIndexes();
       }
     },
@@ -299,7 +391,8 @@ class AppDatabase extends _$AppDatabase {
   /// FTS5-индекс по заметкам, задачам, идеям и финансам.
   ///
   /// Таблица создаётся идемпотентно: это позволяет безопасно применять
-  /// миграцию повторно и использовать её в тестах.
+  /// миграцию повторно и использовать её в тестах. Индексы создаются
+  /// отдельно, после всех таблиц: в v1 → v4 таблицы LLM появляются позже.
   Future<void> _createSearchSchema() async {
     await customStatement('''
       CREATE VIRTUAL TABLE IF NOT EXISTS search_index USING fts5(
@@ -312,7 +405,6 @@ class AppDatabase extends _$AppDatabase {
         tokenize = 'unicode61 remove_diacritics 2'
       )
     ''');
-    await _createIndexes();
   }
 
   /// Индексы для внешних ключей и выборок по датам/soft-delete.
@@ -341,6 +433,18 @@ class AppDatabase extends _$AppDatabase {
     );
     await customStatement(
       'CREATE INDEX IF NOT EXISTS idx_finance_deleted ON finance_transactions(deleted_at)',
+    );
+    await customStatement(
+      'CREATE INDEX IF NOT EXISTS idx_chat_threads_updated '
+      'ON chat_threads(updated_at)',
+    );
+    await customStatement(
+      'CREATE INDEX IF NOT EXISTS idx_chat_messages_thread '
+      'ON chat_messages(thread_id, created_at)',
+    );
+    await customStatement(
+      'CREATE INDEX IF NOT EXISTS idx_llm_configs_default '
+      'ON llm_provider_configs(is_default)',
     );
   }
 }

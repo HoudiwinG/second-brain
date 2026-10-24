@@ -403,4 +403,138 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get dashboardFinanceMonth => 'This month\'s finance';
+
+  @override
+  String get settingsLlmSection => 'LLM providers';
+
+  @override
+  String get settingsLlmHint =>
+      'API keys are stored in the OS secure storage and never go to the DB or logs.';
+
+  @override
+  String get actionAddProvider => 'Add provider';
+
+  @override
+  String get actionSetDefault => 'Set as default';
+
+  @override
+  String get llmProviderLabel => 'Provider';
+
+  @override
+  String get llmProviderOpenai => 'OpenAI';
+
+  @override
+  String get llmProviderOpenaiCompatible => 'OpenAI-compatible';
+
+  @override
+  String get llmProviderAnthropic => 'Anthropic';
+
+  @override
+  String get llmProviderGoogle => 'Google Gemini';
+
+  @override
+  String get llmConfigName => 'Name';
+
+  @override
+  String get llmBaseUrl => 'Base URL';
+
+  @override
+  String get llmModel => 'Model';
+
+  @override
+  String get llmApiKey => 'API key';
+
+  @override
+  String get llmApiKeyHint => 'Leave empty to keep the saved key';
+
+  @override
+  String get llmApiKeyStored => 'Key saved';
+
+  @override
+  String get llmMaxTokens => 'Output token limit';
+
+  @override
+  String get llmDefaultBadge => 'Default';
+
+  @override
+  String get llmNoConfigs => 'No providers configured';
+
+  @override
+  String get llmConfigSaved => 'Configuration saved';
+
+  @override
+  String get llmConfigSaveError => 'Could not save the configuration';
+
+  @override
+  String get llmConfigDeleted => 'Configuration deleted';
+
+  @override
+  String get llmConfigDeleteError => 'Could not delete the configuration';
+
+  @override
+  String get llmDefaultSet => 'Default provider updated';
+
+  @override
+  String get llmDefaultError => 'Could not change the default provider';
+
+  @override
+  String get chatTitle => 'AI Chat';
+
+  @override
+  String get chatNewThread => 'New chat';
+
+  @override
+  String get chatNoConfig =>
+      'Add an LLM provider and API key in Settings first.';
+
+  @override
+  String get chatOpenSettings => 'Open settings';
+
+  @override
+  String get chatEmpty => 'Start a conversation with the assistant.';
+
+  @override
+  String get chatInputHint => 'Message…';
+
+  @override
+  String get chatSend => 'Send';
+
+  @override
+  String get chatStop => 'Stop';
+
+  @override
+  String get chatThreadLabel => 'Thread';
+
+  @override
+  String get chatNoThreads => 'No saved threads';
+
+  @override
+  String get chatAssistant => 'Assistant';
+
+  @override
+  String get chatYou => 'You';
+
+  @override
+  String get chatError =>
+      'Could not get a response. Check the key and network.';
+
+  @override
+  String get chatCancelled => 'Response stopped';
+
+  @override
+  String get chatPrivacyHint =>
+      'Entries marked “do not send to LLM” are excluded from context.';
+
+  @override
+  String get chatThreadDeleted => 'Thread deleted';
+
+  @override
+  String get chatDeleteThread => 'Delete thread';
+
+  @override
+  String get chatProviderMissing =>
+      'The thread provider was deleted. Choose another in Settings.';
+
+  @override
+  String get chatConfigMissing => 'Configure an LLM provider first.';
 }

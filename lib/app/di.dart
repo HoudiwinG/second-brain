@@ -8,8 +8,10 @@ import '../core/secrets/secure_secret_store.dart';
 import '../data/backup/backup_service.dart';
 import '../data/db/app_database.dart';
 import '../data/repositories/categories_repository.dart';
+import '../data/repositories/chat_repository.dart';
 import '../data/repositories/finance_repository.dart';
 import '../data/repositories/ideas_repository.dart';
+import '../data/repositories/llm_config_repository.dart';
 import '../data/repositories/notes_repository.dart';
 import '../data/repositories/search_repository.dart';
 import '../data/repositories/settings_repository.dart';
@@ -17,6 +19,8 @@ import '../data/repositories/tags_repository.dart';
 import '../data/repositories/tasks_repository.dart';
 import '../features/finance/domain/finance_transaction.dart';
 import '../features/ideas/domain/idea_entry.dart';
+import '../features/llm/data/llm_provider_factory.dart';
+import '../features/llm/tools/llm_tool_registry.dart';
 import '../features/notes/domain/category.dart';
 import '../features/notes/domain/note.dart';
 import '../features/notes/domain/tag.dart';
@@ -88,6 +92,32 @@ final backupServiceProvider = FutureProvider<BackupService>((ref) async {
   final db = await ref.watch(appDatabaseProvider.future);
   return BackupService(db);
 });
+
+/// Офлайн-история чата.
+final chatRepositoryProvider = FutureProvider<ChatRepository>((ref) async {
+  final db = await ref.watch(appDatabaseProvider.future);
+  return DriftChatRepository(db);
+});
+
+/// Конфигурации LLM и ключи в secure storage.
+final llmConfigRepositoryProvider = FutureProvider<LlmConfigRepository>((
+  ref,
+) async {
+  final db = await ref.watch(appDatabaseProvider.future);
+  return DriftLlmConfigRepository(db, ref.watch(secretStoreProvider));
+});
+
+/// Фабрика LLM-провайдеров; HTTP-клиент живёт вместе с ProviderScope.
+final llmProviderFactoryProvider = Provider<LlmProviderFactory>((ref) {
+  final factory = LlmProviderFactory();
+  ref.onDispose(factory.close);
+  return factory;
+});
+
+/// Реестр инструментов LLM. На stage-03 пуст: инструменты появятся на stage-04.
+final llmToolRegistryProvider = Provider<LlmToolRegistry>(
+  (ref) => LlmToolRegistry(),
+);
 
 /// Хранилище секретов: secure storage (DPAPI/Keychain/Keystore).
 final secretStoreProvider = Provider<SecretStore>((ref) => SecureSecretStore());

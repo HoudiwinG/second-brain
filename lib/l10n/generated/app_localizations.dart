@@ -865,6 +865,264 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'This month\'s finance'**
   String get dashboardFinanceMonth;
+
+  /// No description provided for @settingsLlmSection.
+  ///
+  /// In en, this message translates to:
+  /// **'LLM providers'**
+  String get settingsLlmSection;
+
+  /// No description provided for @settingsLlmHint.
+  ///
+  /// In en, this message translates to:
+  /// **'API keys are stored in the OS secure storage and never go to the DB or logs.'**
+  String get settingsLlmHint;
+
+  /// No description provided for @actionAddProvider.
+  ///
+  /// In en, this message translates to:
+  /// **'Add provider'**
+  String get actionAddProvider;
+
+  /// No description provided for @actionSetDefault.
+  ///
+  /// In en, this message translates to:
+  /// **'Set as default'**
+  String get actionSetDefault;
+
+  /// No description provided for @llmProviderLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Provider'**
+  String get llmProviderLabel;
+
+  /// No description provided for @llmProviderOpenai.
+  ///
+  /// In en, this message translates to:
+  /// **'OpenAI'**
+  String get llmProviderOpenai;
+
+  /// No description provided for @llmProviderOpenaiCompatible.
+  ///
+  /// In en, this message translates to:
+  /// **'OpenAI-compatible'**
+  String get llmProviderOpenaiCompatible;
+
+  /// No description provided for @llmProviderAnthropic.
+  ///
+  /// In en, this message translates to:
+  /// **'Anthropic'**
+  String get llmProviderAnthropic;
+
+  /// No description provided for @llmProviderGoogle.
+  ///
+  /// In en, this message translates to:
+  /// **'Google Gemini'**
+  String get llmProviderGoogle;
+
+  /// No description provided for @llmConfigName.
+  ///
+  /// In en, this message translates to:
+  /// **'Name'**
+  String get llmConfigName;
+
+  /// No description provided for @llmBaseUrl.
+  ///
+  /// In en, this message translates to:
+  /// **'Base URL'**
+  String get llmBaseUrl;
+
+  /// No description provided for @llmModel.
+  ///
+  /// In en, this message translates to:
+  /// **'Model'**
+  String get llmModel;
+
+  /// No description provided for @llmApiKey.
+  ///
+  /// In en, this message translates to:
+  /// **'API key'**
+  String get llmApiKey;
+
+  /// No description provided for @llmApiKeyHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Leave empty to keep the saved key'**
+  String get llmApiKeyHint;
+
+  /// No description provided for @llmApiKeyStored.
+  ///
+  /// In en, this message translates to:
+  /// **'Key saved'**
+  String get llmApiKeyStored;
+
+  /// No description provided for @llmMaxTokens.
+  ///
+  /// In en, this message translates to:
+  /// **'Output token limit'**
+  String get llmMaxTokens;
+
+  /// No description provided for @llmDefaultBadge.
+  ///
+  /// In en, this message translates to:
+  /// **'Default'**
+  String get llmDefaultBadge;
+
+  /// No description provided for @llmNoConfigs.
+  ///
+  /// In en, this message translates to:
+  /// **'No providers configured'**
+  String get llmNoConfigs;
+
+  /// No description provided for @llmConfigSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Configuration saved'**
+  String get llmConfigSaved;
+
+  /// No description provided for @llmConfigSaveError.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not save the configuration'**
+  String get llmConfigSaveError;
+
+  /// No description provided for @llmConfigDeleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Configuration deleted'**
+  String get llmConfigDeleted;
+
+  /// No description provided for @llmConfigDeleteError.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not delete the configuration'**
+  String get llmConfigDeleteError;
+
+  /// No description provided for @llmDefaultSet.
+  ///
+  /// In en, this message translates to:
+  /// **'Default provider updated'**
+  String get llmDefaultSet;
+
+  /// No description provided for @llmDefaultError.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not change the default provider'**
+  String get llmDefaultError;
+
+  /// No description provided for @chatTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'AI Chat'**
+  String get chatTitle;
+
+  /// No description provided for @chatNewThread.
+  ///
+  /// In en, this message translates to:
+  /// **'New chat'**
+  String get chatNewThread;
+
+  /// No description provided for @chatNoConfig.
+  ///
+  /// In en, this message translates to:
+  /// **'Add an LLM provider and API key in Settings first.'**
+  String get chatNoConfig;
+
+  /// No description provided for @chatOpenSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'Open settings'**
+  String get chatOpenSettings;
+
+  /// No description provided for @chatEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'Start a conversation with the assistant.'**
+  String get chatEmpty;
+
+  /// No description provided for @chatInputHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Message…'**
+  String get chatInputHint;
+
+  /// No description provided for @chatSend.
+  ///
+  /// In en, this message translates to:
+  /// **'Send'**
+  String get chatSend;
+
+  /// No description provided for @chatStop.
+  ///
+  /// In en, this message translates to:
+  /// **'Stop'**
+  String get chatStop;
+
+  /// No description provided for @chatThreadLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Thread'**
+  String get chatThreadLabel;
+
+  /// No description provided for @chatNoThreads.
+  ///
+  /// In en, this message translates to:
+  /// **'No saved threads'**
+  String get chatNoThreads;
+
+  /// No description provided for @chatAssistant.
+  ///
+  /// In en, this message translates to:
+  /// **'Assistant'**
+  String get chatAssistant;
+
+  /// No description provided for @chatYou.
+  ///
+  /// In en, this message translates to:
+  /// **'You'**
+  String get chatYou;
+
+  /// No description provided for @chatError.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not get a response. Check the key and network.'**
+  String get chatError;
+
+  /// No description provided for @chatCancelled.
+  ///
+  /// In en, this message translates to:
+  /// **'Response stopped'**
+  String get chatCancelled;
+
+  /// No description provided for @chatPrivacyHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Entries marked “do not send to LLM” are excluded from context.'**
+  String get chatPrivacyHint;
+
+  /// No description provided for @chatThreadDeleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Thread deleted'**
+  String get chatThreadDeleted;
+
+  /// No description provided for @chatDeleteThread.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete thread'**
+  String get chatDeleteThread;
+
+  /// No description provided for @chatProviderMissing.
+  ///
+  /// In en, this message translates to:
+  /// **'The thread provider was deleted. Choose another in Settings.'**
+  String get chatProviderMissing;
+
+  /// No description provided for @chatConfigMissing.
+  ///
+  /// In en, this message translates to:
+  /// **'Configure an LLM provider first.'**
+  String get chatConfigMissing;
 }
 
 class _AppLocalizationsDelegate

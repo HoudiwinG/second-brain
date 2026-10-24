@@ -403,4 +403,138 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get dashboardFinanceMonth => 'Финансы за месяц';
+
+  @override
+  String get settingsLlmSection => 'LLM-провайдеры';
+
+  @override
+  String get settingsLlmHint =>
+      'API-ключи хранятся в защищённом хранилище ОС и не попадают в БД и логи.';
+
+  @override
+  String get actionAddProvider => 'Добавить провайдера';
+
+  @override
+  String get actionSetDefault => 'Сделать основным';
+
+  @override
+  String get llmProviderLabel => 'Провайдер';
+
+  @override
+  String get llmProviderOpenai => 'OpenAI';
+
+  @override
+  String get llmProviderOpenaiCompatible => 'OpenAI-совместимый';
+
+  @override
+  String get llmProviderAnthropic => 'Anthropic';
+
+  @override
+  String get llmProviderGoogle => 'Google Gemini';
+
+  @override
+  String get llmConfigName => 'Название';
+
+  @override
+  String get llmBaseUrl => 'Base URL';
+
+  @override
+  String get llmModel => 'Модель';
+
+  @override
+  String get llmApiKey => 'API-ключ';
+
+  @override
+  String get llmApiKeyHint =>
+      'Оставьте пустым, чтобы не менять сохранённый ключ';
+
+  @override
+  String get llmApiKeyStored => 'Ключ сохранён';
+
+  @override
+  String get llmMaxTokens => 'Лимит токенов ответа';
+
+  @override
+  String get llmDefaultBadge => 'По умолчанию';
+
+  @override
+  String get llmNoConfigs => 'Провайдеры не настроены';
+
+  @override
+  String get llmConfigSaved => 'Конфигурация сохранена';
+
+  @override
+  String get llmConfigSaveError => 'Не удалось сохранить конфигурацию';
+
+  @override
+  String get llmConfigDeleted => 'Конфигурация удалена';
+
+  @override
+  String get llmConfigDeleteError => 'Не удалось удалить конфигурацию';
+
+  @override
+  String get llmDefaultSet => 'Провайдер по умолчанию обновлён';
+
+  @override
+  String get llmDefaultError => 'Не удалось изменить провайдера по умолчанию';
+
+  @override
+  String get chatTitle => 'AI-чат';
+
+  @override
+  String get chatNewThread => 'Новый чат';
+
+  @override
+  String get chatNoConfig =>
+      'Сначала добавьте LLM-провайдера и API-ключ в настройках.';
+
+  @override
+  String get chatOpenSettings => 'Открыть настройки';
+
+  @override
+  String get chatEmpty => 'Начните диалог с ассистентом.';
+
+  @override
+  String get chatInputHint => 'Сообщение…';
+
+  @override
+  String get chatSend => 'Отправить';
+
+  @override
+  String get chatStop => 'Остановить';
+
+  @override
+  String get chatThreadLabel => 'Диалог';
+
+  @override
+  String get chatNoThreads => 'Нет сохранённых диалогов';
+
+  @override
+  String get chatAssistant => 'Ассистент';
+
+  @override
+  String get chatYou => 'Вы';
+
+  @override
+  String get chatError => 'Не удалось получить ответ. Проверьте ключ и сеть.';
+
+  @override
+  String get chatCancelled => 'Ответ остановлен';
+
+  @override
+  String get chatPrivacyHint =>
+      'Записи с флагом «не отправлять в LLM» не попадают в контекст.';
+
+  @override
+  String get chatThreadDeleted => 'Диалог удалён';
+
+  @override
+  String get chatDeleteThread => 'Удалить диалог';
+
+  @override
+  String get chatProviderMissing =>
+      'Провайдер диалога удалён. Выберите другого в настройках.';
+
+  @override
+  String get chatConfigMissing => 'Сначала настройте LLM-провайдера.';
 }

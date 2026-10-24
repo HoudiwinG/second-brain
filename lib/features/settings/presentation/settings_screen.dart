@@ -9,13 +9,11 @@ import '../../../app/quick_hotkey.dart';
 import '../../../app/widgets/data_ui.dart';
 import '../../../core/logging/app_logger.dart';
 import '../../../l10n/generated/app_localizations.dart';
+import '../../llm/presentation/llm_settings_section.dart';
 import '../application/settings_controller.dart';
 import 'hotkey_recorder_dialog.dart';
 
-/// Экран настроек (этап 0): переключатели темы и языка.
-///
-/// Полный набор настроек (LLM-ключи, приватность, интеграции, экспорт)
-/// появится на следующих этапах.
+/// Экран настроек: оформление, язык, хоткей, LLM-провайдеры и данные.
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
 
@@ -337,6 +335,8 @@ class SettingsScreen extends ConsumerWidget {
               lcm.hintGlobalHotkey,
               style: Theme.of(context).textTheme.bodySmall,
             ),
+            const SizedBox(height: 24),
+            const LlmSettingsSection(),
             const SizedBox(height: 24),
             Text(
               lcm.dataSection,

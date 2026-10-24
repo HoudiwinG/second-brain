@@ -4060,6 +4060,1628 @@ class FinanceTransactionsCompanion extends UpdateCompanion<FinanceTransaction> {
   }
 }
 
+class $LlmProviderConfigsTable extends LlmProviderConfigs
+    with TableInfo<$LlmProviderConfigsTable, LlmProviderConfig> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $LlmProviderConfigsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _providerTypeMeta = const VerificationMeta(
+    'providerType',
+  );
+  @override
+  late final GeneratedColumn<String> providerType = GeneratedColumn<String>(
+    'provider_type',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _displayNameMeta = const VerificationMeta(
+    'displayName',
+  );
+  @override
+  late final GeneratedColumn<String> displayName = GeneratedColumn<String>(
+    'display_name',
+    aliasedName,
+    false,
+    additionalChecks: GeneratedColumn.checkTextLength(
+      minTextLength: 1,
+      maxTextLength: 100,
+    ),
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _baseUrlMeta = const VerificationMeta(
+    'baseUrl',
+  );
+  @override
+  late final GeneratedColumn<String> baseUrl = GeneratedColumn<String>(
+    'base_url',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _modelMeta = const VerificationMeta('model');
+  @override
+  late final GeneratedColumn<String> model = GeneratedColumn<String>(
+    'model',
+    aliasedName,
+    false,
+    additionalChecks: GeneratedColumn.checkTextLength(
+      minTextLength: 1,
+      maxTextLength: 200,
+    ),
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _maxTokensMeta = const VerificationMeta(
+    'maxTokens',
+  );
+  @override
+  late final GeneratedColumn<int> maxTokens = GeneratedColumn<int>(
+    'max_tokens',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(1024),
+  );
+  static const VerificationMeta _secretRefMeta = const VerificationMeta(
+    'secretRef',
+  );
+  @override
+  late final GeneratedColumn<String> secretRef = GeneratedColumn<String>(
+    'secret_ref',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways('UNIQUE'),
+  );
+  static const VerificationMeta _isDefaultMeta = const VerificationMeta(
+    'isDefault',
+  );
+  @override
+  late final GeneratedColumn<bool> isDefault = GeneratedColumn<bool>(
+    'is_default',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("is_default" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    providerType,
+    displayName,
+    baseUrl,
+    model,
+    maxTokens,
+    secretRef,
+    isDefault,
+    createdAt,
+    updatedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'llm_provider_configs';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<LlmProviderConfig> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('provider_type')) {
+      context.handle(
+        _providerTypeMeta,
+        providerType.isAcceptableOrUnknown(
+          data['provider_type']!,
+          _providerTypeMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_providerTypeMeta);
+    }
+    if (data.containsKey('display_name')) {
+      context.handle(
+        _displayNameMeta,
+        displayName.isAcceptableOrUnknown(
+          data['display_name']!,
+          _displayNameMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_displayNameMeta);
+    }
+    if (data.containsKey('base_url')) {
+      context.handle(
+        _baseUrlMeta,
+        baseUrl.isAcceptableOrUnknown(data['base_url']!, _baseUrlMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_baseUrlMeta);
+    }
+    if (data.containsKey('model')) {
+      context.handle(
+        _modelMeta,
+        model.isAcceptableOrUnknown(data['model']!, _modelMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_modelMeta);
+    }
+    if (data.containsKey('max_tokens')) {
+      context.handle(
+        _maxTokensMeta,
+        maxTokens.isAcceptableOrUnknown(data['max_tokens']!, _maxTokensMeta),
+      );
+    }
+    if (data.containsKey('secret_ref')) {
+      context.handle(
+        _secretRefMeta,
+        secretRef.isAcceptableOrUnknown(data['secret_ref']!, _secretRefMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_secretRefMeta);
+    }
+    if (data.containsKey('is_default')) {
+      context.handle(
+        _isDefaultMeta,
+        isDefault.isAcceptableOrUnknown(data['is_default']!, _isDefaultMeta),
+      );
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_updatedAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  LlmProviderConfig map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return LlmProviderConfig(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      providerType: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}provider_type'],
+      )!,
+      displayName: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}display_name'],
+      )!,
+      baseUrl: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}base_url'],
+      )!,
+      model: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}model'],
+      )!,
+      maxTokens: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}max_tokens'],
+      )!,
+      secretRef: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}secret_ref'],
+      )!,
+      isDefault: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}is_default'],
+      )!,
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at'],
+      )!,
+    );
+  }
+
+  @override
+  $LlmProviderConfigsTable createAlias(String alias) {
+    return $LlmProviderConfigsTable(attachedDatabase, alias);
+  }
+}
+
+class LlmProviderConfig extends DataClass
+    implements Insertable<LlmProviderConfig> {
+  final int id;
+
+  /// openai | openai_compatible | anthropic | google.
+  final String providerType;
+  final String displayName;
+
+  /// Базовый URL API (без завершающего слэша).
+  final String baseUrl;
+  final String model;
+
+  /// Жёсткий лимит токенов ответа (защита от больших счетов).
+  final int maxTokens;
+
+  /// Имя секрета в secure storage, например `llm.api_key.1`.
+  final String secretRef;
+
+  /// Провайдер по умолчанию для новых чатов.
+  final bool isDefault;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+  const LlmProviderConfig({
+    required this.id,
+    required this.providerType,
+    required this.displayName,
+    required this.baseUrl,
+    required this.model,
+    required this.maxTokens,
+    required this.secretRef,
+    required this.isDefault,
+    required this.createdAt,
+    required this.updatedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['provider_type'] = Variable<String>(providerType);
+    map['display_name'] = Variable<String>(displayName);
+    map['base_url'] = Variable<String>(baseUrl);
+    map['model'] = Variable<String>(model);
+    map['max_tokens'] = Variable<int>(maxTokens);
+    map['secret_ref'] = Variable<String>(secretRef);
+    map['is_default'] = Variable<bool>(isDefault);
+    map['created_at'] = Variable<DateTime>(createdAt);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    return map;
+  }
+
+  LlmProviderConfigsCompanion toCompanion(bool nullToAbsent) {
+    return LlmProviderConfigsCompanion(
+      id: Value(id),
+      providerType: Value(providerType),
+      displayName: Value(displayName),
+      baseUrl: Value(baseUrl),
+      model: Value(model),
+      maxTokens: Value(maxTokens),
+      secretRef: Value(secretRef),
+      isDefault: Value(isDefault),
+      createdAt: Value(createdAt),
+      updatedAt: Value(updatedAt),
+    );
+  }
+
+  factory LlmProviderConfig.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return LlmProviderConfig(
+      id: serializer.fromJson<int>(json['id']),
+      providerType: serializer.fromJson<String>(json['providerType']),
+      displayName: serializer.fromJson<String>(json['displayName']),
+      baseUrl: serializer.fromJson<String>(json['baseUrl']),
+      model: serializer.fromJson<String>(json['model']),
+      maxTokens: serializer.fromJson<int>(json['maxTokens']),
+      secretRef: serializer.fromJson<String>(json['secretRef']),
+      isDefault: serializer.fromJson<bool>(json['isDefault']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'providerType': serializer.toJson<String>(providerType),
+      'displayName': serializer.toJson<String>(displayName),
+      'baseUrl': serializer.toJson<String>(baseUrl),
+      'model': serializer.toJson<String>(model),
+      'maxTokens': serializer.toJson<int>(maxTokens),
+      'secretRef': serializer.toJson<String>(secretRef),
+      'isDefault': serializer.toJson<bool>(isDefault),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+    };
+  }
+
+  LlmProviderConfig copyWith({
+    int? id,
+    String? providerType,
+    String? displayName,
+    String? baseUrl,
+    String? model,
+    int? maxTokens,
+    String? secretRef,
+    bool? isDefault,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+  }) => LlmProviderConfig(
+    id: id ?? this.id,
+    providerType: providerType ?? this.providerType,
+    displayName: displayName ?? this.displayName,
+    baseUrl: baseUrl ?? this.baseUrl,
+    model: model ?? this.model,
+    maxTokens: maxTokens ?? this.maxTokens,
+    secretRef: secretRef ?? this.secretRef,
+    isDefault: isDefault ?? this.isDefault,
+    createdAt: createdAt ?? this.createdAt,
+    updatedAt: updatedAt ?? this.updatedAt,
+  );
+  LlmProviderConfig copyWithCompanion(LlmProviderConfigsCompanion data) {
+    return LlmProviderConfig(
+      id: data.id.present ? data.id.value : this.id,
+      providerType: data.providerType.present
+          ? data.providerType.value
+          : this.providerType,
+      displayName: data.displayName.present
+          ? data.displayName.value
+          : this.displayName,
+      baseUrl: data.baseUrl.present ? data.baseUrl.value : this.baseUrl,
+      model: data.model.present ? data.model.value : this.model,
+      maxTokens: data.maxTokens.present ? data.maxTokens.value : this.maxTokens,
+      secretRef: data.secretRef.present ? data.secretRef.value : this.secretRef,
+      isDefault: data.isDefault.present ? data.isDefault.value : this.isDefault,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('LlmProviderConfig(')
+          ..write('id: $id, ')
+          ..write('providerType: $providerType, ')
+          ..write('displayName: $displayName, ')
+          ..write('baseUrl: $baseUrl, ')
+          ..write('model: $model, ')
+          ..write('maxTokens: $maxTokens, ')
+          ..write('secretRef: $secretRef, ')
+          ..write('isDefault: $isDefault, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    providerType,
+    displayName,
+    baseUrl,
+    model,
+    maxTokens,
+    secretRef,
+    isDefault,
+    createdAt,
+    updatedAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is LlmProviderConfig &&
+          other.id == this.id &&
+          other.providerType == this.providerType &&
+          other.displayName == this.displayName &&
+          other.baseUrl == this.baseUrl &&
+          other.model == this.model &&
+          other.maxTokens == this.maxTokens &&
+          other.secretRef == this.secretRef &&
+          other.isDefault == this.isDefault &&
+          other.createdAt == this.createdAt &&
+          other.updatedAt == this.updatedAt);
+}
+
+class LlmProviderConfigsCompanion extends UpdateCompanion<LlmProviderConfig> {
+  final Value<int> id;
+  final Value<String> providerType;
+  final Value<String> displayName;
+  final Value<String> baseUrl;
+  final Value<String> model;
+  final Value<int> maxTokens;
+  final Value<String> secretRef;
+  final Value<bool> isDefault;
+  final Value<DateTime> createdAt;
+  final Value<DateTime> updatedAt;
+  const LlmProviderConfigsCompanion({
+    this.id = const Value.absent(),
+    this.providerType = const Value.absent(),
+    this.displayName = const Value.absent(),
+    this.baseUrl = const Value.absent(),
+    this.model = const Value.absent(),
+    this.maxTokens = const Value.absent(),
+    this.secretRef = const Value.absent(),
+    this.isDefault = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+  });
+  LlmProviderConfigsCompanion.insert({
+    this.id = const Value.absent(),
+    required String providerType,
+    required String displayName,
+    required String baseUrl,
+    required String model,
+    this.maxTokens = const Value.absent(),
+    required String secretRef,
+    this.isDefault = const Value.absent(),
+    required DateTime createdAt,
+    required DateTime updatedAt,
+  }) : providerType = Value(providerType),
+       displayName = Value(displayName),
+       baseUrl = Value(baseUrl),
+       model = Value(model),
+       secretRef = Value(secretRef),
+       createdAt = Value(createdAt),
+       updatedAt = Value(updatedAt);
+  static Insertable<LlmProviderConfig> custom({
+    Expression<int>? id,
+    Expression<String>? providerType,
+    Expression<String>? displayName,
+    Expression<String>? baseUrl,
+    Expression<String>? model,
+    Expression<int>? maxTokens,
+    Expression<String>? secretRef,
+    Expression<bool>? isDefault,
+    Expression<DateTime>? createdAt,
+    Expression<DateTime>? updatedAt,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (providerType != null) 'provider_type': providerType,
+      if (displayName != null) 'display_name': displayName,
+      if (baseUrl != null) 'base_url': baseUrl,
+      if (model != null) 'model': model,
+      if (maxTokens != null) 'max_tokens': maxTokens,
+      if (secretRef != null) 'secret_ref': secretRef,
+      if (isDefault != null) 'is_default': isDefault,
+      if (createdAt != null) 'created_at': createdAt,
+      if (updatedAt != null) 'updated_at': updatedAt,
+    });
+  }
+
+  LlmProviderConfigsCompanion copyWith({
+    Value<int>? id,
+    Value<String>? providerType,
+    Value<String>? displayName,
+    Value<String>? baseUrl,
+    Value<String>? model,
+    Value<int>? maxTokens,
+    Value<String>? secretRef,
+    Value<bool>? isDefault,
+    Value<DateTime>? createdAt,
+    Value<DateTime>? updatedAt,
+  }) {
+    return LlmProviderConfigsCompanion(
+      id: id ?? this.id,
+      providerType: providerType ?? this.providerType,
+      displayName: displayName ?? this.displayName,
+      baseUrl: baseUrl ?? this.baseUrl,
+      model: model ?? this.model,
+      maxTokens: maxTokens ?? this.maxTokens,
+      secretRef: secretRef ?? this.secretRef,
+      isDefault: isDefault ?? this.isDefault,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (providerType.present) {
+      map['provider_type'] = Variable<String>(providerType.value);
+    }
+    if (displayName.present) {
+      map['display_name'] = Variable<String>(displayName.value);
+    }
+    if (baseUrl.present) {
+      map['base_url'] = Variable<String>(baseUrl.value);
+    }
+    if (model.present) {
+      map['model'] = Variable<String>(model.value);
+    }
+    if (maxTokens.present) {
+      map['max_tokens'] = Variable<int>(maxTokens.value);
+    }
+    if (secretRef.present) {
+      map['secret_ref'] = Variable<String>(secretRef.value);
+    }
+    if (isDefault.present) {
+      map['is_default'] = Variable<bool>(isDefault.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('LlmProviderConfigsCompanion(')
+          ..write('id: $id, ')
+          ..write('providerType: $providerType, ')
+          ..write('displayName: $displayName, ')
+          ..write('baseUrl: $baseUrl, ')
+          ..write('model: $model, ')
+          ..write('maxTokens: $maxTokens, ')
+          ..write('secretRef: $secretRef, ')
+          ..write('isDefault: $isDefault, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $ChatThreadsTable extends ChatThreads
+    with TableInfo<$ChatThreadsTable, ChatThread> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $ChatThreadsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _titleMeta = const VerificationMeta('title');
+  @override
+  late final GeneratedColumn<String> title = GeneratedColumn<String>(
+    'title',
+    aliasedName,
+    false,
+    additionalChecks: GeneratedColumn.checkTextLength(
+      minTextLength: 1,
+      maxTextLength: 200,
+    ),
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _providerConfigIdMeta = const VerificationMeta(
+    'providerConfigId',
+  );
+  @override
+  late final GeneratedColumn<int> providerConfigId = GeneratedColumn<int>(
+    'provider_config_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES llm_provider_configs (id) ON DELETE SET NULL',
+    ),
+  );
+  static const VerificationMeta _modelMeta = const VerificationMeta('model');
+  @override
+  late final GeneratedColumn<String> model = GeneratedColumn<String>(
+    'model',
+    aliasedName,
+    false,
+    additionalChecks: GeneratedColumn.checkTextLength(
+      minTextLength: 1,
+      maxTextLength: 200,
+    ),
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _archivedAtMeta = const VerificationMeta(
+    'archivedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> archivedAt = GeneratedColumn<DateTime>(
+    'archived_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    title,
+    providerConfigId,
+    model,
+    createdAt,
+    updatedAt,
+    archivedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'chat_threads';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<ChatThread> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('title')) {
+      context.handle(
+        _titleMeta,
+        title.isAcceptableOrUnknown(data['title']!, _titleMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_titleMeta);
+    }
+    if (data.containsKey('provider_config_id')) {
+      context.handle(
+        _providerConfigIdMeta,
+        providerConfigId.isAcceptableOrUnknown(
+          data['provider_config_id']!,
+          _providerConfigIdMeta,
+        ),
+      );
+    }
+    if (data.containsKey('model')) {
+      context.handle(
+        _modelMeta,
+        model.isAcceptableOrUnknown(data['model']!, _modelMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_modelMeta);
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_updatedAtMeta);
+    }
+    if (data.containsKey('archived_at')) {
+      context.handle(
+        _archivedAtMeta,
+        archivedAt.isAcceptableOrUnknown(data['archived_at']!, _archivedAtMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  ChatThread map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return ChatThread(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      title: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}title'],
+      )!,
+      providerConfigId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}provider_config_id'],
+      ),
+      model: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}model'],
+      )!,
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at'],
+      )!,
+      archivedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}archived_at'],
+      ),
+    );
+  }
+
+  @override
+  $ChatThreadsTable createAlias(String alias) {
+    return $ChatThreadsTable(attachedDatabase, alias);
+  }
+}
+
+class ChatThread extends DataClass implements Insertable<ChatThread> {
+  final int id;
+  final String title;
+
+  /// Конфигурация провайдера на момент создания треда.
+  /// Удаление конфигурации не удаляет историю.
+  final int? providerConfigId;
+  final String model;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+  final DateTime? archivedAt;
+  const ChatThread({
+    required this.id,
+    required this.title,
+    this.providerConfigId,
+    required this.model,
+    required this.createdAt,
+    required this.updatedAt,
+    this.archivedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['title'] = Variable<String>(title);
+    if (!nullToAbsent || providerConfigId != null) {
+      map['provider_config_id'] = Variable<int>(providerConfigId);
+    }
+    map['model'] = Variable<String>(model);
+    map['created_at'] = Variable<DateTime>(createdAt);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    if (!nullToAbsent || archivedAt != null) {
+      map['archived_at'] = Variable<DateTime>(archivedAt);
+    }
+    return map;
+  }
+
+  ChatThreadsCompanion toCompanion(bool nullToAbsent) {
+    return ChatThreadsCompanion(
+      id: Value(id),
+      title: Value(title),
+      providerConfigId: providerConfigId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(providerConfigId),
+      model: Value(model),
+      createdAt: Value(createdAt),
+      updatedAt: Value(updatedAt),
+      archivedAt: archivedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(archivedAt),
+    );
+  }
+
+  factory ChatThread.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return ChatThread(
+      id: serializer.fromJson<int>(json['id']),
+      title: serializer.fromJson<String>(json['title']),
+      providerConfigId: serializer.fromJson<int?>(json['providerConfigId']),
+      model: serializer.fromJson<String>(json['model']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+      archivedAt: serializer.fromJson<DateTime?>(json['archivedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'title': serializer.toJson<String>(title),
+      'providerConfigId': serializer.toJson<int?>(providerConfigId),
+      'model': serializer.toJson<String>(model),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+      'archivedAt': serializer.toJson<DateTime?>(archivedAt),
+    };
+  }
+
+  ChatThread copyWith({
+    int? id,
+    String? title,
+    Value<int?> providerConfigId = const Value.absent(),
+    String? model,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+    Value<DateTime?> archivedAt = const Value.absent(),
+  }) => ChatThread(
+    id: id ?? this.id,
+    title: title ?? this.title,
+    providerConfigId: providerConfigId.present
+        ? providerConfigId.value
+        : this.providerConfigId,
+    model: model ?? this.model,
+    createdAt: createdAt ?? this.createdAt,
+    updatedAt: updatedAt ?? this.updatedAt,
+    archivedAt: archivedAt.present ? archivedAt.value : this.archivedAt,
+  );
+  ChatThread copyWithCompanion(ChatThreadsCompanion data) {
+    return ChatThread(
+      id: data.id.present ? data.id.value : this.id,
+      title: data.title.present ? data.title.value : this.title,
+      providerConfigId: data.providerConfigId.present
+          ? data.providerConfigId.value
+          : this.providerConfigId,
+      model: data.model.present ? data.model.value : this.model,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+      archivedAt: data.archivedAt.present
+          ? data.archivedAt.value
+          : this.archivedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ChatThread(')
+          ..write('id: $id, ')
+          ..write('title: $title, ')
+          ..write('providerConfigId: $providerConfigId, ')
+          ..write('model: $model, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('archivedAt: $archivedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    title,
+    providerConfigId,
+    model,
+    createdAt,
+    updatedAt,
+    archivedAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is ChatThread &&
+          other.id == this.id &&
+          other.title == this.title &&
+          other.providerConfigId == this.providerConfigId &&
+          other.model == this.model &&
+          other.createdAt == this.createdAt &&
+          other.updatedAt == this.updatedAt &&
+          other.archivedAt == this.archivedAt);
+}
+
+class ChatThreadsCompanion extends UpdateCompanion<ChatThread> {
+  final Value<int> id;
+  final Value<String> title;
+  final Value<int?> providerConfigId;
+  final Value<String> model;
+  final Value<DateTime> createdAt;
+  final Value<DateTime> updatedAt;
+  final Value<DateTime?> archivedAt;
+  const ChatThreadsCompanion({
+    this.id = const Value.absent(),
+    this.title = const Value.absent(),
+    this.providerConfigId = const Value.absent(),
+    this.model = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.archivedAt = const Value.absent(),
+  });
+  ChatThreadsCompanion.insert({
+    this.id = const Value.absent(),
+    required String title,
+    this.providerConfigId = const Value.absent(),
+    required String model,
+    required DateTime createdAt,
+    required DateTime updatedAt,
+    this.archivedAt = const Value.absent(),
+  }) : title = Value(title),
+       model = Value(model),
+       createdAt = Value(createdAt),
+       updatedAt = Value(updatedAt);
+  static Insertable<ChatThread> custom({
+    Expression<int>? id,
+    Expression<String>? title,
+    Expression<int>? providerConfigId,
+    Expression<String>? model,
+    Expression<DateTime>? createdAt,
+    Expression<DateTime>? updatedAt,
+    Expression<DateTime>? archivedAt,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (title != null) 'title': title,
+      if (providerConfigId != null) 'provider_config_id': providerConfigId,
+      if (model != null) 'model': model,
+      if (createdAt != null) 'created_at': createdAt,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (archivedAt != null) 'archived_at': archivedAt,
+    });
+  }
+
+  ChatThreadsCompanion copyWith({
+    Value<int>? id,
+    Value<String>? title,
+    Value<int?>? providerConfigId,
+    Value<String>? model,
+    Value<DateTime>? createdAt,
+    Value<DateTime>? updatedAt,
+    Value<DateTime?>? archivedAt,
+  }) {
+    return ChatThreadsCompanion(
+      id: id ?? this.id,
+      title: title ?? this.title,
+      providerConfigId: providerConfigId ?? this.providerConfigId,
+      model: model ?? this.model,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      archivedAt: archivedAt ?? this.archivedAt,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (title.present) {
+      map['title'] = Variable<String>(title.value);
+    }
+    if (providerConfigId.present) {
+      map['provider_config_id'] = Variable<int>(providerConfigId.value);
+    }
+    if (model.present) {
+      map['model'] = Variable<String>(model.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    if (archivedAt.present) {
+      map['archived_at'] = Variable<DateTime>(archivedAt.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ChatThreadsCompanion(')
+          ..write('id: $id, ')
+          ..write('title: $title, ')
+          ..write('providerConfigId: $providerConfigId, ')
+          ..write('model: $model, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('archivedAt: $archivedAt')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $ChatMessagesTable extends ChatMessages
+    with TableInfo<$ChatMessagesTable, ChatMessage> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $ChatMessagesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _threadIdMeta = const VerificationMeta(
+    'threadId',
+  );
+  @override
+  late final GeneratedColumn<int> threadId = GeneratedColumn<int>(
+    'thread_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES chat_threads (id) ON DELETE CASCADE',
+    ),
+  );
+  static const VerificationMeta _roleMeta = const VerificationMeta('role');
+  @override
+  late final GeneratedColumn<String> role = GeneratedColumn<String>(
+    'role',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _contentMeta = const VerificationMeta(
+    'content',
+  );
+  @override
+  late final GeneratedColumn<String> content = GeneratedColumn<String>(
+    'content',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _promptTokensMeta = const VerificationMeta(
+    'promptTokens',
+  );
+  @override
+  late final GeneratedColumn<int> promptTokens = GeneratedColumn<int>(
+    'prompt_tokens',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _completionTokensMeta = const VerificationMeta(
+    'completionTokens',
+  );
+  @override
+  late final GeneratedColumn<int> completionTokens = GeneratedColumn<int>(
+    'completion_tokens',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _errorCodeMeta = const VerificationMeta(
+    'errorCode',
+  );
+  @override
+  late final GeneratedColumn<String> errorCode = GeneratedColumn<String>(
+    'error_code',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    threadId,
+    role,
+    content,
+    promptTokens,
+    completionTokens,
+    errorCode,
+    createdAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'chat_messages';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<ChatMessage> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('thread_id')) {
+      context.handle(
+        _threadIdMeta,
+        threadId.isAcceptableOrUnknown(data['thread_id']!, _threadIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_threadIdMeta);
+    }
+    if (data.containsKey('role')) {
+      context.handle(
+        _roleMeta,
+        role.isAcceptableOrUnknown(data['role']!, _roleMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_roleMeta);
+    }
+    if (data.containsKey('content')) {
+      context.handle(
+        _contentMeta,
+        content.isAcceptableOrUnknown(data['content']!, _contentMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_contentMeta);
+    }
+    if (data.containsKey('prompt_tokens')) {
+      context.handle(
+        _promptTokensMeta,
+        promptTokens.isAcceptableOrUnknown(
+          data['prompt_tokens']!,
+          _promptTokensMeta,
+        ),
+      );
+    }
+    if (data.containsKey('completion_tokens')) {
+      context.handle(
+        _completionTokensMeta,
+        completionTokens.isAcceptableOrUnknown(
+          data['completion_tokens']!,
+          _completionTokensMeta,
+        ),
+      );
+    }
+    if (data.containsKey('error_code')) {
+      context.handle(
+        _errorCodeMeta,
+        errorCode.isAcceptableOrUnknown(data['error_code']!, _errorCodeMeta),
+      );
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  ChatMessage map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return ChatMessage(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      threadId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}thread_id'],
+      )!,
+      role: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}role'],
+      )!,
+      content: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}content'],
+      )!,
+      promptTokens: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}prompt_tokens'],
+      ),
+      completionTokens: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}completion_tokens'],
+      ),
+      errorCode: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}error_code'],
+      ),
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+    );
+  }
+
+  @override
+  $ChatMessagesTable createAlias(String alias) {
+    return $ChatMessagesTable(attachedDatabase, alias);
+  }
+}
+
+class ChatMessage extends DataClass implements Insertable<ChatMessage> {
+  final int id;
+  final int threadId;
+
+  /// user | assistant | system.
+  final String role;
+  final String content;
+  final int? promptTokens;
+  final int? completionTokens;
+
+  /// Код ошибки провайдера (без текста ответа и секретов).
+  final String? errorCode;
+  final DateTime createdAt;
+  const ChatMessage({
+    required this.id,
+    required this.threadId,
+    required this.role,
+    required this.content,
+    this.promptTokens,
+    this.completionTokens,
+    this.errorCode,
+    required this.createdAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['thread_id'] = Variable<int>(threadId);
+    map['role'] = Variable<String>(role);
+    map['content'] = Variable<String>(content);
+    if (!nullToAbsent || promptTokens != null) {
+      map['prompt_tokens'] = Variable<int>(promptTokens);
+    }
+    if (!nullToAbsent || completionTokens != null) {
+      map['completion_tokens'] = Variable<int>(completionTokens);
+    }
+    if (!nullToAbsent || errorCode != null) {
+      map['error_code'] = Variable<String>(errorCode);
+    }
+    map['created_at'] = Variable<DateTime>(createdAt);
+    return map;
+  }
+
+  ChatMessagesCompanion toCompanion(bool nullToAbsent) {
+    return ChatMessagesCompanion(
+      id: Value(id),
+      threadId: Value(threadId),
+      role: Value(role),
+      content: Value(content),
+      promptTokens: promptTokens == null && nullToAbsent
+          ? const Value.absent()
+          : Value(promptTokens),
+      completionTokens: completionTokens == null && nullToAbsent
+          ? const Value.absent()
+          : Value(completionTokens),
+      errorCode: errorCode == null && nullToAbsent
+          ? const Value.absent()
+          : Value(errorCode),
+      createdAt: Value(createdAt),
+    );
+  }
+
+  factory ChatMessage.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return ChatMessage(
+      id: serializer.fromJson<int>(json['id']),
+      threadId: serializer.fromJson<int>(json['threadId']),
+      role: serializer.fromJson<String>(json['role']),
+      content: serializer.fromJson<String>(json['content']),
+      promptTokens: serializer.fromJson<int?>(json['promptTokens']),
+      completionTokens: serializer.fromJson<int?>(json['completionTokens']),
+      errorCode: serializer.fromJson<String?>(json['errorCode']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'threadId': serializer.toJson<int>(threadId),
+      'role': serializer.toJson<String>(role),
+      'content': serializer.toJson<String>(content),
+      'promptTokens': serializer.toJson<int?>(promptTokens),
+      'completionTokens': serializer.toJson<int?>(completionTokens),
+      'errorCode': serializer.toJson<String?>(errorCode),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+    };
+  }
+
+  ChatMessage copyWith({
+    int? id,
+    int? threadId,
+    String? role,
+    String? content,
+    Value<int?> promptTokens = const Value.absent(),
+    Value<int?> completionTokens = const Value.absent(),
+    Value<String?> errorCode = const Value.absent(),
+    DateTime? createdAt,
+  }) => ChatMessage(
+    id: id ?? this.id,
+    threadId: threadId ?? this.threadId,
+    role: role ?? this.role,
+    content: content ?? this.content,
+    promptTokens: promptTokens.present ? promptTokens.value : this.promptTokens,
+    completionTokens: completionTokens.present
+        ? completionTokens.value
+        : this.completionTokens,
+    errorCode: errorCode.present ? errorCode.value : this.errorCode,
+    createdAt: createdAt ?? this.createdAt,
+  );
+  ChatMessage copyWithCompanion(ChatMessagesCompanion data) {
+    return ChatMessage(
+      id: data.id.present ? data.id.value : this.id,
+      threadId: data.threadId.present ? data.threadId.value : this.threadId,
+      role: data.role.present ? data.role.value : this.role,
+      content: data.content.present ? data.content.value : this.content,
+      promptTokens: data.promptTokens.present
+          ? data.promptTokens.value
+          : this.promptTokens,
+      completionTokens: data.completionTokens.present
+          ? data.completionTokens.value
+          : this.completionTokens,
+      errorCode: data.errorCode.present ? data.errorCode.value : this.errorCode,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ChatMessage(')
+          ..write('id: $id, ')
+          ..write('threadId: $threadId, ')
+          ..write('role: $role, ')
+          ..write('content: $content, ')
+          ..write('promptTokens: $promptTokens, ')
+          ..write('completionTokens: $completionTokens, ')
+          ..write('errorCode: $errorCode, ')
+          ..write('createdAt: $createdAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    threadId,
+    role,
+    content,
+    promptTokens,
+    completionTokens,
+    errorCode,
+    createdAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is ChatMessage &&
+          other.id == this.id &&
+          other.threadId == this.threadId &&
+          other.role == this.role &&
+          other.content == this.content &&
+          other.promptTokens == this.promptTokens &&
+          other.completionTokens == this.completionTokens &&
+          other.errorCode == this.errorCode &&
+          other.createdAt == this.createdAt);
+}
+
+class ChatMessagesCompanion extends UpdateCompanion<ChatMessage> {
+  final Value<int> id;
+  final Value<int> threadId;
+  final Value<String> role;
+  final Value<String> content;
+  final Value<int?> promptTokens;
+  final Value<int?> completionTokens;
+  final Value<String?> errorCode;
+  final Value<DateTime> createdAt;
+  const ChatMessagesCompanion({
+    this.id = const Value.absent(),
+    this.threadId = const Value.absent(),
+    this.role = const Value.absent(),
+    this.content = const Value.absent(),
+    this.promptTokens = const Value.absent(),
+    this.completionTokens = const Value.absent(),
+    this.errorCode = const Value.absent(),
+    this.createdAt = const Value.absent(),
+  });
+  ChatMessagesCompanion.insert({
+    this.id = const Value.absent(),
+    required int threadId,
+    required String role,
+    required String content,
+    this.promptTokens = const Value.absent(),
+    this.completionTokens = const Value.absent(),
+    this.errorCode = const Value.absent(),
+    required DateTime createdAt,
+  }) : threadId = Value(threadId),
+       role = Value(role),
+       content = Value(content),
+       createdAt = Value(createdAt);
+  static Insertable<ChatMessage> custom({
+    Expression<int>? id,
+    Expression<int>? threadId,
+    Expression<String>? role,
+    Expression<String>? content,
+    Expression<int>? promptTokens,
+    Expression<int>? completionTokens,
+    Expression<String>? errorCode,
+    Expression<DateTime>? createdAt,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (threadId != null) 'thread_id': threadId,
+      if (role != null) 'role': role,
+      if (content != null) 'content': content,
+      if (promptTokens != null) 'prompt_tokens': promptTokens,
+      if (completionTokens != null) 'completion_tokens': completionTokens,
+      if (errorCode != null) 'error_code': errorCode,
+      if (createdAt != null) 'created_at': createdAt,
+    });
+  }
+
+  ChatMessagesCompanion copyWith({
+    Value<int>? id,
+    Value<int>? threadId,
+    Value<String>? role,
+    Value<String>? content,
+    Value<int?>? promptTokens,
+    Value<int?>? completionTokens,
+    Value<String?>? errorCode,
+    Value<DateTime>? createdAt,
+  }) {
+    return ChatMessagesCompanion(
+      id: id ?? this.id,
+      threadId: threadId ?? this.threadId,
+      role: role ?? this.role,
+      content: content ?? this.content,
+      promptTokens: promptTokens ?? this.promptTokens,
+      completionTokens: completionTokens ?? this.completionTokens,
+      errorCode: errorCode ?? this.errorCode,
+      createdAt: createdAt ?? this.createdAt,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (threadId.present) {
+      map['thread_id'] = Variable<int>(threadId.value);
+    }
+    if (role.present) {
+      map['role'] = Variable<String>(role.value);
+    }
+    if (content.present) {
+      map['content'] = Variable<String>(content.value);
+    }
+    if (promptTokens.present) {
+      map['prompt_tokens'] = Variable<int>(promptTokens.value);
+    }
+    if (completionTokens.present) {
+      map['completion_tokens'] = Variable<int>(completionTokens.value);
+    }
+    if (errorCode.present) {
+      map['error_code'] = Variable<String>(errorCode.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ChatMessagesCompanion(')
+          ..write('id: $id, ')
+          ..write('threadId: $threadId, ')
+          ..write('role: $role, ')
+          ..write('content: $content, ')
+          ..write('promptTokens: $promptTokens, ')
+          ..write('completionTokens: $completionTokens, ')
+          ..write('errorCode: $errorCode, ')
+          ..write('createdAt: $createdAt')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -4074,6 +5696,10 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $IdeaTagsTable ideaTags = $IdeaTagsTable(this);
   late final $FinanceTransactionsTable financeTransactions =
       $FinanceTransactionsTable(this);
+  late final $LlmProviderConfigsTable llmProviderConfigs =
+      $LlmProviderConfigsTable(this);
+  late final $ChatThreadsTable chatThreads = $ChatThreadsTable(this);
+  late final $ChatMessagesTable chatMessages = $ChatMessagesTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -4089,6 +5715,9 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     ideaEntries,
     ideaTags,
     financeTransactions,
+    llmProviderConfigs,
+    chatThreads,
+    chatMessages,
   ];
   @override
   StreamQueryUpdateRules get streamUpdateRules => const StreamQueryUpdateRules([
@@ -4154,6 +5783,20 @@ abstract class _$AppDatabase extends GeneratedDatabase {
         limitUpdateKind: UpdateKind.delete,
       ),
       result: [TableUpdate('idea_tags', kind: UpdateKind.delete)],
+    ),
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'llm_provider_configs',
+        limitUpdateKind: UpdateKind.delete,
+      ),
+      result: [TableUpdate('chat_threads', kind: UpdateKind.update)],
+    ),
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'chat_threads',
+        limitUpdateKind: UpdateKind.delete,
+      ),
+      result: [TableUpdate('chat_messages', kind: UpdateKind.delete)],
     ),
   ]);
 }
@@ -7977,6 +9620,1233 @@ typedef $$FinanceTransactionsTableProcessedTableManager =
       FinanceTransaction,
       PrefetchHooks Function()
     >;
+typedef $$LlmProviderConfigsTableCreateCompanionBuilder =
+    LlmProviderConfigsCompanion Function({
+      Value<int> id,
+      required String providerType,
+      required String displayName,
+      required String baseUrl,
+      required String model,
+      Value<int> maxTokens,
+      required String secretRef,
+      Value<bool> isDefault,
+      required DateTime createdAt,
+      required DateTime updatedAt,
+    });
+typedef $$LlmProviderConfigsTableUpdateCompanionBuilder =
+    LlmProviderConfigsCompanion Function({
+      Value<int> id,
+      Value<String> providerType,
+      Value<String> displayName,
+      Value<String> baseUrl,
+      Value<String> model,
+      Value<int> maxTokens,
+      Value<String> secretRef,
+      Value<bool> isDefault,
+      Value<DateTime> createdAt,
+      Value<DateTime> updatedAt,
+    });
+
+final class $$LlmProviderConfigsTableReferences
+    extends
+        BaseReferences<
+          _$AppDatabase,
+          $LlmProviderConfigsTable,
+          LlmProviderConfig
+        > {
+  $$LlmProviderConfigsTableReferences(
+    super.$_db,
+    super.$_table,
+    super.$_typedResult,
+  );
+
+  static MultiTypedResultKey<$ChatThreadsTable, List<ChatThread>>
+  _chatThreadsRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+    db.chatThreads,
+    aliasName: 'llm_provider_configs__id__chat_threads__provider_config_id',
+  );
+
+  $$ChatThreadsTableProcessedTableManager get chatThreadsRefs {
+    final manager = $$ChatThreadsTableTableManager(
+      $_db,
+      $_db.chatThreads,
+    ).filter((f) => f.providerConfigId.id.sqlEquals($_itemColumn<int>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_chatThreadsRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+}
+
+class $$LlmProviderConfigsTableFilterComposer
+    extends Composer<_$AppDatabase, $LlmProviderConfigsTable> {
+  $$LlmProviderConfigsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get providerType => $composableBuilder(
+    column: $table.providerType,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get displayName => $composableBuilder(
+    column: $table.displayName,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get baseUrl => $composableBuilder(
+    column: $table.baseUrl,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get model => $composableBuilder(
+    column: $table.model,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get maxTokens => $composableBuilder(
+    column: $table.maxTokens,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get secretRef => $composableBuilder(
+    column: $table.secretRef,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get isDefault => $composableBuilder(
+    column: $table.isDefault,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  Expression<bool> chatThreadsRefs(
+    Expression<bool> Function($$ChatThreadsTableFilterComposer f) f,
+  ) {
+    final $$ChatThreadsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.chatThreads,
+      getReferencedColumn: (t) => t.providerConfigId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ChatThreadsTableFilterComposer(
+            $db: $db,
+            $table: $db.chatThreads,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+}
+
+class $$LlmProviderConfigsTableOrderingComposer
+    extends Composer<_$AppDatabase, $LlmProviderConfigsTable> {
+  $$LlmProviderConfigsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get providerType => $composableBuilder(
+    column: $table.providerType,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get displayName => $composableBuilder(
+    column: $table.displayName,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get baseUrl => $composableBuilder(
+    column: $table.baseUrl,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get model => $composableBuilder(
+    column: $table.model,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get maxTokens => $composableBuilder(
+    column: $table.maxTokens,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get secretRef => $composableBuilder(
+    column: $table.secretRef,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get isDefault => $composableBuilder(
+    column: $table.isDefault,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$LlmProviderConfigsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $LlmProviderConfigsTable> {
+  $$LlmProviderConfigsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get providerType => $composableBuilder(
+    column: $table.providerType,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get displayName => $composableBuilder(
+    column: $table.displayName,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get baseUrl =>
+      $composableBuilder(column: $table.baseUrl, builder: (column) => column);
+
+  GeneratedColumn<String> get model =>
+      $composableBuilder(column: $table.model, builder: (column) => column);
+
+  GeneratedColumn<int> get maxTokens =>
+      $composableBuilder(column: $table.maxTokens, builder: (column) => column);
+
+  GeneratedColumn<String> get secretRef =>
+      $composableBuilder(column: $table.secretRef, builder: (column) => column);
+
+  GeneratedColumn<bool> get isDefault =>
+      $composableBuilder(column: $table.isDefault, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+
+  Expression<T> chatThreadsRefs<T extends Object>(
+    Expression<T> Function($$ChatThreadsTableAnnotationComposer a) f,
+  ) {
+    final $$ChatThreadsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.chatThreads,
+      getReferencedColumn: (t) => t.providerConfigId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ChatThreadsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.chatThreads,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+}
+
+class $$LlmProviderConfigsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $LlmProviderConfigsTable,
+          LlmProviderConfig,
+          $$LlmProviderConfigsTableFilterComposer,
+          $$LlmProviderConfigsTableOrderingComposer,
+          $$LlmProviderConfigsTableAnnotationComposer,
+          $$LlmProviderConfigsTableCreateCompanionBuilder,
+          $$LlmProviderConfigsTableUpdateCompanionBuilder,
+          (LlmProviderConfig, $$LlmProviderConfigsTableReferences),
+          LlmProviderConfig,
+          PrefetchHooks Function({bool chatThreadsRefs})
+        > {
+  $$LlmProviderConfigsTableTableManager(
+    _$AppDatabase db,
+    $LlmProviderConfigsTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$LlmProviderConfigsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$LlmProviderConfigsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$LlmProviderConfigsTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<String> providerType = const Value.absent(),
+                Value<String> displayName = const Value.absent(),
+                Value<String> baseUrl = const Value.absent(),
+                Value<String> model = const Value.absent(),
+                Value<int> maxTokens = const Value.absent(),
+                Value<String> secretRef = const Value.absent(),
+                Value<bool> isDefault = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+              }) => LlmProviderConfigsCompanion(
+                id: id,
+                providerType: providerType,
+                displayName: displayName,
+                baseUrl: baseUrl,
+                model: model,
+                maxTokens: maxTokens,
+                secretRef: secretRef,
+                isDefault: isDefault,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                required String providerType,
+                required String displayName,
+                required String baseUrl,
+                required String model,
+                Value<int> maxTokens = const Value.absent(),
+                required String secretRef,
+                Value<bool> isDefault = const Value.absent(),
+                required DateTime createdAt,
+                required DateTime updatedAt,
+              }) => LlmProviderConfigsCompanion.insert(
+                id: id,
+                providerType: providerType,
+                displayName: displayName,
+                baseUrl: baseUrl,
+                model: model,
+                maxTokens: maxTokens,
+                secretRef: secretRef,
+                isDefault: isDefault,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$LlmProviderConfigsTable, LlmProviderConfig>(
+                    table,
+                  ),
+                  $$LlmProviderConfigsTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({chatThreadsRefs = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [if (chatThreadsRefs) db.chatThreads],
+              addJoins: null,
+              getPrefetchedDataCallback: (items) async {
+                return [
+                  if (chatThreadsRefs)
+                    await $_getPrefetchedData<
+                      LlmProviderConfig,
+                      $LlmProviderConfigsTable,
+                      ChatThread
+                    >(
+                      currentTable: table,
+                      referencedTable: $$LlmProviderConfigsTableReferences
+                          ._chatThreadsRefsTable(db),
+                      managerFromTypedResult: (p0) =>
+                          $$LlmProviderConfigsTableReferences(
+                            db,
+                            table,
+                            p0,
+                          ).chatThreadsRefs,
+                      referencedItemsForCurrentItem: (item, referencedItems) =>
+                          referencedItems.where(
+                            (e) => e.providerConfigId == item.id,
+                          ),
+                      typedResults: items,
+                    ),
+                ];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$LlmProviderConfigsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $LlmProviderConfigsTable,
+      LlmProviderConfig,
+      $$LlmProviderConfigsTableFilterComposer,
+      $$LlmProviderConfigsTableOrderingComposer,
+      $$LlmProviderConfigsTableAnnotationComposer,
+      $$LlmProviderConfigsTableCreateCompanionBuilder,
+      $$LlmProviderConfigsTableUpdateCompanionBuilder,
+      (LlmProviderConfig, $$LlmProviderConfigsTableReferences),
+      LlmProviderConfig,
+      PrefetchHooks Function({bool chatThreadsRefs})
+    >;
+typedef $$ChatThreadsTableCreateCompanionBuilder =
+    ChatThreadsCompanion Function({
+      Value<int> id,
+      required String title,
+      Value<int?> providerConfigId,
+      required String model,
+      required DateTime createdAt,
+      required DateTime updatedAt,
+      Value<DateTime?> archivedAt,
+    });
+typedef $$ChatThreadsTableUpdateCompanionBuilder =
+    ChatThreadsCompanion Function({
+      Value<int> id,
+      Value<String> title,
+      Value<int?> providerConfigId,
+      Value<String> model,
+      Value<DateTime> createdAt,
+      Value<DateTime> updatedAt,
+      Value<DateTime?> archivedAt,
+    });
+
+final class $$ChatThreadsTableReferences
+    extends BaseReferences<_$AppDatabase, $ChatThreadsTable, ChatThread> {
+  $$ChatThreadsTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static $LlmProviderConfigsTable _providerConfigIdTable(_$AppDatabase db) =>
+      db.llmProviderConfigs.createAlias(
+        'chat_threads__provider_config_id__llm_provider_configs__id',
+      );
+
+  $$LlmProviderConfigsTableProcessedTableManager? get providerConfigId {
+    final $_column = $_itemColumn<int>('provider_config_id');
+    if ($_column == null) return null;
+    final manager = $$LlmProviderConfigsTableTableManager(
+      $_db,
+      $_db.llmProviderConfigs,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_providerConfigIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+
+  static MultiTypedResultKey<$ChatMessagesTable, List<ChatMessage>>
+  _chatMessagesRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+    db.chatMessages,
+    aliasName: 'chat_threads__id__chat_messages__thread_id',
+  );
+
+  $$ChatMessagesTableProcessedTableManager get chatMessagesRefs {
+    final manager = $$ChatMessagesTableTableManager(
+      $_db,
+      $_db.chatMessages,
+    ).filter((f) => f.threadId.id.sqlEquals($_itemColumn<int>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_chatMessagesRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+}
+
+class $$ChatThreadsTableFilterComposer
+    extends Composer<_$AppDatabase, $ChatThreadsTable> {
+  $$ChatThreadsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get title => $composableBuilder(
+    column: $table.title,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get model => $composableBuilder(
+    column: $table.model,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get archivedAt => $composableBuilder(
+    column: $table.archivedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$LlmProviderConfigsTableFilterComposer get providerConfigId {
+    final $$LlmProviderConfigsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.providerConfigId,
+      referencedTable: $db.llmProviderConfigs,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$LlmProviderConfigsTableFilterComposer(
+            $db: $db,
+            $table: $db.llmProviderConfigs,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  Expression<bool> chatMessagesRefs(
+    Expression<bool> Function($$ChatMessagesTableFilterComposer f) f,
+  ) {
+    final $$ChatMessagesTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.chatMessages,
+      getReferencedColumn: (t) => t.threadId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ChatMessagesTableFilterComposer(
+            $db: $db,
+            $table: $db.chatMessages,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+}
+
+class $$ChatThreadsTableOrderingComposer
+    extends Composer<_$AppDatabase, $ChatThreadsTable> {
+  $$ChatThreadsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get title => $composableBuilder(
+    column: $table.title,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get model => $composableBuilder(
+    column: $table.model,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get archivedAt => $composableBuilder(
+    column: $table.archivedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$LlmProviderConfigsTableOrderingComposer get providerConfigId {
+    final $$LlmProviderConfigsTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.providerConfigId,
+      referencedTable: $db.llmProviderConfigs,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$LlmProviderConfigsTableOrderingComposer(
+            $db: $db,
+            $table: $db.llmProviderConfigs,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$ChatThreadsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $ChatThreadsTable> {
+  $$ChatThreadsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get title =>
+      $composableBuilder(column: $table.title, builder: (column) => column);
+
+  GeneratedColumn<String> get model =>
+      $composableBuilder(column: $table.model, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get archivedAt => $composableBuilder(
+    column: $table.archivedAt,
+    builder: (column) => column,
+  );
+
+  $$LlmProviderConfigsTableAnnotationComposer get providerConfigId {
+    final $$LlmProviderConfigsTableAnnotationComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.providerConfigId,
+          referencedTable: $db.llmProviderConfigs,
+          getReferencedColumn: (t) => t.id,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$LlmProviderConfigsTableAnnotationComposer(
+                $db: $db,
+                $table: $db.llmProviderConfigs,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
+    return composer;
+  }
+
+  Expression<T> chatMessagesRefs<T extends Object>(
+    Expression<T> Function($$ChatMessagesTableAnnotationComposer a) f,
+  ) {
+    final $$ChatMessagesTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.chatMessages,
+      getReferencedColumn: (t) => t.threadId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ChatMessagesTableAnnotationComposer(
+            $db: $db,
+            $table: $db.chatMessages,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+}
+
+class $$ChatThreadsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $ChatThreadsTable,
+          ChatThread,
+          $$ChatThreadsTableFilterComposer,
+          $$ChatThreadsTableOrderingComposer,
+          $$ChatThreadsTableAnnotationComposer,
+          $$ChatThreadsTableCreateCompanionBuilder,
+          $$ChatThreadsTableUpdateCompanionBuilder,
+          (ChatThread, $$ChatThreadsTableReferences),
+          ChatThread,
+          PrefetchHooks Function({bool providerConfigId, bool chatMessagesRefs})
+        > {
+  $$ChatThreadsTableTableManager(_$AppDatabase db, $ChatThreadsTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$ChatThreadsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$ChatThreadsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$ChatThreadsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<String> title = const Value.absent(),
+                Value<int?> providerConfigId = const Value.absent(),
+                Value<String> model = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+                Value<DateTime?> archivedAt = const Value.absent(),
+              }) => ChatThreadsCompanion(
+                id: id,
+                title: title,
+                providerConfigId: providerConfigId,
+                model: model,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                archivedAt: archivedAt,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                required String title,
+                Value<int?> providerConfigId = const Value.absent(),
+                required String model,
+                required DateTime createdAt,
+                required DateTime updatedAt,
+                Value<DateTime?> archivedAt = const Value.absent(),
+              }) => ChatThreadsCompanion.insert(
+                id: id,
+                title: title,
+                providerConfigId: providerConfigId,
+                model: model,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                archivedAt: archivedAt,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$ChatThreadsTable, ChatThread>(table),
+                  $$ChatThreadsTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback:
+              ({providerConfigId = false, chatMessagesRefs = false}) {
+                return PrefetchHooks(
+                  db: db,
+                  explicitlyWatchedTables: [
+                    if (chatMessagesRefs) db.chatMessages,
+                  ],
+                  addJoins:
+                      <
+                        T extends TableManagerState<
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic
+                        >
+                      >(state) {
+                        if (providerConfigId) {
+                          state = state.withJoin(
+                            currentTable: table,
+                            currentColumn: table.providerConfigId,
+                            referencedTable: $$ChatThreadsTableReferences
+                                ._providerConfigIdTable(db),
+                            referencedColumn: $$ChatThreadsTableReferences
+                                ._providerConfigIdTable(db)
+                                .id,
+                          ) as T;
+                        }
+
+                        return state;
+                      },
+                  getPrefetchedDataCallback: (items) async {
+                    return [
+                      if (chatMessagesRefs)
+                        await $_getPrefetchedData<
+                          ChatThread,
+                          $ChatThreadsTable,
+                          ChatMessage
+                        >(
+                          currentTable: table,
+                          referencedTable: $$ChatThreadsTableReferences
+                              ._chatMessagesRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$ChatThreadsTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).chatMessagesRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.threadId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                    ];
+                  },
+                );
+              },
+        ),
+      );
+}
+
+typedef $$ChatThreadsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $ChatThreadsTable,
+      ChatThread,
+      $$ChatThreadsTableFilterComposer,
+      $$ChatThreadsTableOrderingComposer,
+      $$ChatThreadsTableAnnotationComposer,
+      $$ChatThreadsTableCreateCompanionBuilder,
+      $$ChatThreadsTableUpdateCompanionBuilder,
+      (ChatThread, $$ChatThreadsTableReferences),
+      ChatThread,
+      PrefetchHooks Function({bool providerConfigId, bool chatMessagesRefs})
+    >;
+typedef $$ChatMessagesTableCreateCompanionBuilder =
+    ChatMessagesCompanion Function({
+      Value<int> id,
+      required int threadId,
+      required String role,
+      required String content,
+      Value<int?> promptTokens,
+      Value<int?> completionTokens,
+      Value<String?> errorCode,
+      required DateTime createdAt,
+    });
+typedef $$ChatMessagesTableUpdateCompanionBuilder =
+    ChatMessagesCompanion Function({
+      Value<int> id,
+      Value<int> threadId,
+      Value<String> role,
+      Value<String> content,
+      Value<int?> promptTokens,
+      Value<int?> completionTokens,
+      Value<String?> errorCode,
+      Value<DateTime> createdAt,
+    });
+
+final class $$ChatMessagesTableReferences
+    extends BaseReferences<_$AppDatabase, $ChatMessagesTable, ChatMessage> {
+  $$ChatMessagesTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static $ChatThreadsTable _threadIdTable(_$AppDatabase db) =>
+      db.chatThreads.createAlias('chat_messages__thread_id__chat_threads__id');
+
+  $$ChatThreadsTableProcessedTableManager get threadId {
+    final $_column = $_itemColumn<int>('thread_id')!;
+
+    final manager = $$ChatThreadsTableTableManager(
+      $_db,
+      $_db.chatThreads,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_threadIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$ChatMessagesTableFilterComposer
+    extends Composer<_$AppDatabase, $ChatMessagesTable> {
+  $$ChatMessagesTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get role => $composableBuilder(
+    column: $table.role,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get content => $composableBuilder(
+    column: $table.content,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get promptTokens => $composableBuilder(
+    column: $table.promptTokens,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get completionTokens => $composableBuilder(
+    column: $table.completionTokens,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get errorCode => $composableBuilder(
+    column: $table.errorCode,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$ChatThreadsTableFilterComposer get threadId {
+    final $$ChatThreadsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.threadId,
+      referencedTable: $db.chatThreads,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ChatThreadsTableFilterComposer(
+            $db: $db,
+            $table: $db.chatThreads,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$ChatMessagesTableOrderingComposer
+    extends Composer<_$AppDatabase, $ChatMessagesTable> {
+  $$ChatMessagesTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get role => $composableBuilder(
+    column: $table.role,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get content => $composableBuilder(
+    column: $table.content,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get promptTokens => $composableBuilder(
+    column: $table.promptTokens,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get completionTokens => $composableBuilder(
+    column: $table.completionTokens,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get errorCode => $composableBuilder(
+    column: $table.errorCode,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$ChatThreadsTableOrderingComposer get threadId {
+    final $$ChatThreadsTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.threadId,
+      referencedTable: $db.chatThreads,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ChatThreadsTableOrderingComposer(
+            $db: $db,
+            $table: $db.chatThreads,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$ChatMessagesTableAnnotationComposer
+    extends Composer<_$AppDatabase, $ChatMessagesTable> {
+  $$ChatMessagesTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get role =>
+      $composableBuilder(column: $table.role, builder: (column) => column);
+
+  GeneratedColumn<String> get content =>
+      $composableBuilder(column: $table.content, builder: (column) => column);
+
+  GeneratedColumn<int> get promptTokens => $composableBuilder(
+    column: $table.promptTokens,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get completionTokens => $composableBuilder(
+    column: $table.completionTokens,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get errorCode =>
+      $composableBuilder(column: $table.errorCode, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  $$ChatThreadsTableAnnotationComposer get threadId {
+    final $$ChatThreadsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.threadId,
+      referencedTable: $db.chatThreads,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ChatThreadsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.chatThreads,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$ChatMessagesTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $ChatMessagesTable,
+          ChatMessage,
+          $$ChatMessagesTableFilterComposer,
+          $$ChatMessagesTableOrderingComposer,
+          $$ChatMessagesTableAnnotationComposer,
+          $$ChatMessagesTableCreateCompanionBuilder,
+          $$ChatMessagesTableUpdateCompanionBuilder,
+          (ChatMessage, $$ChatMessagesTableReferences),
+          ChatMessage,
+          PrefetchHooks Function({bool threadId})
+        > {
+  $$ChatMessagesTableTableManager(_$AppDatabase db, $ChatMessagesTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$ChatMessagesTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$ChatMessagesTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$ChatMessagesTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<int> threadId = const Value.absent(),
+                Value<String> role = const Value.absent(),
+                Value<String> content = const Value.absent(),
+                Value<int?> promptTokens = const Value.absent(),
+                Value<int?> completionTokens = const Value.absent(),
+                Value<String?> errorCode = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+              }) => ChatMessagesCompanion(
+                id: id,
+                threadId: threadId,
+                role: role,
+                content: content,
+                promptTokens: promptTokens,
+                completionTokens: completionTokens,
+                errorCode: errorCode,
+                createdAt: createdAt,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                required int threadId,
+                required String role,
+                required String content,
+                Value<int?> promptTokens = const Value.absent(),
+                Value<int?> completionTokens = const Value.absent(),
+                Value<String?> errorCode = const Value.absent(),
+                required DateTime createdAt,
+              }) => ChatMessagesCompanion.insert(
+                id: id,
+                threadId: threadId,
+                role: role,
+                content: content,
+                promptTokens: promptTokens,
+                completionTokens: completionTokens,
+                errorCode: errorCode,
+                createdAt: createdAt,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$ChatMessagesTable, ChatMessage>(table),
+                  $$ChatMessagesTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({threadId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins:
+                  <
+                    T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (threadId) {
+                      state = state.withJoin(
+                        currentTable: table,
+                        currentColumn: table.threadId,
+                        referencedTable: $$ChatMessagesTableReferences
+                            ._threadIdTable(db),
+                        referencedColumn: $$ChatMessagesTableReferences
+                            ._threadIdTable(db)
+                            .id,
+                      ) as T;
+                    }
+
+                    return state;
+                  },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$ChatMessagesTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $ChatMessagesTable,
+      ChatMessage,
+      $$ChatMessagesTableFilterComposer,
+      $$ChatMessagesTableOrderingComposer,
+      $$ChatMessagesTableAnnotationComposer,
+      $$ChatMessagesTableCreateCompanionBuilder,
+      $$ChatMessagesTableUpdateCompanionBuilder,
+      (ChatMessage, $$ChatMessagesTableReferences),
+      ChatMessage,
+      PrefetchHooks Function({bool threadId})
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -8000,4 +10870,10 @@ class $AppDatabaseManager {
       $$IdeaTagsTableTableManager(_db, _db.ideaTags);
   $$FinanceTransactionsTableTableManager get financeTransactions =>
       $$FinanceTransactionsTableTableManager(_db, _db.financeTransactions);
+  $$LlmProviderConfigsTableTableManager get llmProviderConfigs =>
+      $$LlmProviderConfigsTableTableManager(_db, _db.llmProviderConfigs);
+  $$ChatThreadsTableTableManager get chatThreads =>
+      $$ChatThreadsTableTableManager(_db, _db.chatThreads);
+  $$ChatMessagesTableTableManager get chatMessages =>
+      $$ChatMessagesTableTableManager(_db, _db.chatMessages);
 }

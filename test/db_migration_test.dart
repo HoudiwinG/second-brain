@@ -16,20 +16,28 @@ import 'helpers/in_memory_db.dart';
 ///
 /// Нужна, чтобы проверить политику ADR-012: непокрытый переход onUpgrade
 /// обязан падать, а не молча создавать недостающие таблицы.
-final class _AppDatabaseV4 extends AppDatabase {
-  _AppDatabaseV4(super.executor);
+final class _AppDatabaseV5 extends AppDatabase {
+  _AppDatabaseV5(super.executor);
 
   @override
-  int get schemaVersion => 4;
+  int get schemaVersion => 5;
+}
+
+/// База, которая «не понимает» файл v4: нужна для проверки downgrade.
+final class _AppDatabaseV3 extends AppDatabase {
+  _AppDatabaseV3(super.executor);
+
+  @override
+  int get schemaVersion => 3;
 }
 
 /// Интеграционные тесты миграций drift.
 void main() {
-  group('AppDatabase схема v3', () {
-    test('schemaVersion = 3 (ядро данных stage-01 + напоминания)', () {
+  group('AppDatabase схема v4', () {
+    test('schemaVersion = 4 (ядро, напоминания и LLM-слой)', () {
       final db = InMemoryDbFactory.open();
       addTearDown(db.close);
-      expect(db.schemaVersion, 3);
+      expect(db.schemaVersion, 4);
     });
 
     test('onCreate создаёт app_settings и таблицы ядра', () async {
@@ -59,6 +67,9 @@ void main() {
       expect(await db.select(db.tasks).get(), isEmpty);
       expect(await db.select(db.ideaEntries).get(), isEmpty);
       expect(await db.select(db.financeTransactions).get(), isEmpty);
+      expect(await db.select(db.llmProviderConfigs).get(), isEmpty);
+      expect(await db.select(db.chatThreads).get(), isEmpty);
+      expect(await db.select(db.chatMessages).get(), isEmpty);
 
       final fts = await db
           .customSelect(
@@ -100,37 +111,37 @@ void main() {
         });
         final file = File('${dir.path}/migration.sqlite');
 
-        final v3 = AppDatabase(NativeDatabase(file));
-        await v3
-            .into(v3.appSettings)
+        final v4 = AppDatabase(NativeDatabase(file));
+        await v4
+            .into(v4.appSettings)
             .insert(
               AppSettingsCompanion.insert(
                 key: 'keep.me',
-                value: 'v3',
+                value: 'v4',
                 updatedAt: DateTime.utc(2026, 1, 1),
               ),
             );
-        await v3.close();
+        await v4.close();
 
-        final v4 = _AppDatabaseV4(NativeDatabase(file));
+        final v5 = _AppDatabaseV5(NativeDatabase(file));
         addTearDown(() async {
           try {
-            await v4.close();
+            await v5.close();
           } on Object {
             // Соединение могло остаться в незавершённой миграции.
           }
         });
 
         await expectLater(
-          () => v4.select(v4.appSettings).get(),
+          () => v5.select(v5.appSettings).get(),
           throwsA(isA<UnsupportedError>()),
         );
       },
     );
   });
 
-  group('Миграция v1 → v3', () {
-    test('сохраняет app_settings и создаёт таблицы ядра + FTS', () async {
+  group('Миграция v1 → v4', () {
+    test('сохраняет app_settings и создаёт таблицы ядра + FTS + LLM', () async {
       final dir = await Directory.systemTemp.createTemp('second_brain_db_');
       addTearDown(() async {
         if (dir.existsSync()) await dir.delete(recursive: true);
@@ -175,28 +186,31 @@ void main() {
       final hits = (await search.search('миграции')).unwrap();
       expect(hits, hasLength(1));
       expect(hits.single.entityId, note.id);
-      expect(db.schemaVersion, 3);
+      expect(db.schemaVersion, 4);
+      expect(await db.select(db.llmProviderConfigs).get(), isEmpty);
+      expect(await db.select(db.chatThreads).get(), isEmpty);
+      expect(await db.select(db.chatMessages).get(), isEmpty);
     });
   });
 
   group('Защита миграций (R02-004)', () {
     test(
-      'v2 → v4 падает до DDL и не оставляет файл в промежуточном виде',
+      'v2 → v5 падает до DDL и не оставляет файл в промежуточном виде',
       () async {
         final dir = await Directory.systemTemp.createTemp('second_brain_db_');
         addTearDown(() async {
           if (dir.existsSync()) await dir.delete(recursive: true);
         });
-        final file = File('${dir.path}/v2_to_v4.sqlite');
+        final file = File('${dir.path}/v2_to_v5.sqlite');
         await _seedV2(file);
 
-        final v4 = _AppDatabaseV4(NativeDatabase(file));
+        final v5 = _AppDatabaseV5(NativeDatabase(file));
         await expectLater(
-          () => v4.select(v4.appSettings).get(),
+          () => v5.select(v5.appSettings).get(),
           throwsA(isA<UnsupportedError>()),
         );
         try {
-          await v4.close();
+          await v5.close();
         } on Object {
           // Соединение могло остаться в незавершённой миграции.
         }
@@ -212,11 +226,12 @@ void main() {
         expect(columns, isNot(contains('reminder_sent_at')));
         expect(version, 2);
 
-        // Файл должен остаться пригодным для штатной миграции v2 → v3.
+        // Файл должен остаться пригодным для штатной миграции v2 → v4.
         final recovered = AppDatabase(NativeDatabase(file));
         addTearDown(recovered.close);
         final task = await recovered.select(recovered.tasks).getSingle();
         expect(task.reminderSentAt, isNull);
+        expect(await recovered.select(recovered.chatThreads).get(), isEmpty);
       },
     );
 
@@ -243,7 +258,7 @@ void main() {
       raw.userVersion = 4;
       raw.close();
 
-      final db = AppDatabase(NativeDatabase(file));
+      final db = _AppDatabaseV3(NativeDatabase(file));
       await expectLater(
         () => db.select(db.appSettings).get(),
         throwsA(isA<UnsupportedError>()),
@@ -266,8 +281,8 @@ void main() {
     });
   });
 
-  group('Миграция v2 → v3', () {
-    test('добавляет reminder_sent_at и сохраняет задачи', () async {
+  group('Миграция v2 → v4', () {
+    test('добавляет reminder_sent_at, таблицы LLM и сохраняет задачи', () async {
       final dir = await Directory.systemTemp.createTemp('second_brain_db_');
       addTearDown(() async {
         if (dir.existsSync()) await dir.delete(recursive: true);
@@ -296,12 +311,13 @@ void main() {
 
       final db = AppDatabase(NativeDatabase(file));
       addTearDown(db.close);
-      expect(db.schemaVersion, 3);
+      expect(db.schemaVersion, 4);
 
       final task = await db.select(db.tasks).getSingle();
       expect(task.title, 'Напоминание после миграции');
       expect(task.reminderSentAt, isNull);
       expect(task.remindAt?.toUtc(), DateTime.utc(2026, 2, 1, 10));
+      expect(await db.select(db.llmProviderConfigs).get(), isEmpty);
 
       final index = await db
           .customSelect(
@@ -310,6 +326,47 @@ void main() {
           )
           .getSingleOrNull();
       expect(index, isNotNull);
+    });
+  });
+
+  group('Миграция v3 → v4', () {
+    test('создаёт LLM-таблицы и сохраняет задачи', () async {
+      final dir = await Directory.systemTemp.createTemp('second_brain_db_');
+      addTearDown(() async {
+        if (dir.existsSync()) await dir.delete(recursive: true);
+      });
+      final file = File('${dir.path}/v3.sqlite');
+
+      final seed = AppDatabase(NativeDatabase(file));
+      await seed
+          .into(seed.tasks)
+          .insert(
+            TasksCompanion.insert(
+              title: 'До LLM-слоя',
+              createdAt: DateTime.utc(2026, 1, 1),
+              updatedAt: DateTime.utc(2026, 1, 1),
+            ),
+          );
+      await seed.customStatement('DROP TABLE IF EXISTS chat_messages');
+      await seed.customStatement('DROP TABLE IF EXISTS chat_threads');
+      await seed.customStatement('DROP TABLE IF EXISTS llm_provider_configs');
+      await seed.customStatement('DROP INDEX IF EXISTS idx_chat_threads_updated');
+      await seed.customStatement(
+        'DROP INDEX IF EXISTS idx_chat_messages_thread',
+      );
+      await seed.customStatement(
+        'DROP INDEX IF EXISTS idx_llm_configs_default',
+      );
+      await seed.customStatement('PRAGMA user_version = 3');
+      await seed.close();
+
+      final db = AppDatabase(NativeDatabase(file));
+      addTearDown(db.close);
+      expect(db.schemaVersion, 4);
+      expect((await db.select(db.tasks).getSingle()).title, 'До LLM-слоя');
+      expect(await db.select(db.llmProviderConfigs).get(), isEmpty);
+      expect(await db.select(db.chatThreads).get(), isEmpty);
+      expect(await db.select(db.chatMessages).get(), isEmpty);
     });
   });
 }
