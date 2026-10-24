@@ -32,13 +32,18 @@
 > **Исправления agent-1 (2026-10-24, коммиты `a50d972` и `92a9642`):**
 > R02-009…R02-013 закрыты. Для R02-009 выбран вариант A — вендорный патч
 > `third_party/hotkey_manager_windows` (ADR-017). Отчёт разработчика:
-> [reviews/stage-02-fix-results.md](reviews/stage-02-fix-results.md). Открытых
-> MAJOR нет; вердикт остаётся за ревьюером (ревью №3).
+> [reviews/stage-02-fix-results.md](reviews/stage-02-fix-results.md).
+>
+> **Повторное ревью №3 (2026-10-24):** **PASS WITH COMMENTS**; R02-009…R02-013
+> подтверждены, MAJOR нет. Два не блокирующих комментария не заведены как TD:
+> R02-014 (MINOR — сводка экрана финансов всё ещё смешивает валюты) и R02-015
+> (NIT — повторный error-лог при сбое отметки напоминания). Если они не будут
+> исправлены в ближайшем коммите, их следует принять как TD до релиза.
 
 Проверка после исправлений R02-009…R02-013 (2026-10-24, Flutter 3.47.7):
 `flutter pub get --enforce-lockfile` → OK; `flutter analyze --fatal-infos` →
 0 issues; `flutter test` → **77/77**; `flutter build windows --debug` →
-**success**; `gen-l10n` без дрейфа (RU/EN по 129 ключей). CI runs
+**success**; `gen-l10n` без дрейфа (128 message-ключей в RU/EN + `@@locale`). CI runs
 `39919792561` (`82b04a2`), `39920666645` (`296970b`), `39931858624`
 (`e8c6005`, включает `8956179`), `40091767297` (`f9511c0`) — **success**;
 run `40095276919` (`92a9642`) — см.

@@ -6,10 +6,12 @@
 - **Коммит:** `82b04a2` (базовая реализация),
   `8956179` (исправления R02-001…R02-008),
   `a50d972` (R02-009/R02-010 + вендорный патч), `92a9642` (R02-011…R02-013)
-- **Статус:** **done с исправлениями; ожидает ревью №3**. R02-001…R02-013
-  закрыты в коде и тестах; открытых MAJOR нет. Вердикт выносит только ревьюер.
-  Локально: analyze — 0 issues, test — **77/77**, Windows debug build —
-  success; ручной Windows-сценарий занятой комбинации пройден. CI run
+- **Статус:** **done; PASS WITH COMMENTS** (ревью №3, 2026-10-24). R02-001…R02-013
+  закрыты в коде и тестах; открытых MAJOR нет. Ревью №3 оставило не блокирующие
+  комментарии R02-014 (MINOR, сводка экрана финансов) и R02-015 (NIT, лог retry
+  отметки). Локально: analyze — 0 issues, test — **77/77**, Windows debug build —
+  success; startup-сценарий занятой комбинации пройден, GUI-клик со SnackBar
+  остаётся в ручном чек-листе. CI run
   [39919792561](https://github.com/HoudiwinG/second-brain/actions/runs/39919792561)
   для `82b04a2`, [39920666645](https://github.com/HoudiwinG/second-brain/actions/runs/39920666645)
   для `296970b`, [39931858624](https://github.com/HoudiwinG/second-brain/actions/runs/39931858624)
@@ -17,9 +19,11 @@
   [40091767297](https://github.com/HoudiwinG/second-brain/actions/runs/40091767297)
   для `f9511c0`,
   [40095276919](https://github.com/HoudiwinG/second-brain/actions/runs/40095276919)
-  для `92a9642` — все **success** (проверено через `gh`).
-- **Следующий этап:** stage-03 (LLM-слой) по `PROMPT.md` — после вердикта
-  ревью №3 без открытых MAJOR.
+  для `92a9642`,
+  [40095857001](https://github.com/HoudiwinG/second-brain/actions/runs/40095857001)
+  для `07fa5b9` — все **success** (проверено через `gh`).
+- **Следующий этап:** stage-03 (LLM-слой) по `PROMPT.md` — stage-02
+  разблокирован (MAJOR 0).
 
 ## Цель этапа
 
@@ -368,9 +372,11 @@ close-to-tray проверен фактически.
 - DST-переход (23/25-часовые сутки) локально не воспроизводился: тест
   проверяет календарную семантику границ, но не смену часового пояса.
 - Повторное ревью №2 (2026-10-24) дало **FAIL** (R02-009…R02-013); все пять
-  находок исправлены в `a50d972`/`92a9642`. Подробности —
-  [../reviews/stage-02-fix-results.md](../reviews/stage-02-fix-results.md);
-  вердикт ревью №3 ещё не вынесен.
+  находок исправлены в `a50d972`/`92a9642`. Повторное ревью №3 (2026-10-24) —
+  **PASS WITH COMMENTS** (0 MAJOR; R02-014/R02-015 — не блокирующие
+  комментарии). Подробности —
+  [../reviews/stage-02-fix-results.md](../reviews/stage-02-fix-results.md) и
+  [../reviews/stage-02-review.md](../reviews/stage-02-review.md).
 - Ручными остаются: смена комбинации через UI с занятой комбинацией, меню
   трея, сам toast и визуальная проверка иконки (см. чек-лист).
 - Нет golden-тестов (TD-18) и file-picker/корзины (TD-23/TD-24).
@@ -427,7 +433,7 @@ flutter build windows --debug
 | ID | Что сделано | Где |
 |----|-------------|-----|
 | R02-009 (MAJOR) | вендорный патч `RegisterHotKey` → `hotkey_busy` + `dependency_overrides`; откат вынесен в `applyHotkeyBinding` | `third_party/hotkey_manager_windows/`, `pubspec.yaml`, `lib/app/desktop_services.dart` |
-| R02-010 | backoff 30 с → 1 мин → 5 мин → 15 мин; при показанном toast повторяется только `markReminderSent`; лог без спама | `lib/features/reminders/application/reminder_scheduler.dart` |
+| R02-010 | backoff 30 с → 1 мин → 5 мин → 15 мин; при показанном toast повторяется только `markReminderSent`; warning без спама (error-лог отметки — R02-015) | `lib/features/reminders/application/reminder_scheduler.dart` |
 | R02-011 | единая валюта `FinanceDraft.defaultCurrency`; `summary(currency:)`; валюта в подписи | `lib/features/finance/domain/finance_transaction.dart`, `dashboard_screen.dart` |
 | R02-012 | `_reload()` → `Future<void>`, `RefreshIndicator` ждёт загрузку | `dashboard_screen.dart` |
 | R02-013 | лог «этап 0 — каркас» заменён на актуальный | `lib/main.dart` |
@@ -435,7 +441,27 @@ flutter build windows --debug
 Проверки после исправлений: `pub get --enforce-lockfile` OK, analyze 0,
 test **77/77**, build windows --debug success, CI run
 [40095276919](https://github.com/HoudiwinG/second-brain/actions/runs/40095276919)
-(`92a9642`) — success. Ревью №3 ещё не проводилось; вердикт — за ревьюером.
+(`92a9642`) — success.
+
+## Повторное ревью №3 (2026-10-24, agent-2)
+
+- **Вердикт: PASS WITH COMMENTS** — critical 0, major 0, minor 1 (R02-014),
+  nit 1 (R02-015). R02-009…R02-013 подтверждены закрытыми; stage-03
+  разблокирован.
+- Независимо проверены: `pub get --enforce-lockfile`, analyze 0, test 77/77,
+  `build windows --debug`, `gen-l10n` без дрейфа; в собранной DLL есть
+  `hotkey_busy`, `.flutter-plugins-dependencies` указывает на
+  `third_party/hotkey_manager_windows`; busy/free-сценарии воспроизведены,
+  app не падает; CI `40095276919` и `40095857001` — success.
+- R02-014 (MINOR, не блокирует): на экране финансов `repo.summary()` всё ещё
+  вызывается без валюты и суммирует RUB+USD; дашборд исправлен. Рекомендация —
+  тот же фильтр/подпись, что и на дашборде.
+- R02-015 (NIT, не блокирует): при повторном сбое `markReminderSent`
+  `AppLogger.appError` пишется на каждой попытке; warning-лог ограничен, а
+  error-лог — нет. Рекомендация — логировать только первый сбой серии.
+- GUI-клик «занять комбинацию и выбрать её в настройках» с проверкой
+  `hotkeyBusyError` не автоматизирован; startup-сценарий пройден, GUI-шаг
+  остаётся в чек-листе.
 
 ## Связанные документы
 

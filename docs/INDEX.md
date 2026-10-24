@@ -1,23 +1,27 @@
 # INDEX — карта документации
 
 ## Состояние
-- Текущий этап: stage-02 (UX-каркас) — **исправления по повторному ревью №2
-  внесены, ожидается ревью №3**. R02-001…R02-013 закрыты в коде, тестах и
-  документации; открытых MAJOR нет. R02-009 закрыт вариантом A: вендорный
-  патч `third_party/hotkey_manager_windows` + `dependency_overrides` (ADR-017).
+- Текущий этап: stage-02 (UX-каркас) завершён — **PASS WITH COMMENTS**
+  (ревью №3); следующий — stage-03 (LLM-слой).
+  R02-001…R02-013 закрыты; открытых MAJOR/CRITICAL нет. R02-009 закрыт
+  вариантом A: вендорный патч `third_party/hotkey_manager_windows` +
+  `dependency_overrides` (ADR-017). Ревью №3 оставило не блокирующие
+  комментарии: R02-014 (MINOR, сводка экрана финансов смешивает валюты) и
+  R02-015 (NIT, повторный error-лог при сбое отметки напоминания).
   Локально: analyze 0, test **77/77**, Windows debug build success (2026-10-24);
   CI runs `39919792561`, `39920666645`, `39931858624`, `40091767297`,
-  `40095276919` — **success** (проверено через `gh`).
+  `40095276919`, `40095857001` — **success** (проверено через `gh`).
 - Снимок состояния: [context.md](context.md)
-- Ревью stage-02: исторические вердикты **FAIL** (ревью и повторное №2):
-  critical 0, major 1, minor 2, nit 2; см.
-  [reviews/stage-02-review.md](reviews/stage-02-review.md); исправления
-  R02-001…R02-008 —
+- Ревью stage-02: актуальный вердикт **PASS WITH COMMENTS** (ревью №3,
+  critical 0, major 0, minor 1, nit 1); исторические **FAIL** — ревью и
+  повторное №2; см. [reviews/stage-02-review.md](reviews/stage-02-review.md).
+  Исправления R02-001…R02-008 —
   [reviews/stage-02-review-results.md](reviews/stage-02-review-results.md),
   R02-009…R02-013 —
   [reviews/stage-02-fix-results.md](reviews/stage-02-fix-results.md)
-- Реестр техдолга: [tech-debt.md](tech-debt.md) — открытых позиций 0,
-  принятых 15, исправлено 36 (включая R02-001…R02-013, TD-27)
+- Реестр техдолга: [tech-debt.md](tech-debt.md) — открытых TD 0,
+  принятых 15, исправлено 36 (включая R02-001…R02-013, TD-27); плюс два
+  не блокирующих комментария ревью №3 — R02-014 (MINOR) и R02-015 (NIT)
 
 ## Процесс
 - Исходные промпты (в корне репозитория): PROMPT.md (ТЗ), STAGE_ONE.md (этап 0),
@@ -33,10 +37,10 @@
 ## Отчёты по этапам
 - [stage-00](stages/stage-00.md) — каркас (done, PASS WITH COMMENTS)
 - [stage-01](stages/stage-01.md) — ядро данных (done, CI зелёный)
-- [stage-02](stages/stage-02.md) — UX-каркас (done с исправлениями R02;
-  локальные проверки 77/77, Windows smoke, ручной сценарий занятой комбинации
-  и 5 CI-run подтверждены; ожидается ревью №3)
-- stage-03 — LLM-слой (следующий, после вердикта stage-02 без MAJOR)
+- [stage-02](stages/stage-02.md) — UX-каркас (done; **PASS WITH COMMENTS**,
+  ревью №3: 0 MAJOR, R02-014/R02-015 — не блокирующие комментарии; локальные
+  проверки 77/77, Windows smoke и 6 CI-run подтверждены)
+- stage-03 — LLM-слой (следующий; stage-02 разблокирован)
 
 ## Шаблоны
 - [decisions.template.md](decisions.template.md) — формат ADR
@@ -52,10 +56,11 @@
 - [stage-00-review-results](reviews/stage-00-review-results.md) — краткие
   результаты повторного ревью №2 и задачи для agent-1 (2026-10-22)
 - Ревью stage-01 — не проводилось.
-- [stage-02-review](reviews/stage-02-review.md) — **FAIL** (2026-10-23,
-  agent-2); critical 0, major 2 (R02-001/R02-002), minor 6. Повторное ревью №2
-  (2026-10-24, agent-2) — **FAIL**: R02-001…R02-008 закрыты, открыты R02-009
-  (MAJOR), R02-010/R02-011 (MINOR), R02-012/R02-013 (NIT).
+- [stage-02-review](reviews/stage-02-review.md) — **PASS WITH COMMENTS**
+  (повторное ревью №3, 2026-10-24, agent-2): critical 0, major 0, minor 1
+  (R02-014), nit 1 (R02-015); R02-009…R02-013 закрыты. Исторические ревью:
+  **FAIL** (2026-10-23; 2 MAJOR), повторное №2 (2026-10-24; 1 MAJOR R02-009,
+  2 MINOR, 2 NIT).
 - [stage-02-review-results](reviews/stage-02-review-results.md) — self-check
   agent-1: все R02-001…R02-008 исправлены, тесты 69/69, smoke из каталога
   `.exe`; фактические результаты проверены в повторном ревью №2.
@@ -65,7 +70,7 @@
 - [stage-02-fix-results](reviews/stage-02-fix-results.md) — self-check agent-1
   по R02-009…R02-013 (2026-10-24): вариант A, backoff, валюты, refresh, лог;
   analyze 0, test 77/77, build success, ручной сценарий занятой комбинации;
-  это не вердикт — ревью №3 ожидается.
+  ревью №3 подтвердило исправления и дало **PASS WITH COMMENTS**.
 
 ## Решения
 - [decisions.md](decisions.md) — все ADR

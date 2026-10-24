@@ -1,8 +1,9 @@
 # Review: Stage-02
 
-> **Актуальный вердикт — в конце файла:** «Повторное ревью №2 (2026-10-24)» —
-> **FAIL** (critical 0, major 1, minor 2, nit 2), блокер stage-03 — R02-009.
-> Раздел ниже — историческое ревью от 2026-10-23 (состояние `296970b`).
+> **Актуальный вердикт — в конце файла:** «Повторное ревью №3 (2026-10-24)» —
+> **PASS WITH COMMENTS** (critical 0, major 0, minor 1, nit 1); R02-009 закрыт,
+> stage-03 не блокируется. Разделы ниже — исторические ревью (состояние
+> `296970b` и повторное №2).
 
 - Дата (UTC): 2026-10-23 08:40
 - Ревьюер: agent-2 (DeepSeek V4.1 Flash Free, OpenCode)
@@ -771,3 +772,162 @@
   быстрым вводом.
 - `pubspec.lock` согласован (`--enforce-lockfile` OK); CI зелёный на всех
   проверенных коммитах; дерево чистое.
+
+---
+
+## Повторное ревью №3 (2026-10-24)
+
+- **Дата (UTC):** 2026-10-24 13:15
+- **Ревьюер:** agent-2 (DeepSeek V4.1 Flash Free, OpenCode)
+- **Проверяемый коммит:** `master` @ `07fa5b9` (`a50d972` — R02-009/010,
+  `92a9642` — R02-011…013, `07fa5b9` — документация); `origin/master` совпадает.
+- **Метод:** чтение diff `2c591a8..07fa5b9`, кода и тестов, ADR-017, TD-27,
+  `stage-02.md`, `stage-02-fix-results.md`; независимые `flutter pub get
+  --enforce-lockfile`, `analyze --fatal-infos`, `test`, `build windows --debug`,
+  `gen-l10n`; проверка состава DLL и `.flutter-plugins-dependencies`; `gh run
+  view`; независимый запуск busy/free-сценария через
+  `tool/occupy_hotkey.ps1`; `git status/diff --check`.
+- **Ограничение среды:** GUI-клик «занять комбинацию и выбрать её в настройках»
+  с визуальной проверкой SnackBar не автоматизирован. Startup-сценарий занятой
+  комбинации и возврат свободной комбинации воспроизведены на этой машине.
+
+### Итог
+
+- **Вердикт: PASS WITH COMMENTS**
+- Находки: critical **0**, major **0**, minor **1** (R02-014), nit **1**
+  (R02-015).
+- R02-009…R02-013 закрыты. Блокеров stage-03 нет; оба комментария
+  ниже не блокируют LLM-слой и могут быть закрыты отдельным коммитом.
+- Ручной GUI-шаг для R02-009 остаётся обязательным перед релизной проверкой
+  (см. чек-лист stage-02, п. 6).
+
+### R02-009 — занятая глобальная комбинация: подтверждено
+
+- В `third_party/hotkey_manager_windows/windows/hotkey_manager_windows_plugin.cpp`
+  (строки 104-119) результат `::RegisterHotKey` проверяется; при `FALSE`
+  возвращается `result->Error("hotkey_busy", …)` с `GetLastError()` и `return`
+  **до** вставки в `hotkey_id_map_`. Патч минимален, `LICENSE` upstream сохранён.
+- `pubspec.yaml` содержит `dependency_overrides: hotkey_manager_windows: path:
+  third_party/hotkey_manager_windows`; `.flutter-plugins-dependencies` указывает
+  на этот каталог, а в собранной
+  `build/windows/x64/runner/Debug/hotkey_manager_windows_plugin.dll` найдена
+  строка `hotkey_busy`. То есть проверялась именно пропатченная DLL, а не
+  версия из pub-кэша.
+- `DesktopServices.applyHotkeyBinding` действительно ловит `PlatformException`,
+  снимает новую комбинацию, повторно регистрирует предыдущую и возвращает
+  `false`; `SettingsController.setQuickHotkey` откатывает состояние и возвращает
+  `false`, а экран настроек показывает локализованный `hotkeyBusyError`. Это
+  подтверждено `test/desktop_services_test.dart` и
+  `test/settings_controller_test.dart`; сам SnackBar в widget-тесте не
+  проверялся.
+- Независимый запуск: `tool/occupy_hotkey.ps1` занял `Ctrl+Alt+B`, приложение
+  осталось живо и залогировало
+  `PlatformException(hotkey_busy, RegisterHotKey failed: the shortcut is
+  already in use, 1409, null)`; после остановки helper'а повторный запуск
+  залогировал успешную регистрацию `Ctrl + Alt + B`. Сырые логи этого прогона —
+  `build/review_busy_out.txt` и `build/review_free_out.txt` (`build/` вне git).
+- **Что не проверено вручную:** смена комбинации через настройки с занятой
+  комбинацией и появление SnackBar `hotkeyBusyError`. Код этой ветки не менялся
+  в проходе и покрыт unit-тестом контроллера, но для полного соответствия
+  критерию R02-009 нужен один ручной клик по чек-листу.
+
+### R02-010 — backoff и повтор только отметки
+
+- Реализованы задержки 30 с → 1 мин → 5 мин → 15 мин на задачу, состояние
+  (`failures`, `nextAttemptAt`, `shown`) сбрасывается при успешной отметке и
+  изменении `remind_at`; после успешного `show()` при сбое
+  `markReminderSent` повторяется только отметка.
+- Тест `test/reminder_scheduler_test.dart` проверяет интервалы на fake clock и
+  отсутствие второго toast. Замечание по логу — R02-015 ниже.
+
+### R02-011 — валюта на дашборде
+
+- `FinanceDraft.defaultCurrency` — единый источник (`RUB`); `summary` получает
+  `currency`, карточка подписана `financeAmountWithCurrency` («Доход · RUB»);
+  тест с RUB/USD подтверждает, что USD не попадает в сумму. Замечание по
+  экрану финансов — R02-014 ниже.
+
+### R02-012/R02-013
+
+- `_reload()` возвращает `Future<void>`, `RefreshIndicator.onRefresh` ждёт её;
+  widget-тест с `Completer` подтверждает, что индикатор не завершается раньше
+  загрузки.
+- Лог в `main.dart` заменён на «Second Brain: приложение запущено»; в логах/UI
+  «этап 0» больше не встречается. В двух doc-комментариях (`settings_screen.dart`,
+  `placeholder_section_screen.dart`) слово «этап 0» осталось, но это не UI и не
+  лог, поэтому R02-013 не переоткрывается.
+
+### Новые комментарии (не блокируют stage-03)
+
+#### [MINOR] R02-014: сводка на экране финансов по-прежнему смешивает валюты
+
+- **Где:** `lib/features/finance/presentation/finance_screen.dart:26-30`
+  (`repo.summary()` без `currency`), `:149-180` (`_SummaryCard` без подписи
+  валюты).
+- **Что не так:** R02-011 исправил дашборд, но на самом экране финансов
+  «Доход/Расход/Баланс» по-прежнему суммируют все валюты. При 100 RUB + 100 USD
+  карточка покажет 200.00 без указания валюты.
+- **Ожидаемое:** та же валюта по умолчанию, что и на дашборде, либо разбивка
+  по валютам; подпись валюты обязательна.
+- **Предложение:** передать `currency: FinanceDraft.defaultCurrency` в
+  `summary()` и использовать `financeAmountWithCurrency` (или сделать
+  группировку по валютам); добавить widget/unit-тест с двумя валютами.
+- **Статус:** open (comment, MINOR). Не блокирует stage-03.
+
+#### [NIT] R02-015: сбой отметки напоминания логируется на каждом retry
+
+- **Где:** `lib/features/reminders/application/reminder_scheduler.dart:163-169`.
+- **Что не так:** при `markReminderSent → Failure` вызывается
+  `AppLogger.appError(error)` на каждой попытке, включая повторы каждые 15
+  минут. `_scheduleRetry` аккуратно ограничивает warning, но error-лог этого
+  ограничения не имеет; обещание «лог без спама» из R02-010 выполняется не
+  полностью.
+- **Предложение:** логировать `appError` только при `attempt.failures == 0`
+  (или при смене интервала), как в `_scheduleRetry`; при желании добавить тест
+  на количество логов.
+- **Статус:** open (comment, NIT). Не блокирует stage-03.
+
+### Независимые проверки
+
+| Проверка | Результат |
+|----------|-----------|
+| `flutter pub get --enforce-lockfile` | OK; `hotkey_manager_windows 0.2.0 from path third_party\...` |
+| `flutter analyze --fatal-infos` | **No issues found!** |
+| `flutter test` | **77/77**, All tests passed |
+| `flutter build windows --debug` | **success**; `build\windows\x64\runner\Debug\second_brain.exe` |
+| `flutter gen-l10n` | без дрейфа; 128 message keys в RU/EN (+ `@@locale`); `git status` чист |
+| DLL | `hotkey_manager_windows_plugin.dll` содержит `hotkey_busy` |
+| Busy-сценарий | `PlatformException(hotkey_busy, …, 1409)`; процесс жив |
+| Free-сценарий | `горячая клавиша Ctrl + Alt + B зарегистрирована` |
+| CI `40095276919` (`92a9642`) | success; `analyze-and-test` + `build-windows` |
+| CI `40095857001` (`07fa5b9`) | success; `analyze-and-test` + `build-windows` |
+| `git status --short` | пусто; `git diff --check` без ошибок |
+
+### Документация
+
+- ADR-017, TD-27, `stage-02.md`, `context.md`, `INDEX.md`,
+  `stage-02-fix-results.md` соответствуют коду; TD-27 переведён в `fixed`.
+- В отчёте разработчика и двух живых документах было указано «129 ключей»
+  локализации. Фактически в ARB **128** message-ключей (плюс `@@locale`);
+  в живых документах счёт исправлен на 128. На вердикт это не влияет.
+- Секретов в индексе нет; `.env` исключён, в репозитории только
+  `.env.example`; дерево чистое.
+
+### Что подтверждено положительно
+
+- R02-009 закрыт по коду, unit-тестам и независимому Windows-smoke; вендорный
+  патч действительно попадает в сборку.
+- R02-010/R02-011/R02-012/R02-013 закрыты, regression-тесты осмысленные
+  (fake clock, две валюты, gated repository, controller failure).
+- `analyze`/`test`/`build`/CI воспроизводятся; документация в основном точная
+  и честно отмечает, что GUI-шаг не прокликан.
+
+### Рекомендации
+
+1. Перед релизной проверкой stage-02 вручную пройти п. 6 чек-листа: занять
+   `Ctrl+Alt+B`, выбрать её в настройках, увидеть `hotkeyBusyError`, убедиться
+   в откате; после освобождения — успешная регистрация.
+2. R02-014 и R02-015 закрыть отдельным небольшим коммитом (или зафиксировать
+   как TD), они не блокируют stage-03.
+3. При обновлении `hotkey_manager` заново сверить вендорный патч с новой
+   версией `hotkey_manager_windows` (ADR-017) и повторить busy-smoke.

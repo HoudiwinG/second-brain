@@ -393,7 +393,7 @@ toast визуально не проверялись.
 
 Проверки: `flutter pub get --enforce-lockfile` — OK; `flutter analyze
 --fatal-infos` — 0 issues; `flutter test` — **77/77**; `flutter build windows
---debug` — success; `gen-l10n` без дрейфа (RU/EN по 129 ключей). CI run
+--debug` — success; `gen-l10n` без дрейфа (128 message-ключей в RU/EN + `@@locale`). CI run
 `40095276919` (`92a9642`) — **success** (оба job'а). Промежуточный `a50d972`
 отдельного прогона не сохранил: его отменил следующий push через
 `concurrency`.
@@ -405,7 +405,7 @@ toast визуально не проверялись.
 | 2026-10-24 12:20| 2    | R02-011 | исправлено| agent-1 | 92a9642 | `FinanceDraft.defaultCurrency` (RUB) как единый источник; `summary(currency:)`; валюта в подписи ячейки; тест с двумя валютами |
 | 2026-10-24 12:20| 2    | R02-012 | исправлено| agent-1 | 92a9642 | `_reload()` → `Future<void>`; `RefreshIndicator` ждёт загрузку; widget-тест |
 | 2026-10-24 12:20| 2    | R02-013 | исправлено| agent-1 | 92a9642 | лог «этап 0 — каркас» → «Second Brain: приложение запущено» |
-| 2026-10-24 12:20| 2    | —       | проверено| agent-1 | 92a9642 | analyze 0, test 77/77, build windows success, CI `40095276919` success; вердикт ревью №3 ещё не вынесен |
+| 2026-10-24 12:20| 2    | —       | проверено| agent-1 | 92a9642 | analyze 0, test 77/77, build windows success, CI `40095276919` success; позже ревью №3: PASS WITH COMMENTS |
 
 ### Ручная проверка занятой комбинации (2026-10-24)
 
@@ -428,3 +428,38 @@ toast визуально не проверялись.
 - **Патч зависимости фиксировать ADR и PATCH.md, а не только кодом.** При
   обновлении upstream патч нужно перепроверить; `dependency_overrides`
   временный по своей природе.
+
+## Повторное ревью №3 stage-02 (2026-10-24)
+
+Состояние: `master` @ `07fa5b9` (`a50d972`, `92a9642`, `07fa5b9`); дерево
+чистое. Вердикт — **PASS WITH COMMENTS** (critical 0, major 0, minor 1,
+nit 1); stage-03 разблокирован.
+
+Проверки ревьюера: `flutter pub get --enforce-lockfile` — OK; `flutter
+analyze --fatal-infos` — 0; `flutter test` — **77/77**; `flutter build windows
+--debug` — success; `gen-l10n` без дрейфа (128 message-ключей + `@@locale`);
+CI `40095276919` (`92a9642`) и `40095857001` (`07fa5b9`) — success (оба job'а).
+В собранной `hotkey_manager_windows_plugin.dll` найдена строка `hotkey_busy`;
+`.flutter-plugins-dependencies` указывает на `third_party/hotkey_manager_windows`.
+
+Независимый busy/free-smoke: helper занял `Ctrl+Alt+B`; приложение осталось
+живо и залогировало `PlatformException(hotkey_busy, …, 1409, null)`; после
+остановки helper'а комбинация зарегистрировалась. GUI-клик смены комбинации
+и SnackBar `hotkeyBusyError` не автоматизирован — остаётся ручным шагом.
+
+| Timestamp (UTC) | Этап | ID      | Действие | Кто     | Коммит  | Примечание |
+|-----------------|------|---------|----------|---------|---------|------------|
+| 2026-10-24 13:15| 2    | R02-009…013 | проверено | agent-2 | 07fa5b9 | все пять находок подтверждены; R02-009 — DLL, path-override и busy/free-smoke; GUI-клик остаётся ручным |
+| 2026-10-24 13:15| 2    | R02-014 | найдено  | agent-2 | 07fa5b9 | **MINOR:** `finance_screen.dart:29` вызывает `summary()` без валюты; сводка экрана финансов смешивает RUB/USD (дашборд исправлен) |
+| 2026-10-24 13:15| 2    | R02-015 | найдено  | agent-2 | 07fa5b9 | **NIT:** `reminder_scheduler.dart:163-169` логирует `appError` на каждом retry сбоя отметки; warning ограничен, error-лог — нет |
+| 2026-10-24 13:15| 2    | —       | вердикт  | agent-2 | 07fa5b9 | **PASS WITH COMMENTS**: critical 0, major 0, minor 1, nit 1; R02-014/R02-015 не блокируют stage-03 |
+
+### Дополнение к паттернам ошибок (2026-10-24, ревью №3)
+
+- **Исправление «в одном месте» проверять по всему классу экранов.** R02-011
+  закрыл дашборд, но такой же `summary()` без валюты остался на экране
+  финансов (R02-014). Правило: искать все вызовы изменённого API, а не только
+  место из находки.
+- **Ограничение логов должно покрывать все ветки.** Backoff ограничил warning,
+  но `appError` в `_markOnly` остался без ограничения (R02-015). Правило:
+  проверять, что каждый лог в retry-пути подчиняется той же политике.

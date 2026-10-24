@@ -1,31 +1,37 @@
 # Контекст проекта (снимок состояния)
 
-- **Текущий этап:** stage-02 (UX-каркас)
-- **Статус:** **исправления по повторному ревью №2 внесены, ожидается ревью
-  №3**. R02-001…R02-013 закрыты в коде, тестах и документации; открытых MAJOR
-  нет. Вердикт выносит только ревьюер. Для R02-009 выбран вариант A —
-  вендорный патч `hotkey_manager_windows` + `dependency_overrides` (ADR-017).
+- **Текущий этап:** stage-02 (UX-каркас) завершён — **PASS WITH COMMENTS**
+  (ревью №3); следующий — stage-03 (LLM-слой)
+- **Статус:** R02-001…R02-013 закрыты; открытых MAJOR/CRITICAL нет.
+  Ревью №3: **PASS WITH COMMENTS**, minor 1 (R02-014 — сводка экрана финансов
+  всё ещё смешивает валюты), nit 1 (R02-015 — error-лог при повторных сбоях
+  отметки напоминания); оба комментария не блокируют stage-03. Для R02-009
+  выбран вариант A — вендорный патч `hotkey_manager_windows` +
+  `dependency_overrides` (ADR-017); busy-сценарий при старте воспроизведён,
+  GUI-клик со SnackBar остаётся ручным шагом.
   Локально: analyze 0, test **77/77**, Windows debug build success; CI runs
   [39919792561](https://github.com/HoudiwinG/second-brain/actions/runs/39919792561),
   [39920666645](https://github.com/HoudiwinG/second-brain/actions/runs/39920666645),
   [39931858624](https://github.com/HoudiwinG/second-brain/actions/runs/39931858624),
   [40091767297](https://github.com/HoudiwinG/second-brain/actions/runs/40091767297),
-  [40095276919](https://github.com/HoudiwinG/second-brain/actions/runs/40095276919)
+  [40095276919](https://github.com/HoudiwinG/second-brain/actions/runs/40095276919),
+  [40095857001](https://github.com/HoudiwinG/second-brain/actions/runs/40095857001)
   — **success** (проверено через `gh`).
 - **Последний закрытый этап:** stage-01 (ядро данных) — **done**, CI run
   [39763804171](https://github.com/HoudiwinG/second-brain/actions/runs/39763804171)
   — success; ревью stage-01 не проводилось.
 - **Текущий отчёт:** [stages/stage-02.md](stages/stage-02.md)
 - **Текущее ревью:** [reviews/stage-02-review.md](reviews/stage-02-review.md) —
-  исторические вердикты **FAIL** (ревью и повторное №2); результаты
-  исправлений R02-001…R02-008 —
+  актуальный вердикт **PASS WITH COMMENTS** (ревью №3, 2026-10-24); исторические
+  вердикты **FAIL** (ревью и повторное №2). Результаты исправлений
+  R02-001…R02-008 —
   [reviews/stage-02-review-results.md](reviews/stage-02-review-results.md),
   R02-009…R02-013 —
-  [reviews/stage-02-fix-results.md](reviews/stage-02-fix-results.md). Ревью №3
-  ещё не проводилось.
+  [reviews/stage-02-fix-results.md](reviews/stage-02-fix-results.md).
 - **Открытых CRITICAL:** 0
-- **Открытых MAJOR:** 0. TD-21 — отдельное принятое ограничение `REAL` для
-  финансов.
+- **Открытых MAJOR:** 0; **MINOR:** 1 (R02-014, экран финансов);
+  **NIT:** 1 (R02-015, лог retry). TD-21 — отдельное принятое ограничение
+  `REAL` для финансов.
 - **Сборка:** `flutter analyze --fatal-infos` — 0 issues;
   `flutter test` — **77/77**; `flutter build windows --debug` — **success**
   (2026-10-24, локально, `build\windows\x64\runner\Debug\second_brain.exe`)
@@ -35,9 +41,10 @@
   замечаний. Android: cmdline-tools 23.0 + `JAVA_HOME` → Android Studio JBR.
   До 2026-10-24 VS на этой машине отсутствовал: записи о «локальной сборке»
   от 2026-10-22 относились к другому ПК (см. `docs/debug/log.md`).
-- **Ветка:** `master`; код исправлений ревью №2 — `a50d972` и `92a9642`;
-  исправления первого ревью — `8956179`; базовая реализация stage-02 —
-  `82b04a2`; HEAD до stage-02 — `6faeb90`.
+- **Ветка:** `master`; проверенный код — `07fa5b9`, документация ревью №3 —
+  следующий коммит после него; код исправлений ревью №2 — `a50d972` и
+  `92a9642`; исправления первого ревью — `8956179`; базовая реализация
+  stage-02 — `82b04a2`; HEAD до stage-02 — `6faeb90`.
 
 ## Активные фича-флаги
 - experimental.llmChat = true (заготовка, не используется)
@@ -149,8 +156,10 @@
 
 ## Известные ограничения / принятый техдолг
 - **R02-009…R02-013 — fixed** (2026-10-24, `a50d972`/`92a9642`); отчёт:
-  [reviews/stage-02-fix-results.md](reviews/stage-02-fix-results.md). Открытых
-  MAJOR/MINOR по ревью stage-02 нет; вердикт — за ревьюером (ревью №3).
+  [reviews/stage-02-fix-results.md](reviews/stage-02-fix-results.md).
+  Ревью №3 — **PASS WITH COMMENTS**: MAJOR нет; R02-014 (MINOR, сводка экрана
+  финансов всё ещё смешивает валюты) и R02-015 (NIT, повторный error-лог при
+  сбое `markReminderSent`) не блокируют stage-03.
 - TD-15 (хоткей не настраивался) — **fixed** на stage-02 (ADR-016, ADR-017).
 - TD-27 (занятая комбинация не обнаруживалась) — **fixed** (ADR-017).
 - TD-21 (MAJOR, accepted): сумма финансов — `REAL`/`double`, возможны
@@ -167,14 +176,16 @@
 - DST-переход (23/25-часовые сутки) локально не воспроизводился; тест
   `dashboard_period_test.dart` проверяет календарную семантику границ.
 - Повторное ревью stage-02 №2 (2026-10-24): **FAIL**; все пять находок
-  исправлены, ожидается ревью №3.
+  исправлены. Ревью №3 (2026-10-24): **PASS WITH COMMENTS**; stage-03
+  разблокирован.
 
 ## Ближайшие задачи (stage-03 «LLM-слой»)
-- **Сначала** получить вердикт ревью №3 по stage-02 без открытых MAJOR.
-  Stage-03 не начинать до этого.
-- Ревьюеру: проверить вендорный патч и ручной сценарий занятой комбинации,
-  backoff/тесты, фильтр валют, `RefreshIndicator`, текст лога и соответствие
-  документации.
+- Вердикт ревью №3 получен: **PASS WITH COMMENTS**, открытых MAJOR нет;
+  stage-03 можно начинать. R02-014/R02-015 — не блокирующие комментарии.
+- Перед релизной проверкой вручную пройти п. 6 чек-листа stage-02 (занятая
+  комбинация + SnackBar `hotkeyBusyError`).
+- Ревьюеру в stage-03: следить, чтобы `is_private_for_llm` и секреты не попадали
+  в LLM-контекст; проверить стриминг и tool-вызовы.
 - Провайдеры LLM, чат, стриминг, privacy guard и tool-вызовы по `PROMPT.md`.
 - Не отправлять в LLM записи с `is_private_for_llm = true`.
 - Решить TD-21 перед финансовой аналитикой/бюджетами.
@@ -200,7 +211,8 @@
 - agent-1: DeepSeek V4.1 Flash Free (OpenCode), ветка master
 - agent-2: ревью stage-00 — **PASS WITH COMMENTS**; ревью stage-02 —
   **FAIL** (2 MAJOR, 6 MINOR); повторное ревью №2 (2026-10-24) — **FAIL**
-  (1 MAJOR R02-009, 2 MINOR, 2 NIT); исправления внесены, ревью №3 ожидается;
+  (1 MAJOR R02-009, 2 MINOR, 2 NIT); повторное ревью №3 (2026-10-24) —
+  **PASS WITH COMMENTS** (0 MAJOR, 1 MINOR R02-014, 1 NIT R02-015);
   ревью stage-01 не проводилось.
 
 ## Ссылки
