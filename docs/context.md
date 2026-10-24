@@ -1,24 +1,28 @@
 # Контекст проекта (снимок состояния)
 
 - **Текущий этап:** stage-02 (UX-каркас)
-- **Статус:** исходное ревью — **FAIL** (2 MAJOR, 6 MINOR), но все находки
-  R02-001…R02-008 исправлены в коде-коммите `8956179`. Локальные проверки
-  зелёные; Windows smoke из каталога `.exe` подтвердил close-to-tray при
-  доступной иконке. Ожидается повторное ревью без MAJOR; stage-03 остаётся
-  заблокированным до него. CI stage-02:
-  [run 39919792561](https://github.com/HoudiwinG/second-brain/actions/runs/39919792561)
-  для `82b04a2` заявлен **success** (`analyze-and-test`, `build-windows`),
-  независимо не проверен (private repo); CI для `8956179` — после push.
+- **Статус:** **повторное ревью №2 (2026-10-24) — FAIL** (critical 0, major 1,
+  minor 2, nit 2). R02-001…R02-008 закрыты и проверены независимо; открыт
+  **R02-009 (MAJOR)** — занятая глобальная комбинация не обнаруживается на
+  Windows, откат недостижим (`hotkey_manager_windows 0.2.0` игнорирует
+  результат `RegisterHotKey`). Stage-03 заблокирован до закрытия R02-009 или
+  официального принятия его как TD-27 с переформулировкой критерия.
+  Локально: analyze 0, test 69/69, Windows debug build success; CI runs
+  [39919792561](https://github.com/HoudiwinG/second-brain/actions/runs/39919792561),
+  [39920666645](https://github.com/HoudiwinG/second-brain/actions/runs/39920666645),
+  [39931858624](https://github.com/HoudiwinG/second-brain/actions/runs/39931858624),
+  [40091767297](https://github.com/HoudiwinG/second-brain/actions/runs/40091767297)
+  — **success** (проверено через `gh`).
 - **Последний закрытый этап:** stage-01 (ядро данных) — **done**, CI run
   [39763804171](https://github.com/HoudiwinG/second-brain/actions/runs/39763804171)
-  заявлен success; ревью stage-01 не проводилось.
+  — success; ревью stage-01 не проводилось.
 - **Текущий отчёт:** [stages/stage-02.md](stages/stage-02.md)
-- **Текущее ревью:** [reviews/stage-02-review.md](reviews/stage-02-review.md)
-  (исторический вердикт **FAIL**) + результаты исправлений:
+- **Текущее ревью:** [reviews/stage-02-review.md](reviews/stage-02-review.md) —
+  исторический вердикт **FAIL**, актуальный (повторное ревью №2) — **FAIL**;
+  результаты исправлений:
   [reviews/stage-02-review-results.md](reviews/stage-02-review-results.md)
 - **Открытых CRITICAL:** 0
-- **Открытых MAJOR:** 0 по исправлениям (R02-001/R02-002 закрыты
-  self-check'ом; формальный вердикт ждёт повторного ревью). TD-21 — отдельное
+- **Открытых MAJOR:** 1 — R02-009 (горячая клавиша). TD-21 — отдельное
   принятое ограничение `REAL` для финансов.
 - **Сборка:** `flutter analyze --fatal-infos` — 0 issues;
   `flutter test` — **69/69**; `flutter build windows --debug` — **success**
@@ -73,11 +77,14 @@
   `Ctrl+Alt+B`; запись через `HotkeyRecorderDialog`, сохранение и откат в
   `SettingsController`. На старте apply ожидается; при `false` применяется и
   сохраняется default, UI показывает фактическую комбинацию; early return при
-  совпадении state удалён (R02-003 fixed).
+  совпадении state удалён (R02-003 fixed). **Ограничение:** на Windows applier
+  не может вернуть `false` — плагин всегда сообщает об успехе, поэтому откат
+  при занятой комбинации недостижим (**R02-009 MAJOR, open**).
 - `ReminderScheduler` проверяет БД сразу и раз в 30 секунд; Windows toast через
   `local_notifier` 0.1.6 (WinToast), на других платформах no-op. `show`
   возвращает `bool`; `reminder_sent_at` ставится только при успехе, иначе
-  повтор на следующем тике (R02-002 fixed).
+  повтор на следующем тике (R02-002 fixed). Повторы без backoff — R02-010
+  (MINOR, open).
 - В редакторе задач — выбор даты/времени напоминания и чип в карточке.
 
 ### Локализация
@@ -100,8 +107,31 @@
   (иконка может быть скрыта в overflow Windows); smoke не является
   независимым подтверждением (см. review).
 
+### Независимый Windows-smoke ревьюера (2026-10-24, agent-2)
+- `.exe` запущен из `build\windows\x64\runner\Debug`; окно открылось.
+- В рабочую БД добавлена задача с `remind_at` в прошлом: планировщик записал
+  `reminder_sent_at`, через 40 с (следующий тик) значение не изменилось —
+  повторной отметки/показа нет; WinToast инициализировался без ошибок.
+- `taskkill /PID` без `/F` (WM_CLOSE): процесс жив, `IsWindowVisible = false`
+  — close-to-tray работает и косвенно подтверждает, что трей поднят
+  (`_trayReady == true`, иначе приложение завершилось бы).
+- Меню/иконка трея и сам toast визуально не проверялись; физическое нажатие
+  хоткея не эмулировалось.
+
 ## Известные ограничения / принятый техдолг
-- TD-15 (хоткей не настраивался) — **fixed** на stage-02 (ADR-016).
+- **R02-009 (MAJOR, open):** на Windows занятая глобальная комбинация не
+  обнаруживается (`hotkey_manager_windows 0.2.0` игнорирует результат
+  `RegisterHotKey`), откат при занятости недостижим; UI показывает комбинацию
+  как активную. Кандидат в TD-27, если решено принять ограничение.
+- **R02-010 (MINOR, open):** повторные неудачи toast не имеют backoff —
+  попытка и warning каждые 30 с; при сбое `markReminderSent` возможен повтор
+  toast.
+- **R02-011 (MINOR, open):** сводка финансов на дашборде суммирует разные
+  валюты (репозиторий поддерживает `currency`, дашборд его не передаёт).
+- **R02-012/R02-013 (NIT, open):** `RefreshIndicator` завершается до загрузки;
+  устаревший лог «этап 0 — каркас» в `main.dart`.
+- TD-15 (хоткей не настраивался) — **fixed** на stage-02 (ADR-016), с
+  оговоркой R02-009.
 - TD-21 (MAJOR, accepted): сумма финансов — `REAL`/`double`, возможны
   погрешности; триггер — бюджеты/аналитика.
 - TD-22 (MINOR, accepted): нет `User`, вложений, learning/chat-таблиц.
@@ -115,12 +145,14 @@
   CI (шум на legacy-файлах).
 - DST-переход (23/25-часовые сутки) локально не воспроизводился; тест
   `dashboard_period_test.dart` проверяет календарную семантику границ.
-- Повторное ревью stage-02 после исправлений R02 ещё не проводилось.
+- Повторное ревью stage-02 №2 проведено 2026-10-24: **FAIL**, блокер
+  stage-03 — R02-009.
 
 ## Ближайшие задачи (stage-03 «LLM-слой»)
-- **Сначала** получить повторное ревью stage-02 без MAJOR: все находки
-  R02-001…R02-008 исправлены, но независимого вердикта ещё нет. Stage-03 не
+- **Сначала** закрыть R02-009 или официально принять его как TD-27 с
+  переформулировкой критерия и получить вердикт без открытых MAJOR. Stage-03 не
   начинать до этого.
+- Закрыть R02-010…R02-013 вместе с ближайшими правками.
 - Провайдеры LLM, чат, стриминг, privacy guard и tool-вызовы по `PROMPT.md`.
 - Не отправлять в LLM записи с `is_private_for_llm = true`.
 - Решить TD-21 перед финансовой аналитикой/бюджетами.
@@ -143,8 +175,8 @@
 ## Активный агент
 - agent-1: DeepSeek V4.1 Flash Free (OpenCode), ветка master
 - agent-2: ревью stage-00 — **PASS WITH COMMENTS**; ревью stage-02 —
-  **FAIL** (2 MAJOR, 6 MINOR); agent-1 исправил все 8 находок, ожидается
-  повторное ревью; ревью stage-01 не проводилось.
+  **FAIL** (2 MAJOR, 6 MINOR); повторное ревью №2 (2026-10-24) — **FAIL**
+  (1 MAJOR R02-009, 2 MINOR, 2 NIT); ревью stage-01 не проводилось.
 
 ## Ссылки
 - Отчёт stage-02: [stages/stage-02.md](stages/stage-02.md)
@@ -162,10 +194,15 @@
 - Удалённый: **https://github.com/HoudiwinG/second-brain** (приватный), ветка master
 - HEAD до stage-02: `6faeb90` (`fix(stage-01): убрать overflow бокового rail
   при низком окне`).
-- Stage-02: `82b04a2`; исправления ревью — `8956179`. CI run
+- Stage-02: `82b04a2`; исправления ревью — `8956179`. CI runs stage-02:
   [39919792561](https://github.com/HoudiwinG/second-brain/actions/runs/39919792561)
-  для базовой реализации — **success** (`analyze-and-test`, `build-windows`);
-  CI для `8956179` проверяется после push.
+  (`82b04a2`),
+  [39920666645](https://github.com/HoudiwinG/second-brain/actions/runs/39920666645)
+  (`296970b`),
+  [39931858624](https://github.com/HoudiwinG/second-brain/actions/runs/39931858624)
+  (`e8c6005`, включает `8956179`),
+  [40091767297](https://github.com/HoudiwinG/second-brain/actions/runs/40091767297)
+  (`f9511c0`) — все **success** (проверено `gh run list`).
 - CI: GitHub Actions (`.github/workflows/ci.yml`) — pub get
   `--enforce-lockfile` + analyze + test (ubuntu) + test + build windows
   --debug (windows-latest).

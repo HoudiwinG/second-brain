@@ -14,7 +14,7 @@
 
 | Статус | Кол-во |
 |--------|--------|
-| open | 0 |
+| open | 1 |
 | fixed | 35 |
 | accepted | 15 |
 | pending | 0 |
@@ -23,17 +23,19 @@
 > (R02-001…R02-008). Все 8 находок исправлены agent-1 (код-коммит `8956179`);
 > источник: [reviews/stage-02-review.md](reviews/stage-02-review.md),
 > результаты: [reviews/stage-02-review-results.md](reviews/stage-02-review-results.md).
-> Повторное ревью ещё не проводилось.
+>
+> **Повторное ревью №2 (2026-10-24):** R02-001…R02-008 подтверждены как
+> закрытые; открыты R02-009 (MAJOR, хоткей), R02-010/R02-011 (MINOR),
+> R02-012/R02-013 (NIT). Вердикт — **FAIL**; stage-03 заблокирован до закрытия
+> R02-009 или его официального принятия как TD-27.
 
-Проверка после stage-02 (локально, Flutter 3.47.7):
+Проверка после stage-02 (независимо, 2026-10-24, Flutter 3.47.7):
 `flutter analyze --fatal-infos` → 0 issues; `flutter test` → 69/69;
-`flutter build windows --debug` → **success**. CI stage-02:
-[run 39919792561](https://github.com/HoudiwinG/second-brain/actions/runs/39919792561)
-для `82b04a2` — заявлен **success** (`analyze-and-test`, `build-windows`);
-независимо не проверен (private repo). CI для `8956179` проверяется после
-push. CI stage-01:
-[run 39763804171](https://github.com/HoudiwinG/second-brain/actions/runs/39763804171)
-— **success** (`analyze-and-test`, `build-windows`).
+`flutter build windows --debug` → **success**; `flutter pub get
+--enforce-lockfile` → OK; `gen-l10n` без дрейфа. CI runs `39919792561`
+(`82b04a2`), `39920666645` (`296970b`), `39931858624` (`e8c6005`, включает
+`8956179`), `40091767297` (`f9511c0`) — **success** (проверено `gh`). CI
+stage-01: run `39763804171` — success.
 
 ---
 
@@ -240,6 +242,9 @@ GitHub API: job'ы
   `HotKeyRecorder`. `SettingsController.setQuickHotkey` регистрирует новую
   комбинацию, сохраняет её и откатывает состояние/прежнюю регистрацию при
   ошибке. На не-Windows платформах applier — no-op.
+  **Ограничение (2026-10-24, R02-009/TD-27):** на Windows applier не может
+  вернуть `false`, поэтому откат при занятой комбинации недостижим; смена и
+  сохранение работают.
 - **Тесты:** `test/quick_hotkey_test.dart` (сериализация, валидация, equality);
   `test/settings_controller_test.dart` (успех и занятая комбинация).
 - **Статус:** fixed (ADR-016)
@@ -252,7 +257,8 @@ GitHub API: job'ы
 [reviews/stage-02-review.md](reviews/stage-02-review.md)). Agent-1 исправил все
 8 находок код-коммитом `8956179`; подробные доказательства —
 [reviews/stage-02-review-results.md](reviews/stage-02-review-results.md).
-Повторное ревью не проводилось.
+Повторное ревью №2 (2026-10-24) подтвердило закрытие всех восьми находок
+(код, тесты, независимый Windows-smoke).
 
 | ID | Критичность | Находка | Действие | Статус |
 |----|-------------|---------|----------|--------|
@@ -268,6 +274,38 @@ GitHub API: job'ы
 Локальные доказательства: `flutter analyze --fatal-infos` — 0 issues;
 `flutter test` — 69/69; `flutter build windows --debug` — success; smoke
 close-to-tray из каталога `.exe` — процесс остался жив после WM_CLOSE.
+
+## Открыто по повторному ревью №2 stage-02 (2026-10-24)
+
+| ID | Критичность | Находка | Статус |
+|----|-------------|---------|--------|
+| R02-009 | MAJOR | занятая глобальная комбинация не обнаруживается на Windows: плагин игнорирует результат `RegisterHotKey`, откат недостижим | open (TD-27) |
+| R02-010 | MINOR | повторные неудачи toast без backoff: попытка/warning каждые 30 с; при сбое отметки — повтор toast | open |
+| R02-011 | MINOR | сводка финансов на дашборде смешивает валюты (`summary` без `currency`) | open |
+| R02-012 | NIT | `RefreshIndicator` завершается до загрузки данных | open |
+| R02-013 | NIT | устаревший лог «этап 0 — каркас» в `main.dart` | open |
+
+### TD-27 — Обнаружение занятой глобальной комбинации на Windows
+- **Критичность:** MAJOR, **статус:** open
+- **Область:** `lib/app/desktop_services.dart`,
+  `lib/features/settings/application/settings_controller.dart`,
+  `pubspec.yaml` (`hotkey_manager 0.2.3` → `hotkey_manager_windows 0.2.0`)
+- **Проблема:** нативный плагин вызывает `::RegisterHotKey(...)` и игнорирует
+  возвращённый `BOOL`, после чего всегда отвечает `Success(true)`
+  (`hotkey_manager_windows_plugin.cpp:104-108`). Dart-обёртка возвращает
+  `Future<void>`. Поэтому `setQuickCaptureHotkey` не может вернуть `false`:
+  откат на прежнюю комбинацию и SnackBar `hotkeyBusyError` в production
+  недостижимы. Если комбинацию занимает другое приложение, она молча
+  отображается как активная, но не работает. Находка ревью — R02-009.
+- **Уточнение к TD-03:** утверждение «занятая комбинация выбрасывала исключение
+  из `main()`» для `hotkey_manager 0.2.3` неверно — плагин исключение не
+  бросает; TD-03 закрывал отсутствие `try/catch` вокруг других сбоев
+  platform channel.
+- **Почему не исправлено:** требует патча/форка нативного плагина или FFI-пробы
+  `RegisterHotKey` до регистрации; затрагивает зависимость и Windows-сборку.
+- **Триггер пересмотра:** решение владельца продукта — исправлять (патч/форк)
+  или официально принять ограничение и переформулировать критерий stage-02.
+- **Связанные ADR:** ADR-016; находка R02-009.
 
 ---
 
