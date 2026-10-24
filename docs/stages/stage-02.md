@@ -4,22 +4,22 @@
 - **Агент:** agent-1 (DeepSeek V4.1 Flash Free, OpenCode)
 - **Ветка:** `master`
 - **Коммит:** `82b04a2` (базовая реализация),
-  `8956179` (исправления R02-001…R02-008)
-- **Статус:** **done с исправлениями по ревью; повторное ревью №2 — FAIL**
-  (critical 0, major 1, minor 2, nit 2). R02-001…R02-008 закрыты и проверены
-  независимо; открыт **R02-009 (MAJOR)**: занятая глобальная комбинация не
-  обнаруживается на Windows, откат недостижим (ограничение
-  `hotkey_manager_windows 0.2.0`). Локально: analyze — 0 issues, test — 69/69,
-  Windows debug build — success. CI run
+  `8956179` (исправления R02-001…R02-008),
+  `a50d972` (R02-009/R02-010 + вендорный патч), `92a9642` (R02-011…R02-013)
+- **Статус:** **done с исправлениями; ожидает ревью №3**. R02-001…R02-013
+  закрыты в коде и тестах; открытых MAJOR нет. Вердикт выносит только ревьюер.
+  Локально: analyze — 0 issues, test — **77/77**, Windows debug build —
+  success; ручной Windows-сценарий занятой комбинации пройден. CI run
   [39919792561](https://github.com/HoudiwinG/second-brain/actions/runs/39919792561)
   для `82b04a2`, [39920666645](https://github.com/HoudiwinG/second-brain/actions/runs/39920666645)
   для `296970b`, [39931858624](https://github.com/HoudiwinG/second-brain/actions/runs/39931858624)
   для `e8c6005` (включает `8956179`),
   [40091767297](https://github.com/HoudiwinG/second-brain/actions/runs/40091767297)
-  для `f9511c0` — все **success** (проверено через `gh`).
-- **Следующий этап:** stage-03 (LLM-слой) по `PROMPT.md` — только после
-  вердикта без открытых MAJOR (закрыть R02-009 или официально принять его как
-  TD-27 с переформулировкой критерия).
+  для `f9511c0`,
+  [40095276919](https://github.com/HoudiwinG/second-brain/actions/runs/40095276919)
+  для `92a9642` — все **success** (проверено через `gh`).
+- **Следующий этап:** stage-03 (LLM-слой) по `PROMPT.md` — после вердикта
+  ревью №3 без открытых MAJOR.
 
 ## Цель этапа
 
@@ -53,9 +53,15 @@
 - секция «Задачи на сегодня»: просроченные и задачи на текущий день
   (`dueAt ?? remindAt`), сортировка по времени, ограничение 7 строк;
 - последние 4 заметки и 3 идеи;
-- доход/расход/баланс за текущий месяц;
+- доход/расход/баланс за текущий месяц **в одной валюте**:
+  `FinanceDraft.defaultCurrency` (`RUB`) — единый источник; `summary`
+  получает `currency`, а в подписи каждой ячейки показана валюта
+  (`financeAmountWithCurrency`, например «Доход · RUB»). Операции в других
+  валютах не попадают в сводку и не смешиваются с рублями (R02-011);
 - быстрые действия «Заметка», «Задача», «Идея», «Операция»;
 - переходы «Все» в соответствующие разделы, обновление списка и pull-to-refresh;
+  `RefreshIndicator.onRefresh` ждёт `Future<void>` от `_reload()`, поэтому
+  индикатор не исчезает до окончания загрузки (R02-012);
 - пустые состояния и обработка ошибок загрузки;
 - границы дня и месяца считаются календарными конструкторами
   (`DateTime(year, month, day + 1)`), а не `+ Duration(days: 1)`, чтобы не
@@ -114,12 +120,16 @@
 - `lib/features/settings/presentation/hotkey_recorder_dialog.dart` — запись
   новой комбинации через `HotKeyRecorder`.
 - `SettingsController.setQuickHotkey` сначала регистрирует комбинацию, затем
-  сохраняет её. Логика отката состояния/прежней регистрации и локализованное
-  сообщение `hotkeyBusyError` реализованы, но на Windows **недостижимы**:
-  `hotkey_manager_windows 0.2.0` игнорирует результат `RegisterHotKey` и всегда
-  сообщает об успехе — открытая находка **R02-009 (MAJOR)**. Тесты с
-  `overrideWithValue((_) async => false)` проверяют только логику отката, не
-  реальную занятость комбинации.
+  сохраняет её. При ошибке состояние и сохранённое значение откатываются,
+  пользователь видит локализованный `hotkeyBusyError`.
+- Занятая комбинация теперь **обнаруживается**: `hotkey_manager_windows 0.2.0`
+  скопирован в `third_party/hotkey_manager_windows/` и подключён через
+  `dependency_overrides`; в нативном `Register` проверяется результат
+  `::RegisterHotKey` и при `FALSE` возвращается
+  `PlatformException(hotkey_busy, …, 1409)` (R02-009, ADR-017). Откат в Dart
+  вынесен в тестируемый `DesktopServices.applyHotkeyBinding(...)` с typedef
+  `HotkeyRegistrar`, поэтому проверяется unit-тестами и подтверждён ручным
+  Windows-сценарием (см. ниже).
 - при старте применение сохранённой комбинации ожидается; если applier вернул
   `false`, применяется `QuickHotkey.defaultBinding`, фактическая комбинация
   сохраняется в `app_settings`, а состояние UI отражает реально
@@ -144,7 +154,13 @@
   ошибки логируются и не останавливают приложение.
 - `ReminderNotifier.show` возвращает `Future<bool>`; `markReminderSent`
   вызывается только при `true`. Если WinToast недоступен или показ завершился
-  ошибкой, напоминание не теряется и повторяется на следующем тике (R02-002).
+  ошибкой, напоминание не теряется и повторяется по backoff
+  **30 с → 1 мин → 5 мин → 15 мин** на задачу; warning пишется в лог только
+  при первой неудаче серии, без спама каждые 30 секунд (R02-010).
+- Если toast уже показан, но `markReminderSent` упал, повторяется **только
+  отметка**; повторный toast не показывается. Состояние попыток
+  (`failures`, `nextAttemptAt`, `shown`) хранится в `_ReminderAttempt` и
+  сбрасывается при изменении `remind_at` или успешной отметке (R02-010).
 - `LocalReminderNotifier` показывает Windows toast через `local_notifier`
   (WinToast), на других платформах используется no-op; клик по уведомлению
   показывает и фокусирует окно приложения.
@@ -209,9 +225,15 @@
 - `local_notifier: 0.1.6` — Windows toast-уведомления через WinToast. Версия
   зафиксирована точно; на не-Windows платформах используется no-op.
   Generated Windows plugin-файлы обновлены (`local_notifier`).
+- `third_party/hotkey_manager_windows` (path + `dependency_overrides`) —
+  вендорная копия `hotkey_manager_windows 0.2.0` с проверкой результата
+  `RegisterHotKey` (R02-009, ADR-017). Описание отличий —
+  `third_party/hotkey_manager_windows/PATCH.md`; каталог исключён из
+  `flutter analyze` в `analysis_options.yaml`.
 
 Остальные desktop-зависимости (`window_manager`, `tray_manager` 0.5.0,
-`hotkey_manager`) уже были в stage-00/01 и не менялись.
+`hotkey_manager`) уже были в stage-00/01; `hotkey_manager` не менялся,
+переопределён только его Windows-плагин.
 
 ## Тесты
 
@@ -220,7 +242,7 @@
 ```powershell
 flutter pub get --enforce-lockfile   # OK
 flutter analyze --fatal-infos        # 0 issues
-flutter test                         # 69/69
+flutter test                         # 77/77
 flutter build windows --debug        # success
 ```
 
@@ -248,15 +270,27 @@ flutter build windows --debug        # success
 - `test/quick_capture_dialog_test.dart` — ошибка репозитория разблокирует
   сохранение и показывает сообщение (R02-006);
 - `test/desktop_services_test.dart` — абсолютный путь к иконке трея на Windows
-  и PNG-путь на других платформах (R02-001);
+  и PNG-путь на других платформах (R02-001); откат при ошибке регистрации
+  хоткея через `applyHotkeyBinding`; наличие контракта `hotkey_busy` в
+  вендорном `.cpp` и path-источника в `pubspec.yaml` (R02-009);
 - `test/dashboard_period_test.dart` — календарные границы дня и месяца
   (R02-008);
+- `test/reminder_scheduler_test.dart` (дополнено) — backoff
+  30 с → 1 мин → 5 мин → 15 мин с fake clock; после успешного toast при сбое
+  отметки повторяется только отметка (R02-010);
+- `test/dashboard_widget_test.dart` (дополнено) — сводка только по валюте
+  `FinanceDraft.defaultCurrency`, подпись с валютой, две валюты не
+  смешиваются (R02-011); `RefreshIndicator` ждёт завершения загрузки
+  (R02-012);
+- `test/data_repositories_test.dart` (дополнено) — `summary(currency:)`
+  возвращает только операции указанной валюты (R02-011);
 - `test/app_router_widget_test.dart` — стартовый экран `DashboardScreen`.
 
 Не покрыто автоматическими тестами (требует Windows GUI):
 
-- фактическая регистрация глобального хоткея и поведение при занятой
-  комбинации;
+- физическое нажатие глобального хоткея при занятой/свободной комбинации
+  (сценарий выполнен вручную, см. ниже);
+- смена комбинации через UI и SnackBar `hotkeyBusyError` (ручной шаг);
 - меню трея, close-to-tray и полный выход;
 - показ Windows toast и клик по нему;
 - визуальные/golden-проверки (TD-18).
@@ -293,6 +327,31 @@ close-to-tray проверен фактически.
   Затем процесс был принудительно остановлен.
 - Визуальная проверка меню/иконки в overflow трея не выполнялась.
 
+### Ручной сценарий «комбинация занята» (2026-10-24, agent-1)
+
+Проверка R02-009 на реальном Windows с собранной debug-сборкой и
+вендорным патчем:
+
+1. `tool/occupy_hotkey.ps1` (PowerShell) занял глобальную комбинацию
+   `Ctrl+Alt+B` в отдельном процессе.
+2. Приложение запущено; при старте оно попыталось применить сохранённую
+   комбинацию и получило ошибку:
+   `PlatformException(hotkey_busy, RegisterHotKey failed: the shortcut is
+   already in use, 1409, null)`.
+   `SettingsController` залогировал неудачное применение; приложение
+   продолжило работу и не упало.
+3. Helper остановлен, комбинация освобождена; повторный запуск приложения
+   залогировал `DesktopServices: горячая клавиша Ctrl + Alt + B
+   зарегистрирована`.
+4. В собранной `hotkey_manager_windows_plugin.dll` присутствует строка
+   `hotkey_busy`, то есть используется именно пропатченный плагин.
+
+Смена комбинации через настройки и показ SnackBar `hotkeyBusyError` требуют
+ручного клика в GUI и в этом проходе не автоматизированы; логика отката
+покрыта unit-тестами (`applyHotkeyBinding`, `SettingsController`). Сырые логи
+лежат в `build/manual_busy_stdout.txt` и `build/manual_free_stdout.txt`
+(`build/` исключён из git).
+
 ## Известные ограничения и техдолг
 
 - Напоминания работают, пока запущен процесс приложения (в том числе свёрнутый
@@ -304,14 +363,16 @@ close-to-tray проверен фактически.
   действий «Отложить/Выполнено» в уведомлении нет — TD-26.
 - Уведомления реализованы только для Windows; на других платформах — no-op.
 - Если WinToast не инициализировался, ошибка логируется, а приложение
-  продолжает работать; `reminder_sent_at` не выставляется, поэтому попытка
-  повторится на следующем тике, пока toast не станет доступен.
+  продолжает работать; `reminder_sent_at` не выставляется, а повтор идёт по
+  backoff (30 с → 1 мин → 5 мин → 15 мин), пока toast не станет доступен.
 - DST-переход (23/25-часовые сутки) локально не воспроизводился: тест
   проверяет календарную семантику границ, но не смену часового пояса.
-- Повторное ревью №2 (2026-10-24) проведено: **FAIL**, открыт R02-009
-  (MAJOR) по горячей клавише; R02-001…R02-008 закрыты. Подробности —
-  [../reviews/stage-02-review.md](../reviews/stage-02-review.md), раздел
-  «Повторное ревью №2».
+- Повторное ревью №2 (2026-10-24) дало **FAIL** (R02-009…R02-013); все пять
+  находок исправлены в `a50d972`/`92a9642`. Подробности —
+  [../reviews/stage-02-fix-results.md](../reviews/stage-02-fix-results.md);
+  вердикт ревью №3 ещё не вынесен.
+- Ручными остаются: смена комбинации через UI с занятой комбинацией, меню
+  трея, сам toast и визуальная проверка иконки (см. чек-лист).
 - Нет golden-тестов (TD-18) и file-picker/корзины (TD-23/TD-24).
 - `dart format` для всего дерева не включён в CI: текущий formatter даёт шум
   на legacy-файлах (TD-20).
@@ -335,9 +396,11 @@ flutter build windows --debug
 4. Открыть «Быстрый ввод» из меню трея и через `Ctrl+Alt+B`.
 5. В настройках записать новую комбинацию, перезапустить приложение и
    убедиться, что она сохранилась.
-6. Занять комбинацию другим приложением (или заведомо занятую) и повторить
-   п. 5: ожидается локализованная ошибка и откат на прежнюю комбинацию
-   (сейчас не работает — R02-009).
+6. Занять комбинацию другим приложением:
+   `powershell -ExecutionPolicy Bypass -File tool\occupy_hotkey.ps1 -Key B -Ctrl -Alt`
+   и повторить п. 5: ожидается локализованная ошибка `hotkeyBusyError` и откат
+   на прежнюю комбинацию; после остановки helper'а комбинация снова
+   регистрируется.
 7. Создать задачу с напоминанием на ближайшую минуту, свернуть приложение в
    трей и дождаться toast; клик по toast должен показать окно.
 8. Выйти через меню трея и убедиться, что процесс завершён.
@@ -356,11 +419,31 @@ flutter build windows --debug
   официально принять как TD-27 и переформулировать критерий.
 - Полный журнал: [../reviews/stage-02-review.md](../reviews/stage-02-review.md).
 
+## Исправления по повторному ревью №2 (2026-10-24, agent-1)
+
+Все пять находок закрыты; отчёт с доказательствами —
+[../reviews/stage-02-fix-results.md](../reviews/stage-02-fix-results.md).
+
+| ID | Что сделано | Где |
+|----|-------------|-----|
+| R02-009 (MAJOR) | вендорный патч `RegisterHotKey` → `hotkey_busy` + `dependency_overrides`; откат вынесен в `applyHotkeyBinding` | `third_party/hotkey_manager_windows/`, `pubspec.yaml`, `lib/app/desktop_services.dart` |
+| R02-010 | backoff 30 с → 1 мин → 5 мин → 15 мин; при показанном toast повторяется только `markReminderSent`; лог без спама | `lib/features/reminders/application/reminder_scheduler.dart` |
+| R02-011 | единая валюта `FinanceDraft.defaultCurrency`; `summary(currency:)`; валюта в подписи | `lib/features/finance/domain/finance_transaction.dart`, `dashboard_screen.dart` |
+| R02-012 | `_reload()` → `Future<void>`, `RefreshIndicator` ждёт загрузку | `dashboard_screen.dart` |
+| R02-013 | лог «этап 0 — каркас» заменён на актуальный | `lib/main.dart` |
+
+Проверки после исправлений: `pub get --enforce-lockfile` OK, analyze 0,
+test **77/77**, build windows --debug success, CI run
+[40095276919](https://github.com/HoudiwinG/second-brain/actions/runs/40095276919)
+(`92a9642`) — success. Ревью №3 ещё не проводилось; вердикт — за ревьюером.
+
 ## Связанные документы
 
 - [ADR-015](../decisions.md)
 - [ADR-016](../decisions.md)
+- [ADR-017](../decisions.md)
 - [Техдолг](../tech-debt.md)
 - [Контекст](../context.md)
 - [Ревью stage-02](../reviews/stage-02-review.md)
-- [Результаты исправлений R02](../reviews/stage-02-review-results.md)
+- [Результаты исправлений R02-001…R02-008](../reviews/stage-02-review-results.md)
+- [Результаты исправлений R02-009…R02-013](../reviews/stage-02-fix-results.md)

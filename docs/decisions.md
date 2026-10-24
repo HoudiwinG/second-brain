@@ -695,3 +695,72 @@ Stage-02 требует создавать записи быстро из люб
 
 ### Связанные записи
 ADR-006 (tray_manager), ADR-010 (локализованный трей), ADR-015 (схема v3)
+
+---
+
+## ADR-017: Вендорный патч hotkey_manager_windows — ошибка занятой комбинации
+- **Дата (UTC):** 2026-10-24
+- **Этап:** stage-02 (исправления по повторному ревью №2)
+- **Тип:** dependency / integration
+- **Автор/агент:** agent-1
+- **Статус:** accepted
+
+### Контекст
+Критерий stage-02 требует корректного отката, если глобальная комбинация занята
+другим приложением. `hotkey_manager 0.2.3` (последняя версия на pub.dev на
+2026-10-24) использует `hotkey_manager_windows 0.2.0`, где `::RegisterHotKey`
+вызывается без проверки `BOOL`, после чего всегда возвращается `Success(true)`
+(`hotkey_manager_windows_plugin.cpp:104-108` upstream). Поэтому
+`DesktopServices.setQuickCaptureHotkey` на Windows не мог вернуть `false`, а
+ветки отката и `hotkeyBusyError` были недостижимы (R02-009, TD-27).
+
+### Решение
+- Пакет `hotkey_manager_windows 0.2.0` скопирован в
+  `third_party/hotkey_manager_windows/` и подключён через
+  `dependency_overrides` в корневом `pubspec.yaml`.
+- В `Register` проверяется результат `::RegisterHotKey(...)`. При `FALSE`
+  возвращается `result->Error("hotkey_busy", ...)` с `GetLastError()` и
+  выполняется `return` **до** вставки в `hotkey_id_map_`, чтобы плагин не хранил
+  незарегистрированный id.
+- Dart-контракт не менялся: `hotKeyManager.register` пробрасывает
+  `PlatformException`, `DesktopServices.applyHotkeyBinding` ловит `Exception`,
+  возвращает `false` и повторно регистрирует предыдущую комбинацию.
+  `SettingsController` уже откатывает состояние и показывает
+  `hotkeyBusyError`.
+- Версия upstream зафиксирована (0.2.0); патч минимален и описан в
+  `third_party/hotkey_manager_windows/PATCH.md`.
+
+### Альтернативы
+- **FFI-проба `RegisterHotKey`/`UnregisterHotKey` до регистрации**: окно гонки
+  между пробой и регистрацией, второй набор Win32-вызовов, сложнее
+  сопровождать; плагин всё равно скрывал бы ошибку при гонке.
+- **Официально принять ограничение (TD-27 accepted)**: отклонено владельцем
+  продукта — критерий stage-02 остаётся обязательным.
+- **Сменить пакет глобальных хоткеев**: зрелой замены с поддержкой Windows,
+  macOS и Linux в проекте нет; миграция затронула бы все платформы.
+- **Git-форк как зависимость**: CI зависит от сети и прав на отдельный
+  репозиторий; path-пакет воспроизводим и ревьюится вместе с кодом.
+
+### Последствия
+- Положительные: занятость комбинации обнаруживается до сохранения настройки;
+  откат и локализованная ошибка достижимы; свободная комбинация регистрируется
+  как раньше.
+- Отрицательные/риски: при обновлении `hotkey_manager` нужно заново сверить
+  патч с новой версией `hotkey_manager_windows`; патч действует только на
+  Windows. Смягчение — `PATCH.md`, regression-тест на наличие проверки и
+  ручной Windows-сценарий.
+- Влияние на совместимость: `pubspec.lock` переведён на `source: path` для
+  `hotkey_manager_windows`; CI (`ubuntu` и `windows-latest`) ставит зависимость
+  из репозитория. Публичный Dart-контракт не изменился.
+
+### Затронутые файлы/модули
+- `third_party/hotkey_manager_windows/` (вендорный пакет, `PATCH.md`).
+- `pubspec.yaml`, `pubspec.lock`.
+- `lib/app/desktop_services.dart` — `applyHotkeyBinding`, `HotkeyRegistrar`.
+- `analysis_options.yaml` — исключение `third_party/**` из анализа.
+- `test/desktop_services_test.dart` — откат при `PlatformException` и проверка
+  наличия патча.
+- `tool/occupy_hotkey.ps1` — helper для ручного сценария.
+
+### Связанные записи
+ADR-016 (быстрый ввод и хоткей), TD-27, R02-009

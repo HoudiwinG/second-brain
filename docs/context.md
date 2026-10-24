@@ -1,31 +1,33 @@
 # Контекст проекта (снимок состояния)
 
 - **Текущий этап:** stage-02 (UX-каркас)
-- **Статус:** **повторное ревью №2 (2026-10-24) — FAIL** (critical 0, major 1,
-  minor 2, nit 2). R02-001…R02-008 закрыты и проверены независимо; открыт
-  **R02-009 (MAJOR)** — занятая глобальная комбинация не обнаруживается на
-  Windows, откат недостижим (`hotkey_manager_windows 0.2.0` игнорирует
-  результат `RegisterHotKey`). Stage-03 заблокирован до закрытия R02-009 или
-  официального принятия его как TD-27 с переформулировкой критерия.
-  Локально: analyze 0, test 69/69, Windows debug build success; CI runs
+- **Статус:** **исправления по повторному ревью №2 внесены, ожидается ревью
+  №3**. R02-001…R02-013 закрыты в коде, тестах и документации; открытых MAJOR
+  нет. Вердикт выносит только ревьюер. Для R02-009 выбран вариант A —
+  вендорный патч `hotkey_manager_windows` + `dependency_overrides` (ADR-017).
+  Локально: analyze 0, test **77/77**, Windows debug build success; CI runs
   [39919792561](https://github.com/HoudiwinG/second-brain/actions/runs/39919792561),
   [39920666645](https://github.com/HoudiwinG/second-brain/actions/runs/39920666645),
   [39931858624](https://github.com/HoudiwinG/second-brain/actions/runs/39931858624),
-  [40091767297](https://github.com/HoudiwinG/second-brain/actions/runs/40091767297)
+  [40091767297](https://github.com/HoudiwinG/second-brain/actions/runs/40091767297),
+  [40095276919](https://github.com/HoudiwinG/second-brain/actions/runs/40095276919)
   — **success** (проверено через `gh`).
 - **Последний закрытый этап:** stage-01 (ядро данных) — **done**, CI run
   [39763804171](https://github.com/HoudiwinG/second-brain/actions/runs/39763804171)
   — success; ревью stage-01 не проводилось.
 - **Текущий отчёт:** [stages/stage-02.md](stages/stage-02.md)
 - **Текущее ревью:** [reviews/stage-02-review.md](reviews/stage-02-review.md) —
-  исторический вердикт **FAIL**, актуальный (повторное ревью №2) — **FAIL**;
-  результаты исправлений:
-  [reviews/stage-02-review-results.md](reviews/stage-02-review-results.md)
+  исторические вердикты **FAIL** (ревью и повторное №2); результаты
+  исправлений R02-001…R02-008 —
+  [reviews/stage-02-review-results.md](reviews/stage-02-review-results.md),
+  R02-009…R02-013 —
+  [reviews/stage-02-fix-results.md](reviews/stage-02-fix-results.md). Ревью №3
+  ещё не проводилось.
 - **Открытых CRITICAL:** 0
-- **Открытых MAJOR:** 1 — R02-009 (горячая клавиша). TD-21 — отдельное
-  принятое ограничение `REAL` для финансов.
+- **Открытых MAJOR:** 0. TD-21 — отдельное принятое ограничение `REAL` для
+  финансов.
 - **Сборка:** `flutter analyze --fatal-infos` — 0 issues;
-  `flutter test` — **69/69**; `flutter build windows --debug` — **success**
+  `flutter test` — **77/77**; `flutter build windows --debug` — **success**
   (2026-10-24, локально, `build\windows\x64\runner\Debug\second_brain.exe`)
 - **Flutter SDK:** 3.47.7 stable, `C:\src\flutter` (Dart 3.13.5)
 - **Windows-тулчейн:** Visual Studio Build Tools 2022 17.14 (MSVC v143 +
@@ -33,8 +35,9 @@
   замечаний. Android: cmdline-tools 23.0 + `JAVA_HOME` → Android Studio JBR.
   До 2026-10-24 VS на этой машине отсутствовал: записи о «локальной сборке»
   от 2026-10-22 относились к другому ПК (см. `docs/debug/log.md`).
-- **Ветка:** `master`; код исправлений — `8956179`; базовая реализация
-  stage-02 — `82b04a2`; HEAD до stage-02 — `6faeb90`.
+- **Ветка:** `master`; код исправлений ревью №2 — `a50d972` и `92a9642`;
+  исправления первого ревью — `8956179`; базовая реализация stage-02 —
+  `82b04a2`; HEAD до stage-02 — `6faeb90`.
 
 ## Активные фича-флаги
 - experimental.llmChat = true (заготовка, не используется)
@@ -56,6 +59,11 @@
 ### Дашборд и навигация
 - Дашборд: задачи на сегодня и просроченные (`dueAt ?? remindAt`), последние
   заметки/идеи, финансы за месяц, обновление и пустые состояния.
+- Финансы на дашборде считаются только в `FinanceDraft.defaultCurrency`
+  (`RUB`): `summary(currency:)`, валюта в подписи каждой ячейки; операции в
+  других валютах не смешиваются (R02-011).
+- `RefreshIndicator.onRefresh` ждёт `Future<void>` от `_reload()` — индикатор
+  не завершается раньше загрузки (R02-012).
 - Быстрые действия и переходы «Все» в заметки, задачи, идеи и финансы.
 - Границы локального дня/месяца — календарные (`dashboard_period.dart`), без
   `+ Duration(days: 1)`; финансы используют эксклюзивную верхнюю границу
@@ -77,14 +85,22 @@
   `Ctrl+Alt+B`; запись через `HotkeyRecorderDialog`, сохранение и откат в
   `SettingsController`. На старте apply ожидается; при `false` применяется и
   сохраняется default, UI показывает фактическую комбинацию; early return при
-  совпадении state удалён (R02-003 fixed). **Ограничение:** на Windows applier
-  не может вернуть `false` — плагин всегда сообщает об успехе, поэтому откат
-  при занятой комбинации недостижим (**R02-009 MAJOR, open**).
+  совпадении state удалён (R02-003 fixed).
+- **R02-009 fixed (ADR-017):** `hotkey_manager_windows 0.2.0` вендорен в
+  `third_party/` и подключён через `dependency_overrides`; нативный
+  `Register` проверяет `::RegisterHotKey` и при неудаче возвращает
+  `PlatformException(hotkey_busy, …, 1409)`. Dart-откат вынесен в тестируемый
+  `DesktopServices.applyHotkeyBinding(...)` (`HotkeyRegistrar`): при ошибке
+  возвращается `false`, прежняя комбинация регистрируется снова, UI показывает
+  `hotkeyBusyError`. Ручной Windows-сценарий с `tool/occupy_hotkey.ps1`
+  подтвердил реальное обнаружение занятой комбинации; смена через UI —
+  ручной шаг.
 - `ReminderScheduler` проверяет БД сразу и раз в 30 секунд; Windows toast через
   `local_notifier` 0.1.6 (WinToast), на других платформах no-op. `show`
-  возвращает `bool`; `reminder_sent_at` ставится только при успехе, иначе
-  повтор на следующем тике (R02-002 fixed). Повторы без backoff — R02-010
-  (MINOR, open).
+  возвращает `bool`; `reminder_sent_at` ставится только при успехе. Неудачи
+  повторяются по backoff **30 с → 1 мин → 5 мин → 15 мин** на задачу, warning
+  логируется без спама; если toast уже показан, при сбое отметки повторяется
+  только `markReminderSent` (R02-002/R02-010 fixed).
 - В редакторе задач — выбор даты/времени напоминания и чип в карточке.
 
 ### Локализация
@@ -118,20 +134,25 @@
 - Меню/иконка трея и сам toast визуально не проверялись; физическое нажатие
   хоткея не эмулировалось.
 
+### Ручной сценарий занятой комбинации (2026-10-24, agent-1)
+
+- `tool/occupy_hotkey.ps1` занял `Ctrl+Alt+B`; при запуске приложение получило
+  `PlatformException(hotkey_busy, RegisterHotKey failed: the shortcut is
+  already in use, 1409, null)`, продолжило работу и залогировало неудачное
+  применение сохранённой комбинации.
+- После остановки helper'а регистрация прошла:
+  `DesktopServices: горячая клавиша Ctrl + Alt + B зарегистрирована`.
+- В собранной DLL присутствует строка `hotkey_busy` — используется
+  пропатченный плагин.
+- Смена комбинации через настройки и SnackBar в GUI вручную не прокликивались;
+  логика отката покрыта unit-тестами.
+
 ## Известные ограничения / принятый техдолг
-- **R02-009 (MAJOR, open):** на Windows занятая глобальная комбинация не
-  обнаруживается (`hotkey_manager_windows 0.2.0` игнорирует результат
-  `RegisterHotKey`), откат при занятости недостижим; UI показывает комбинацию
-  как активную. Кандидат в TD-27, если решено принять ограничение.
-- **R02-010 (MINOR, open):** повторные неудачи toast не имеют backoff —
-  попытка и warning каждые 30 с; при сбое `markReminderSent` возможен повтор
-  toast.
-- **R02-011 (MINOR, open):** сводка финансов на дашборде суммирует разные
-  валюты (репозиторий поддерживает `currency`, дашборд его не передаёт).
-- **R02-012/R02-013 (NIT, open):** `RefreshIndicator` завершается до загрузки;
-  устаревший лог «этап 0 — каркас» в `main.dart`.
-- TD-15 (хоткей не настраивался) — **fixed** на stage-02 (ADR-016), с
-  оговоркой R02-009.
+- **R02-009…R02-013 — fixed** (2026-10-24, `a50d972`/`92a9642`); отчёт:
+  [reviews/stage-02-fix-results.md](reviews/stage-02-fix-results.md). Открытых
+  MAJOR/MINOR по ревью stage-02 нет; вердикт — за ревьюером (ревью №3).
+- TD-15 (хоткей не настраивался) — **fixed** на stage-02 (ADR-016, ADR-017).
+- TD-27 (занятая комбинация не обнаруживалась) — **fixed** (ADR-017).
 - TD-21 (MAJOR, accepted): сумма финансов — `REAL`/`double`, возможны
   погрешности; триггер — бюджеты/аналитика.
 - TD-22 (MINOR, accepted): нет `User`, вложений, learning/chat-таблиц.
@@ -145,15 +166,15 @@
   CI (шум на legacy-файлах).
 - DST-переход (23/25-часовые сутки) локально не воспроизводился; тест
   `dashboard_period_test.dart` проверяет календарную семантику границ.
-- Повторное ревью stage-02 №2 проведено 2026-10-24: **FAIL**, блокер
-  stage-03 — R02-009.
+- Повторное ревью stage-02 №2 (2026-10-24): **FAIL**; все пять находок
+  исправлены, ожидается ревью №3.
 
 ## Ближайшие задачи (stage-03 «LLM-слой»)
-- **Сначала** закрыть R02-009 или официально принять его как TD-27 с
-  переформулировкой критерия и получить вердикт без открытых MAJOR. Stage-03 не
-  начинать до этого.
-- Закрыть R02-010…R02-013 вместе с ближайшими правками. Готовые задачи и
-  патч-предложения: [reviews/stage-02-fix-tasks.md](reviews/stage-02-fix-tasks.md).
+- **Сначала** получить вердикт ревью №3 по stage-02 без открытых MAJOR.
+  Stage-03 не начинать до этого.
+- Ревьюеру: проверить вендорный патч и ручной сценарий занятой комбинации,
+  backoff/тесты, фильтр валют, `RefreshIndicator`, текст лога и соответствие
+  документации.
 - Провайдеры LLM, чат, стриминг, privacy guard и tool-вызовы по `PROMPT.md`.
 - Не отправлять в LLM записи с `is_private_for_llm = true`.
 - Решить TD-21 перед финансовой аналитикой/бюджетами.
@@ -172,20 +193,25 @@
 - ADR-014: JSON-импорт заменяет, CSV финансов добавляет
 - ADR-015: схема v3 и `reminder_sent_at` для идемпотентных напоминаний
 - ADR-016: быстрый ввод — общий диалог, хоткей и трей
+- ADR-017: вендорный патч `hotkey_manager_windows` — проверка занятой
+  комбинации
 
 ## Активный агент
 - agent-1: DeepSeek V4.1 Flash Free (OpenCode), ветка master
 - agent-2: ревью stage-00 — **PASS WITH COMMENTS**; ревью stage-02 —
   **FAIL** (2 MAJOR, 6 MINOR); повторное ревью №2 (2026-10-24) — **FAIL**
-  (1 MAJOR R02-009, 2 MINOR, 2 NIT); ревью stage-01 не проводилось.
+  (1 MAJOR R02-009, 2 MINOR, 2 NIT); исправления внесены, ревью №3 ожидается;
+  ревью stage-01 не проводилось.
 
 ## Ссылки
 - Отчёт stage-02: [stages/stage-02.md](stages/stage-02.md)
 - Отчёт stage-01: [stages/stage-01.md](stages/stage-01.md)
 - Отчёт stage-00: [stages/stage-00.md](stages/stage-00.md)
 - Ревью stage-02: [reviews/stage-02-review.md](reviews/stage-02-review.md)
-- Результаты исправлений stage-02:
+- Результаты исправлений stage-02 R02-001…R02-008:
   [reviews/stage-02-review-results.md](reviews/stage-02-review-results.md)
+- Результаты исправлений stage-02 R02-009…R02-013:
+  [reviews/stage-02-fix-results.md](reviews/stage-02-fix-results.md)
 - Ревью stage-00: [reviews/stage-00-review.md](reviews/stage-00-review.md)
 - Реестр техдолга: [tech-debt.md](tech-debt.md)
 - ADR: [decisions.md](decisions.md)
@@ -195,7 +221,8 @@
 - Удалённый: **https://github.com/HoudiwinG/second-brain** (приватный), ветка master
 - HEAD до stage-02: `6faeb90` (`fix(stage-01): убрать overflow бокового rail
   при низком окне`).
-- Stage-02: `82b04a2`; исправления ревью — `8956179`. CI runs stage-02:
+- Stage-02: `82b04a2`; исправления ревью — `8956179`; исправления повторного
+  ревью №2 — `a50d972`, `92a9642`. CI runs stage-02:
   [39919792561](https://github.com/HoudiwinG/second-brain/actions/runs/39919792561)
   (`82b04a2`),
   [39920666645](https://github.com/HoudiwinG/second-brain/actions/runs/39920666645)
@@ -203,7 +230,9 @@
   [39931858624](https://github.com/HoudiwinG/second-brain/actions/runs/39931858624)
   (`e8c6005`, включает `8956179`),
   [40091767297](https://github.com/HoudiwinG/second-brain/actions/runs/40091767297)
-  (`f9511c0`) — все **success** (проверено `gh run list`).
+  (`f9511c0`),
+  [40095276919](https://github.com/HoudiwinG/second-brain/actions/runs/40095276919)
+  (`92a9642`) — все **success** (проверено `gh run list`).
 - CI: GitHub Actions (`.github/workflows/ci.yml`) — pub get
   `--enforce-lockfile` + analyze + test (ubuntu) + test + build windows
   --debug (windows-latest).
