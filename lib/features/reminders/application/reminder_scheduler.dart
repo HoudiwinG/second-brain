@@ -9,6 +9,11 @@ import 'reminder_notifier.dart';
 ///
 /// Сервис не зависит от UI и плагинов напрямую: репозиторий и notifier
 /// инжектируются, поэтому логика проверяется unit-тестами.
+///
+/// Повторные неудачи не спамят пользователя и лог: после первого сбоя попытка
+/// откладывается по схеме 30 с → 1 мин → 5 мин → 15 мин (R02-010). Если toast
+/// уже показан, но `reminder_sent_at` записать не удалось, повторяется только
+/// отметка — второй toast не показывается.
 class ReminderScheduler {
   factory ReminderScheduler({
     required Future<TasksRepository> Function() repository,
@@ -31,6 +36,15 @@ class ReminderScheduler {
     this.interval,
   );
 
+  /// Задержки повторов после неудачного показа. Последнее значение
+  /// повторяется, пока попытка не увенчается успехом.
+  static const List<Duration> _retryDelays = [
+    Duration(seconds: 30),
+    Duration(minutes: 1),
+    Duration(minutes: 5),
+    Duration(minutes: 15),
+  ];
+
   final Future<TasksRepository> Function() _repository;
   final ReminderNotifier _notifier;
   final DateTime Function() _clock;
@@ -39,6 +53,9 @@ class ReminderScheduler {
   Timer? _timer;
   var _checking = false;
   var _disposed = false;
+
+  /// In-memory состояние попыток по id задачи (R02-010).
+  final Map<int, _ReminderAttempt> _attempts = {};
 
   bool get isRunning => _timer != null;
 
@@ -56,9 +73,10 @@ class ReminderScheduler {
     _checking = true;
     try {
       final repository = await _repository();
-      final due = (await repository.dueReminders(_clock().toUtc())).unwrap();
+      final now = _clock().toUtc();
+      final due = (await repository.dueReminders(now)).unwrap();
       for (final task in due) {
-        await _notify(repository, task);
+        await _notify(repository, task, now);
       }
     } on Object catch (e, s) {
       AppLogger.e('ReminderScheduler: проверка напоминаний не удалась', e, s);
@@ -67,39 +85,127 @@ class ReminderScheduler {
     }
   }
 
-  Future<void> _notify(TasksRepository repository, TaskItem task) async {
+  Future<void> _notify(
+    TasksRepository repository,
+    TaskItem task,
+    DateTime now,
+  ) async {
     final remindAt = task.remindAt;
     if (remindAt == null) return;
+    final remindAtUtc = remindAt.toUtc();
+
+    // Если пользователь перенёс напоминание, состояние старой попытки
+    // недействительно: новое время должно сработать независимо от backoff.
+    final existing = _attempts[task.id];
+    if (existing != null && existing.remindAt != remindAtUtc) {
+      _attempts.remove(task.id);
+    }
+    var attempt = _attempts[task.id];
+
+    final nextAttemptAt = attempt?.nextAttemptAt;
+    if (nextAttemptAt != null && now.isBefore(nextAttemptAt)) {
+      return;
+    }
+
+    // Toast уже показан, но отметка не сохранилась: не показываем его снова,
+    // повторяем только markReminderSent.
+    if (attempt?.shown == true) {
+      await _markOnly(repository, task, attempt!, now);
+      return;
+    }
+
+    attempt ??= _ReminderAttempt(remindAtUtc);
+    _attempts[task.id] = attempt;
+
+    final bool shown;
     try {
-      final shown = await _notifier.show(
+      shown = await _notifier.show(
         ReminderMessage(
           taskId: task.id,
           title: task.title,
           body: task.description,
         ),
       );
-      if (!shown) {
-        // Не помечаем отправленным: при следующем тике попробуем снова.
-        AppLogger.w(
-          'ReminderScheduler: уведомление task-${task.id} не показано, '
-          'повтор при следующем тике',
+    } on Object catch (e, s) {
+      if (attempt.failures == 0) {
+        AppLogger.e(
+          'ReminderScheduler: не удалось показать напоминание task-${task.id}',
+          e,
+          s,
+        );
+      }
+      _scheduleRetry(task.id, attempt, now, reason: 'toast недоступен');
+      return;
+    }
+
+    if (!shown) {
+      _scheduleRetry(task.id, attempt, now, reason: 'toast не показан');
+      return;
+    }
+
+    // С этого момента toast считается доставленным: повторять его нельзя,
+    // даже если запись reminder_sent_at не удалась.
+    attempt.shown = true;
+    await _markOnly(repository, task, attempt, now);
+  }
+
+  Future<void> _markOnly(
+    TasksRepository repository,
+    TaskItem task,
+    _ReminderAttempt attempt,
+    DateTime now,
+  ) async {
+    try {
+      final marked = await repository.markReminderSent(
+        task.id,
+        remindAt: attempt.remindAt,
+      );
+      final success = marked.when<bool>(
+        success: (_) => true,
+        failure: (error) {
+          AppLogger.appError(error);
+          return false;
+        },
+      );
+      if (success) {
+        _attempts.remove(task.id);
+        AppLogger.d(
+          'ReminderScheduler: напоминание task-${task.id} отмечено отправленным',
         );
         return;
       }
-      final marked = await repository.markReminderSent(
-        task.id,
-        remindAt: remindAt,
-      );
-      marked.when(
-        success: (_) {},
-        failure: (error) => AppLogger.appError(error),
-      );
     } on Object catch (e, s) {
-      // Не помечаем отправленным: при следующем тике попробуем снова.
-      AppLogger.e(
-        'ReminderScheduler: не удалось отправить напоминание task-${task.id}',
-        e,
-        s,
+      if (attempt.failures == 0) {
+        AppLogger.e(
+          'ReminderScheduler: не удалось отметить напоминание task-${task.id}',
+          e,
+          s,
+        );
+      }
+    }
+    _scheduleRetry(task.id, attempt, now, reason: 'отметка не сохранена');
+  }
+
+  /// Планирует повтор и логирует только первый сбой и смену интервала.
+  void _scheduleRetry(
+    int taskId,
+    _ReminderAttempt attempt,
+    DateTime now, {
+    required String reason,
+  }) {
+    attempt.failures += 1;
+    final index = attempt.failures >= _retryDelays.length
+        ? _retryDelays.length - 1
+        : attempt.failures - 1;
+    final delay = _retryDelays[index];
+    attempt.nextAttemptAt = now.add(delay);
+
+    // Первые четыре сбоя меняют интервал — их полезно видеть в логе.
+    // Дальше интервал постоянный, и повторные сообщения были бы шумом.
+    if (attempt.failures <= _retryDelays.length) {
+      AppLogger.w(
+        'ReminderScheduler: напоминание task-$taskId не доставлено '
+        '($reason), повтор через ${delay.inSeconds} с',
       );
     }
   }
@@ -108,5 +214,23 @@ class ReminderScheduler {
     _disposed = true;
     _timer?.cancel();
     _timer = null;
+    _attempts.clear();
   }
+}
+
+/// Состояние доставки одного напоминания в памяти процесса.
+class _ReminderAttempt {
+  _ReminderAttempt(this.remindAt);
+
+  /// Время напоминания, к которому относится попытка (UTC).
+  final DateTime remindAt;
+
+  /// Сколько раз подряд не удалось показать/отметить напоминание.
+  int failures = 0;
+
+  /// Раньше этого времени повтор не выполняется.
+  DateTime? nextAttemptAt;
+
+  /// Toast уже показан; повторяется только запись [reminderSentAt].
+  bool shown = false;
 }

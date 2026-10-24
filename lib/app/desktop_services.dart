@@ -13,6 +13,9 @@ import 'package:window_manager/window_manager.dart';
 import '../core/logging/app_logger.dart';
 import 'quick_hotkey.dart';
 
+/// Регистрирует комбинацию или бросает исключение, если она занята.
+typedef HotkeyRegistrar = Future<void> Function(QuickHotkey binding);
+
 /// Системная интеграция Windows: окно, трей, глобальная горячая клавиша.
 ///
 /// Вызывается только при Platform.isWindows (см. main) — десктопные плагины
@@ -97,12 +100,28 @@ abstract final class DesktopServices {
     if (kIsWeb || defaultTargetPlatform != TargetPlatform.windows) {
       return true;
     }
+    return applyHotkeyBinding(
+      binding,
+      register: _registerWithPlugin,
+      unregisterAll: hotKeyManager.unregisterAll,
+    );
+  }
+
+  /// Применяет комбинацию с откатом на предыдущую.
+  ///
+  /// Вынесено из [setQuickCaptureHotkey], чтобы контракт отката проверялся
+  /// unit-тестом с подменённым драйвером регистрации: плагин в тестовой среде
+  /// недоступен, а ветка `false` — единственная защита от «молчаливой»
+  /// неработающей комбинации (R02-009).
+  @visibleForTesting
+  static Future<bool> applyHotkeyBinding(
+    QuickHotkey binding, {
+    required HotkeyRegistrar register,
+    required Future<void> Function() unregisterAll,
+  }) async {
     try {
-      await hotKeyManager.unregisterAll();
-      await hotKeyManager.register(
-        binding.toHotKey(),
-        keyDownHandler: (_) => unawaited(requestQuickCapture()),
-      );
+      await unregisterAll();
+      await register(binding);
       _currentHotkey = binding;
       AppLogger.d(
         'DesktopServices: горячая клавиша ${binding.label} зарегистрирована',
@@ -119,10 +138,7 @@ abstract final class DesktopServices {
       final previous = _currentHotkey;
       if (previous != null) {
         try {
-          await hotKeyManager.register(
-            previous.toHotKey(),
-            keyDownHandler: (_) => unawaited(requestQuickCapture()),
-          );
+          await register(previous);
           _currentHotkey = previous;
         } on Exception catch (restoreError, restoreStack) {
           _currentHotkey = null;
@@ -135,6 +151,21 @@ abstract final class DesktopServices {
       }
       return false;
     }
+  }
+
+  /// Регистрация через hotkey_manager. Ошибка плагина (PlatformException)
+  /// пробрасывается вызывающей стороне для отката.
+  static Future<void> _registerWithPlugin(QuickHotkey binding) {
+    return hotKeyManager.register(
+      binding.toHotKey(),
+      keyDownHandler: (_) => unawaited(requestQuickCapture()),
+    );
+  }
+
+  /// Сбрасывает запомненную комбинацию (только для тестов).
+  @visibleForTesting
+  static void resetHotkeyForTesting() {
+    _currentHotkey = null;
   }
 
   /// Показывает окно и просит UI открыть диалог быстрого ввода.

@@ -1,4 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:second_brain/core/error/app_exception.dart';
+import 'package:second_brain/core/result/result.dart';
+import 'package:second_brain/data/db/app_database.dart';
 import 'package:second_brain/data/repositories/tasks_repository.dart';
 import 'package:second_brain/features/reminders/application/reminder_notifier.dart';
 import 'package:second_brain/features/reminders/application/reminder_scheduler.dart';
@@ -20,23 +23,46 @@ class _RecordingNotifier implements ReminderNotifier {
   }
 }
 
+/// Репозиторий, у которого можно смоделировать сбой отметки (R02-010).
+class _FlakyMarkRepository extends DriftTasksRepository {
+  _FlakyMarkRepository(super.db);
+
+  bool failMarks = true;
+  int markCalls = 0;
+
+  @override
+  Future<Result<void>> markReminderSent(int id, {required DateTime remindAt}) {
+    markCalls += 1;
+    if (failMarks) {
+      return Future.value(
+        Result<void>.failure(const DataException('тест: отметка не сохранена')),
+      );
+    }
+    return super.markReminderSent(id, remindAt: remindAt);
+  }
+}
+
 void main() {
+  late AppDatabase db;
   late DriftTasksRepository repo;
   late _RecordingNotifier notifier;
   final now = DateTime.utc(2026, 10, 23, 12);
+  late DateTime clockNow;
 
   setUp(() {
-    final db = InMemoryDbFactory.open();
+    db = InMemoryDbFactory.open();
     addTearDown(db.close);
     repo = DriftTasksRepository(db);
     notifier = _RecordingNotifier();
+    clockNow = now;
   });
 
-  ReminderScheduler scheduler() => ReminderScheduler(
-    repository: () async => repo,
-    notifier: notifier,
-    clock: () => now,
-  );
+  ReminderScheduler scheduler({TasksRepository? repository}) =>
+      ReminderScheduler(
+        repository: () async => repository ?? repo,
+        notifier: notifier,
+        clock: () => clockNow,
+      );
 
   test('отправляет только наступившие напоминания один раз', () async {
     final past = (await repo.create(
@@ -133,6 +159,109 @@ void main() {
     expect(notifier.messages, hasLength(1));
     expect((await repo.getById(task.id)).unwrap()!.reminderSentAt, isNull);
     expect((await repo.dueReminders(now)).unwrap(), hasLength(1));
+  });
+
+  test('backoff 30 с → 1 мин → 5 мин → 15 мин (R02-010)', () async {
+    await repo.create(
+      TaskDraft(
+        title: 'Toast недоступен',
+        remindAt: now.subtract(const Duration(minutes: 10)),
+      ),
+    );
+    notifier.succeeds = false;
+
+    final service = scheduler();
+    addTearDown(service.dispose);
+
+    await service.checkNow();
+    expect(notifier.messages, hasLength(1));
+
+    // До 30 секунд повтор не выполняется.
+    clockNow = now.add(const Duration(seconds: 29));
+    await service.checkNow();
+    expect(notifier.messages, hasLength(1));
+
+    clockNow = now.add(const Duration(seconds: 30));
+    await service.checkNow();
+    expect(notifier.messages, hasLength(2));
+
+    // Следующий интервал — 1 минута от второй попытки.
+    clockNow = now.add(const Duration(seconds: 30 + 59));
+    await service.checkNow();
+    expect(notifier.messages, hasLength(2));
+
+    clockNow = now.add(const Duration(seconds: 30 + 60));
+    await service.checkNow();
+    expect(notifier.messages, hasLength(3));
+
+    // Далее 5 минут.
+    clockNow = now.add(const Duration(seconds: 30 + 60 + 299));
+    await service.checkNow();
+    expect(notifier.messages, hasLength(3));
+
+    clockNow = now.add(const Duration(seconds: 30 + 60 + 300));
+    await service.checkNow();
+    expect(notifier.messages, hasLength(4));
+
+    // Далее 15 минут.
+    clockNow = now.add(const Duration(seconds: 30 + 60 + 300 + 899));
+    await service.checkNow();
+    expect(notifier.messages, hasLength(4));
+
+    clockNow = now.add(const Duration(seconds: 30 + 60 + 300 + 900));
+    await service.checkNow();
+    expect(notifier.messages, hasLength(5));
+
+    // Интервал стабилизировался на 15 минутах.
+    clockNow = now.add(const Duration(seconds: 30 + 60 + 300 + 900 + 899));
+    await service.checkNow();
+    expect(notifier.messages, hasLength(5));
+
+    clockNow = now.add(const Duration(seconds: 30 + 60 + 300 + 900 + 900));
+    await service.checkNow();
+    expect(notifier.messages, hasLength(6));
+  });
+
+  test('после показа toast повторяется только отметка (R02-010)', () async {
+    final flaky = _FlakyMarkRepository(db);
+    final task = (await repo.create(
+      TaskDraft(
+        title: 'Показан, но не отмечен',
+        remindAt: now.subtract(const Duration(minutes: 1)),
+      ),
+    )).unwrap();
+    final service = scheduler(repository: flaky);
+    addTearDown(service.dispose);
+
+    await service.checkNow();
+    expect(notifier.messages, hasLength(1));
+    expect(flaky.markCalls, 1);
+    expect((await repo.getById(task.id)).unwrap()!.reminderSentAt, isNull);
+
+    // В пределах backoff повторной попытки нет.
+    await service.checkNow();
+    expect(notifier.messages, hasLength(1));
+    expect(flaky.markCalls, 1);
+
+    // Через 30 секунд — только отметка, без второго toast.
+    clockNow = now.add(const Duration(seconds: 30));
+    await service.checkNow();
+    expect(notifier.messages, hasLength(1));
+    expect(flaky.markCalls, 2);
+
+    // Отметка восстановилась: toast больше не повторяется, задача закрыта.
+    flaky.failMarks = false;
+    clockNow = now.add(const Duration(seconds: 30 + 60));
+    await service.checkNow();
+
+    expect(notifier.messages, hasLength(1));
+    expect(flaky.markCalls, 3);
+    expect((await repo.getById(task.id)).unwrap()!.reminderSentAt, isNotNull);
+    expect((await repo.dueReminders(clockNow)).unwrap(), isEmpty);
+
+    await service.checkNow();
+    expect(notifier.messages, hasLength(1));
+    expect(flaky.markCalls, 3);
   });
 
   test('markReminderSent не помечает задачу при другом remind_at', () async {

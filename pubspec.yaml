@@ -41,6 +41,12 @@ dependencies:
   hotkey_manager: ^0.2.3
   local_notifier: 0.1.6
 
+# R02-009 / ADR-017: вендорный патч hotkey_manager_windows возвращает ошибку
+# RegisterHotKey, если глобальная комбинация занята другим приложением.
+dependency_overrides:
+  hotkey_manager_windows:
+    path: third_party/hotkey_manager_windows
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
