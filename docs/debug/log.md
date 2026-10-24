@@ -438,7 +438,8 @@ nit 1); stage-03 разблокирован.
 Проверки ревьюера: `flutter pub get --enforce-lockfile` — OK; `flutter
 analyze --fatal-infos` — 0; `flutter test` — **77/77**; `flutter build windows
 --debug` — success; `gen-l10n` без дрейфа (128 message-ключей + `@@locale`);
-CI `40095276919` (`92a9642`) и `40095857001` (`07fa5b9`) — success (оба job'а).
+CI `40095276919` (`92a9642`), `40095857001` (`07fa5b9`) и `40097546532`
+(`1fd60d3`, документация ревью) — success (оба job'а).
 В собранной `hotkey_manager_windows_plugin.dll` найдена строка `hotkey_busy`;
 `.flutter-plugins-dependencies` указывает на `third_party/hotkey_manager_windows`.
 

@@ -21,7 +21,9 @@
   [40095276919](https://github.com/HoudiwinG/second-brain/actions/runs/40095276919)
   для `92a9642`,
   [40095857001](https://github.com/HoudiwinG/second-brain/actions/runs/40095857001)
-  для `07fa5b9` — все **success** (проверено через `gh`).
+  для `07fa5b9`,
+  [40097546532](https://github.com/HoudiwinG/second-brain/actions/runs/40097546532)
+  для `1fd60d3` — все **success** (проверено через `gh`).
 - **Следующий этап:** stage-03 (LLM-слой) по `PROMPT.md` — stage-02
   разблокирован (MAJOR 0).
 

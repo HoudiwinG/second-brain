@@ -15,7 +15,8 @@
   [39931858624](https://github.com/HoudiwinG/second-brain/actions/runs/39931858624),
   [40091767297](https://github.com/HoudiwinG/second-brain/actions/runs/40091767297),
   [40095276919](https://github.com/HoudiwinG/second-brain/actions/runs/40095276919),
-  [40095857001](https://github.com/HoudiwinG/second-brain/actions/runs/40095857001)
+  [40095857001](https://github.com/HoudiwinG/second-brain/actions/runs/40095857001),
+  [40097546532](https://github.com/HoudiwinG/second-brain/actions/runs/40097546532)
   — **success** (проверено через `gh`).
 - **Последний закрытый этап:** stage-01 (ядро данных) — **done**, CI run
   [39763804171](https://github.com/HoudiwinG/second-brain/actions/runs/39763804171)

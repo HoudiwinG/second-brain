@@ -901,7 +901,8 @@
 | Free-сценарий | `горячая клавиша Ctrl + Alt + B зарегистрирована` |
 | CI `40095276919` (`92a9642`) | success; `analyze-and-test` + `build-windows` |
 | CI `40095857001` (`07fa5b9`) | success; `analyze-and-test` + `build-windows` |
-| `git status --short` | пусто; `git diff --check` без ошибок |
+| CI `40097546532` (`1fd60d3`, документация) | success; `analyze-and-test` + `build-windows` |
+| `git status --short` | пусто до правок документации; `git diff --check` без ошибок |
 
 ### Документация
 
