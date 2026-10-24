@@ -11,7 +11,7 @@
   комментарии R02-014 (MINOR, сводка экрана финансов) и R02-015 (NIT, лог retry
   отметки). Локально: analyze — 0 issues, test — **77/77**, Windows debug build —
   success; startup-сценарий занятой комбинации пройден, GUI-клик со SnackBar
-  остаётся в ручном чек-листе. CI run
+  и откат подтверждены пользователем 2026-10-24. CI run
   [39919792561](https://github.com/HoudiwinG/second-brain/actions/runs/39919792561)
   для `82b04a2`, [39920666645](https://github.com/HoudiwinG/second-brain/actions/runs/39920666645)
   для `296970b`, [39931858624](https://github.com/HoudiwinG/second-brain/actions/runs/39931858624)
