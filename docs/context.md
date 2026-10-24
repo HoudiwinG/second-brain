@@ -1,41 +1,29 @@
 # Контекст проекта (снимок состояния)
 
-- **Текущий этап:** stage-02 (UX-каркас) завершён — **PASS WITH COMMENTS**
-  (ревью №3); следующий — stage-03 (LLM-слой)
-- **Статус:** R02-001…R02-013 закрыты; открытых MAJOR/CRITICAL нет.
-  Ревью №3: **PASS WITH COMMENTS**, minor 1 (R02-014 — сводка экрана финансов
-  всё ещё смешивает валюты), nit 1 (R02-015 — error-лог при повторных сбоях
-  отметки напоминания); оба комментария не блокируют stage-03. Для R02-009
-  выбран вариант A — вендорный патч `hotkey_manager_windows` +
-  `dependency_overrides` (ADR-017); busy-сценарий при старте воспроизведён,
-  GUI-клик со SnackBar выполнен пользователем 2026-10-24 — хоткей работает,
-  откат и локализованная ошибка подтверждены.
-  Локально: analyze 0, test **77/77**, Windows debug build success; CI runs
-  [39919792561](https://github.com/HoudiwinG/second-brain/actions/runs/39919792561),
-  [39920666645](https://github.com/HoudiwinG/second-brain/actions/runs/39920666645),
-  [39931858624](https://github.com/HoudiwinG/second-brain/actions/runs/39931858624),
-  [40091767297](https://github.com/HoudiwinG/second-brain/actions/runs/40091767297),
-  [40095276919](https://github.com/HoudiwinG/second-brain/actions/runs/40095276919),
-  [40095857001](https://github.com/HoudiwinG/second-brain/actions/runs/40095857001),
-  [40097546532](https://github.com/HoudiwinG/second-brain/actions/runs/40097546532)
-  — **success** (проверено через `gh`).
-- **Последний закрытый этап:** stage-01 (ядро данных) — **done**, CI run
-  [39763804171](https://github.com/HoudiwinG/second-brain/actions/runs/39763804171)
-  — success; ревью stage-01 не проводилось.
-- **Текущий отчёт:** [stages/stage-02.md](stages/stage-02.md)
-- **Текущее ревью:** [reviews/stage-02-review.md](reviews/stage-02-review.md) —
-  актуальный вердикт **PASS WITH COMMENTS** (ревью №3, 2026-10-24); исторические
-  вердикты **FAIL** (ревью и повторное №2). Результаты исправлений
-  R02-001…R02-008 —
+- **Текущий этап:** stage-03 (LLM-слой) завершён — **done (self-check)**;
+  независимое ревью stage-03 не проводилось; следующий — stage-04
+  (инструменты ассистента).
+- **Статус stage-02:** **PASS WITH COMMENTS** (ревью №3); R02-001…R02-013
+  закрыты, R02-014 (MINOR, сводка экрана финансов) и R02-015 (NIT, error-лог
+  retry) остаются не блокирующими комментариями.
+- **Статус stage-03:** провайдеры OpenAI-compatible/Anthropic/Google,
+  безопасные ключи в `SecretStore`, streaming-чат с отменой и офлайн-историей,
+  privacy guard, контракт tools и интерфейсы RAG. Локально: analyze 0, test
+  **104/104**, Windows debug build success (2026-10-24); CI-run
+  [40112234645](https://github.com/HoudiwinG/second-brain/actions/runs/40112234645)
+  для `0ae0c85` — **success** (проверено через `gh`).
+- **Последний ревью-этап:** stage-02 — [reviews/stage-02-review.md](reviews/stage-02-review.md),
+  **PASS WITH COMMENTS** (ревью №3, 2026-10-24); исторические вердикты
+  **FAIL** (ревью и повторное №2). Результаты исправлений R02-001…R02-008 —
   [reviews/stage-02-review-results.md](reviews/stage-02-review-results.md),
-  R02-009…R02-013 —
-  [reviews/stage-02-fix-results.md](reviews/stage-02-fix-results.md).
+  R02-009…R02-013 — [reviews/stage-02-fix-results.md](reviews/stage-02-fix-results.md).
+- **Текущий отчёт:** [stages/stage-03.md](stages/stage-03.md)
 - **Открытых CRITICAL:** 0
-- **Открытых MAJOR:** 0; **MINOR:** 1 (R02-014, экран финансов);
-  **NIT:** 1 (R02-015, лог retry). TD-21 — отдельное принятое ограничение
-  `REAL` для финансов.
+- **Открытых MAJOR:** 0; **MINOR:** 2 (R02-014 — экран финансов; TD-28 — нет
+  UI выбора контекста в чате); **NIT:** 1 (R02-015, лог retry). TD-21 —
+  отдельное принятое ограничение `REAL` для финансов.
 - **Сборка:** `flutter analyze --fatal-infos` — 0 issues;
-  `flutter test` — **77/77**; `flutter build windows --debug` — **success**
+  `flutter test` — **104/104**; `flutter build windows --debug` — **success**
   (2026-10-24, локально, `build\windows\x64\runner\Debug\second_brain.exe`)
 - **Flutter SDK:** 3.47.7 stable, `C:\src\flutter` (Dart 3.13.5)
 - **Windows-тулчейн:** Visual Studio Build Tools 2022 17.14 (MSVC v143 +
@@ -49,8 +37,59 @@
   stage-02 — `82b04a2`; HEAD до stage-02 — `6faeb90`.
 
 ## Активные фича-флаги
-- experimental.llmChat = true (заготовка, не используется)
+- experimental.llmChat = true (чат и LLM-провайдеры используются на stage-03)
 - premium.enabled / cloud.sync.enabled / experimental.emailOauth = false
+
+## Что сделано на stage-03
+
+### Схема v4 и секреты
+- `schemaVersion = 4`; добавлены `llm_provider_configs`, `chat_threads`,
+  `chat_messages` (ADR-018). `max_tokens` хранится в конфигурации (1…32768,
+  default 1024).
+- API-ключ не попадает в БД: только `secret_ref` в `SecretStore`; при
+  удалении конфигурации треды сохраняются с `provider_config_id = NULL`.
+- Явные миграции `v3 → v4` и `v1 → v4`; guard `from > to || from > 4 ||
+  to > 4` до DDL; индексы создаются после всех таблиц.
+- Teardown/компенсация: при ошибке записи конфигурации ключ удаляется или
+  восстанавливается; `maxTokens` валидируется в репозитории.
+
+### Сеть и провайдеры
+- `ApiClient` — реальный `http 1.6.0`: `sendStreamed`, `requestJson`,
+  `streamLines`, таймауты 15/60 с, до 3 попыток (ADR-019).
+- Retry только до начала SSE-потока; после старта повтор запрещён, чтобы не
+  дублировать текст.
+- Адаптеры: OpenAI/OpenAI-compatible (`/chat/completions`,
+  `/embeddings`), Anthropic (`/messages`), Google
+  (`:streamGenerateContent?alt=sse`, `:embedContent`).
+- Финальный `done`-чанк всегда содержит накопленный usage; Anthropic
+  объединяет usage из `message_start` и `message_delta`.
+- Tool-call-дельты парсятся в `LlmResponse.toolCalls`, но не исполняются.
+
+### Чат и история
+- `ChatController`: загрузка тредов/сообщений из БД, новый/выбранный/удалённый
+  тред, streaming, отмена, сохранение usage и маркеров ошибок.
+- Завершённый ответ сохраняется целиком; при отмене — уже полученный
+  фрагмент, при пустом ответе/ошибке — маркер `cancelled`/`llm_error` без
+  тела провайдера.
+- `cancel()` не ждёт закрытия HTTP-потока, чтобы UI не зависал.
+- История доступна офлайн; при перезапуске открывается последний тред.
+- UI: список тредов, лента сообщений, индикатор streaming, кнопка Stop,
+  пустое состояние с переходом в настройки.
+
+### Настройки LLM
+- `LlmSettingsSection`: CRUD провайдеров, тип, имя, base URL, модель, ключ,
+  лимит токенов, default, удаление, локализованные SnackBar.
+- Ключ при редактировании можно не менять; пустая строка удаляет его; в UI
+  показывается только факт «ключ сохранён», не сам ключ.
+
+### Privacy guard, tools, RAG
+- `PrivacyGuard.filter` исключает `isPrivateForLlm = true`; логирует только
+  количество и типы, без содержимого; вызывается в
+  `ChatController.sendMessage(context:)`.
+- `LlmToolRegistry`/`LlmTool` — контракт и реестр; на stage-03 реестр пуст,
+  определения передаются в запрос.
+- `EmbeddingService` и `VectorStore` — интерфейсы RAG, без индексации.
+- В чате пока нет UI выбора контекста (TD-28).
 
 ## Что сделано на stage-02
 
@@ -158,16 +197,35 @@
   после освобождения хоткей зарегистрировался и работает.
 
 ## Известные ограничения / принятый техдолг
+- **Stage-03 — self-check, независимого ревью нет.** Все адаптеры проверены
+  через `MockClient`; реальный запрос с настоящим API-ключом и ручной
+  GUI-streaming в этом проходе не выполнялись. Это главный пункт для ревью
+  stage-03.
+- **TD-28 (MINOR, accepted):** в чате нет UI выбора контекста; privacy guard
+  вызывается через `ChatController.sendMessage(context:)` и покрыт тестами,
+  но обычный пользователь пока не может прикрепить заметку/задачу.
+- Tool calls парсятся, но не исполняются; реестр инструментов пуст до
+  stage-04.
+- RAG: только интерфейсы `EmbeddingService`/`VectorStore`, индексации нет.
+- Модель вводится вручную; списка моделей от провайдера нет.
+- Retry после начала SSE-потока не выполняется; частичный ответ сохраняется,
+  повтор инициирует пользователь.
+- Anthropic не поддерживает embeddings; для RAG нужен OpenAI-compatible или
+  Google.
+- История чата хранится в локальной БД в открытом виде, как и остальные
+  данные; шифрование полей через `CryptoService` — отдельный этап.
 - **R02-009…R02-013 — fixed** (2026-10-24, `a50d972`/`92a9642`); отчёт:
   [reviews/stage-02-fix-results.md](reviews/stage-02-fix-results.md).
   Ревью №3 — **PASS WITH COMMENTS**: MAJOR нет; R02-014 (MINOR, сводка экрана
   финансов всё ещё смешивает валюты) и R02-015 (NIT, повторный error-лог при
   сбое `markReminderSent`) не блокируют stage-03.
 - TD-15 (хоткей не настраивался) — **fixed** на stage-02 (ADR-016, ADR-017).
+- TD-16 (`ApiClient` без HTTP) — **fixed** на stage-03 (ADR-019).
 - TD-27 (занятая комбинация не обнаруживалась) — **fixed** (ADR-017).
 - TD-21 (MAJOR, accepted): сумма финансов — `REAL`/`double`, возможны
   погрешности; триггер — бюджеты/аналитика.
-- TD-22 (MINOR, accepted): нет `User`, вложений, learning/chat-таблиц.
+- TD-22 (MINOR, accepted): нет `User`, вложений и learning-таблиц; chat-таблицы
+  закрыты схемой v4.
 - TD-23 (MINOR, accepted): экспорт/импорт через ввод пути, без file-picker.
 - TD-24 (MINOR, accepted): нет UI корзины/restore/purge для soft-delete.
 - TD-25 (MINOR, accepted): напоминания работают только пока запущен процесс
@@ -178,19 +236,16 @@
   CI (шум на legacy-файлах).
 - DST-переход (23/25-часовые сутки) локально не воспроизводился; тест
   `dashboard_period_test.dart` проверяет календарную семантику границ.
-- Повторное ревью stage-02 №2 (2026-10-24): **FAIL**; все пять находок
-  исправлены. Ревью №3 (2026-10-24): **PASS WITH COMMENTS**; stage-03
-  разблокирован.
 
-## Ближайшие задачи (stage-03 «LLM-слой»)
-- Вердикт ревью №3 получен: **PASS WITH COMMENTS**, открытых MAJOR нет;
-  stage-03 можно начинать. R02-014/R02-015 — не блокирующие комментарии.
-- Ручной п. 6 чек-листа stage-02 (занятая комбинация + SnackBar
-  `hotkeyBusyError`) закрыт пользователем 2026-10-24.
-- Ревьюеру в stage-03: следить, чтобы `is_private_for_llm` и секреты не попадали
-  в LLM-контекст; проверить стриминг и tool-вызовы.
-- Провайдеры LLM, чат, стриминг, privacy guard и tool-вызовы по `PROMPT.md`.
-- Не отправлять в LLM записи с `is_private_for_llm = true`.
+## Ближайшие задачи (stage-04 «Инструменты ассистента»)
+- Провести независимое ревью stage-03; отдельно проверить реальный streaming
+  с ключом, отсутствие секретов в БД/логах и privacy guard.
+- Реализовать tools: создание задач/заметок/напоминаний, поиск по данным,
+  обновление трекера; подключить `LlmToolRegistry` к чату и добавить
+  аудит действий без содержимого приватных полей.
+- Добавить UI выбора контекста в чат (TD-28), чтобы privacy guard был
+  достижим в пользовательском сценарии.
+- RAG: реализация `EmbeddingService`/`VectorStore` и индексация заметок.
 - Решить TD-21 перед финансовой аналитикой/бюджетами.
 - По UX-долгу: file-picker (TD-23), корзина (TD-24), golden-тесты (TD-18).
 
@@ -209,6 +264,9 @@
 - ADR-016: быстрый ввод — общий диалог, хоткей и трей
 - ADR-017: вендорный патч `hotkey_manager_windows` — проверка занятой
   комбинации
+- ADR-018: схема v4 — LLM-конфигурации, офлайн-чат и секреты вне БД
+- ADR-019: HTTP/SSE-транспорт через `ApiClient`, retry только до потока
+- ADR-020: единый контракт LLM, streaming, privacy guard и границы tools/RAG
 
 ## Активный агент
 - agent-1: DeepSeek V4.1 Flash Free (OpenCode), ветка master
@@ -216,9 +274,10 @@
   **FAIL** (2 MAJOR, 6 MINOR); повторное ревью №2 (2026-10-24) — **FAIL**
   (1 MAJOR R02-009, 2 MINOR, 2 NIT); повторное ревью №3 (2026-10-24) —
   **PASS WITH COMMENTS** (0 MAJOR, 1 MINOR R02-014, 1 NIT R02-015);
-  ревью stage-01 не проводилось.
+  ревью stage-01 и stage-03 не проводились.
 
 ## Ссылки
+- Отчёт stage-03: [stages/stage-03.md](stages/stage-03.md)
 - Отчёт stage-02: [stages/stage-02.md](stages/stage-02.md)
 - Отчёт stage-01: [stages/stage-01.md](stages/stage-01.md)
 - Отчёт stage-00: [stages/stage-00.md](stages/stage-00.md)
@@ -237,17 +296,14 @@
 - HEAD до stage-02: `6faeb90` (`fix(stage-01): убрать overflow бокового rail
   при низком окне`).
 - Stage-02: `82b04a2`; исправления ревью — `8956179`; исправления повторного
-  ревью №2 — `a50d972`, `92a9642`. CI runs stage-02:
-  [39919792561](https://github.com/HoudiwinG/second-brain/actions/runs/39919792561)
-  (`82b04a2`),
-  [39920666645](https://github.com/HoudiwinG/second-brain/actions/runs/39920666645)
-  (`296970b`),
-  [39931858624](https://github.com/HoudiwinG/second-brain/actions/runs/39931858624)
-  (`e8c6005`, включает `8956179`),
-  [40091767297](https://github.com/HoudiwinG/second-brain/actions/runs/40091767297)
-  (`f9511c0`),
-  [40095276919](https://github.com/HoudiwinG/second-brain/actions/runs/40095276919)
-  (`92a9642`) — все **success** (проверено `gh run list`).
+  ревью №2 — `a50d972`, `92a9642`; документация ревью №3 — `1fd60d3`,
+  `2e55265`.
+- Stage-03: `0ae0c85` — код и тесты (провайдеры, чат, privacy guard, схема
+  v4); документация этапа — отдельный коммит после `0ae0c85`.
+- CI stage-03: run
+  [40112234645](https://github.com/HoudiwinG/second-brain/actions/runs/40112234645)
+  (`0ae0c85`) — `analyze-and-test` и `build-windows` **success**
+  (проверено через `gh run watch`).
 - CI: GitHub Actions (`.github/workflows/ci.yml`) — pub get
   `--enforce-lockfile` + analyze + test (ubuntu) + test + build windows
   --debug (windows-latest).
