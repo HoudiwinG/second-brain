@@ -305,3 +305,34 @@ agent-2; stage-03 не начат.
   notifier или миграции. Улучшение: для каждого внешнего side-effect
   добавлять failing-реализацию через override и проверять, что состояние
   откатилось/не изменилось.
+
+## 2026-10-24 — окружение текущего ПК (agent-1)
+
+Контекст: документация 2026-10-22 заявляла локальную сборку Windows, но на
+этом ПК VS отсутствовал (`vswhere` не найден, реестр `SxS\VS7` пуст,
+`flutter doctor` → `[X] Visual Studio not installed`). Записи относились к
+другому ПК, где доработки и выполнялись.
+
+Установлено:
+- Visual Studio Build Tools 2022 17.14.37806.7 — workload
+  `Microsoft.VisualStudio.Workload.VCTools` (`--includeRecommended`), плюс
+  `VC.ATL` и `VC.ATLMFC`. Установщик запросил перезагрузку; сборка прошла без
+  неё.
+- Android cmdline-tools 23.0 (`commandlinetools-win-16111833_latest.zip`,
+  SHA-1 `57d04f2d75eb8e8fffc5000a987e5de4b5a63e9d` проверен) в
+  `%LOCALAPPDATA%\Android\sdk\cmdline-tools\latest`. Пользовательские
+  переменные: `ANDROID_HOME`, `ANDROID_SDK_ROOT`, `JAVA_HOME` (Android Studio
+  JBR), PATH + `jbr\bin`, `cmdline-tools\latest\bin`, `platform-tools`.
+  Примечание: в cmdline-tools 23 `sdkmanager --licenses` объявлен устаревшим
+  («--licenses option is no longer needed»), Android CLI принимает лицензии сам.
+
+Проверено:
+- `flutter doctor` — **No issues found!**
+- `flutter build windows --debug` — success, 73,6 с;
+  `build\windows\x64\runner\Debug\second_brain.exe`, 1 032 192 байт,
+  плагины (`tray_manager`, `window_manager`, `hotkey_manager`,
+  `local_notifier`, `flutter_secure_storage`, `sqlite3`, `dartjni`) собраны.
+- `flutter analyze --fatal-infos` — 0 issues; `flutter test` — 69/69.
+
+Следствие: блокер ADR-007 на этом ПК снят, критерий «сборка Windows»
+подтверждён локально и в CI.

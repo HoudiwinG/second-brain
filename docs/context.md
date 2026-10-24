@@ -22,7 +22,13 @@
   принятое ограничение `REAL` для финансов.
 - **Сборка:** `flutter analyze --fatal-infos` — 0 issues;
   `flutter test` — **69/69**; `flutter build windows --debug` — **success**
+  (2026-10-24, локально, `build\windows\x64\runner\Debug\second_brain.exe`)
 - **Flutter SDK:** 3.47.7 stable, `C:\src\flutter` (Dart 3.13.5)
+- **Windows-тулчейн:** Visual Studio Build Tools 2022 17.14 (MSVC v143 +
+  Windows SDK + ATL/ATLMFC), установлен 2026-10-24; `flutter doctor` — без
+  замечаний. Android: cmdline-tools 23.0 + `JAVA_HOME` → Android Studio JBR.
+  До 2026-10-24 VS на этой машине отсутствовал: записи о «локальной сборке»
+  от 2026-10-22 относились к другому ПК (см. `docs/debug/log.md`).
 - **Ветка:** `master`; код исправлений — `8956179`; базовая реализация
   stage-02 — `82b04a2`; HEAD до stage-02 — `6faeb90`.
 
