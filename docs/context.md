@@ -1,27 +1,35 @@
 # Контекст проекта (снимок состояния)
 
-- **Текущий этап:** stage-03 (LLM-слой) завершён — **done (self-check)**;
-  независимое ревью stage-03 не проводилось; следующий — stage-04
-  (инструменты ассистента).
+- **Текущий этап:** stage-03 (LLM-слой) — **независимое ревью FAIL**
+  (2026-10-25, два независимых прохода). Открыты **3 MAJOR** (S03-001,
+  S03-002, S03-003); stage-04 **заблокирован** до исправления и повторного
+  ревью.
 - **Статус stage-02:** **PASS WITH COMMENTS** (ревью №3); R02-001…R02-013
   закрыты, R02-014 (MINOR, сводка экрана финансов) и R02-015 (NIT, error-лог
   retry) остаются не блокирующими комментариями.
-- **Статус stage-03:** провайдеры OpenAI-compatible/Anthropic/Google,
-  безопасные ключи в `SecretStore`, streaming-чат с отменой и офлайн-историей,
-  privacy guard, контракт tools и интерфейсы RAG. Локально: analyze 0, test
-  **104/104**, Windows debug build success (2026-10-24); CI-run
+- **Статус stage-03:** реализованы провайдеры OpenAI-compatible/Anthropic/
+  Google, безопасные ключи в `SecretStore`, streaming-чат с отменой и
+  офлайн-историей, privacy guard, контракт tools и интерфейсы RAG. Локальные
+  гейты зелёные: analyze 0, test **104/104**, Windows debug build success
+  (2026-10-24); CI-run
   [40112234645](https://github.com/HoudiwinG/second-brain/actions/runs/40112234645)
-  для `0ae0c85` — **success** (проверено через `gh`).
-- **Последний ревью-этап:** stage-02 — [reviews/stage-02-review.md](reviews/stage-02-review.md),
+  для `0ae0c85` — **success**. Однако ревью выявило дефекты состояния чата,
+  которые эти тесты не покрывают.
+- **Ревью stage-03:** [reviews/stage-03-review.md](reviews/stage-03-review.md) —
+  **FAIL**: reviewer A — 2 major/9 minor/6 nit, reviewer B — 2 major/13 minor/
+  4 nit; после объединения дублей — 3 major, 17 minor, 8 nit.
+- **Последний PASS-ревью:** stage-02 —
+  [reviews/stage-02-review.md](reviews/stage-02-review.md),
   **PASS WITH COMMENTS** (ревью №3, 2026-10-24); исторические вердикты
   **FAIL** (ревью и повторное №2). Результаты исправлений R02-001…R02-008 —
   [reviews/stage-02-review-results.md](reviews/stage-02-review-results.md),
   R02-009…R02-013 — [reviews/stage-02-fix-results.md](reviews/stage-02-fix-results.md).
 - **Текущий отчёт:** [stages/stage-03.md](stages/stage-03.md)
 - **Открытых CRITICAL:** 0
-- **Открытых MAJOR:** 0; **MINOR:** 2 (R02-014 — экран финансов; TD-28 — нет
-  UI выбора контекста в чате); **NIT:** 1 (R02-015, лог retry). TD-21 —
-  отдельное принятое ограничение `REAL` для финансов.
+- **Открытых MAJOR:** 3 (S03-001 — залипший `llm_error`; S03-002 — обрезка
+  истории без выравнивания ролей; S03-003 — новый тред во время streaming);
+  **MINOR:** 19 (17 S03 + R02-014 + TD-28); **NIT:** 9 (8 S03 + R02-015).
+  TD-21 — отдельное принятое ограничение `REAL` для финансов.
 - **Сборка:** `flutter analyze --fatal-infos` — 0 issues;
   `flutter test` — **104/104**; `flutter build windows --debug` — **success**
   (2026-10-24, локально, `build\windows\x64\runner\Debug\second_brain.exe`)
@@ -31,16 +39,21 @@
   замечаний. Android: cmdline-tools 23.0 + `JAVA_HOME` → Android Studio JBR.
   До 2026-10-24 VS на этой машине отсутствовал: записи о «локальной сборке»
   от 2026-10-22 относились к другому ПК (см. `docs/debug/log.md`).
-- **Ветка:** `master`; проверенный код — `07fa5b9`, документация ревью №3 —
-  следующий коммит после него; код исправлений ревью №2 — `a50d972` и
-  `92a9642`; исправления первого ревью — `8956179`; базовая реализация
-  stage-02 — `82b04a2`; HEAD до stage-02 — `6faeb90`.
+- **Ветка:** `master`; код stage-03 — `0ae0c85`, документация stage-03 —
+  `0defdb0`, уточнение отчёта — `9fedec7`; документация независимого ревью —
+  текущий HEAD. Код исправлений ревью №2 stage-02 — `a50d972` и `92a9642`;
+  исправления первого ревью — `8956179`; базовая реализация stage-02 —
+  `82b04a2`; HEAD до stage-02 — `6faeb90`.
 
 ## Активные фича-флаги
 - experimental.llmChat = true (чат и LLM-провайдеры используются на stage-03)
 - premium.enabled / cloud.sync.enabled / experimental.emailOauth = false
 
 ## Что сделано на stage-03
+
+> **Ревью 2026-10-25:** реализация ниже принята как основа, но этап **FAIL**.
+> До stage-04 нужно исправить S03-001…S03-003 и повторно пройти ревью.
+> Детали — [reviews/stage-03-review.md](reviews/stage-03-review.md).
 
 ### Схема v4 и секреты
 - `schemaVersion = 4`; добавлены `llm_provider_configs`, `chat_threads`,
@@ -197,13 +210,18 @@
   после освобождения хоткей зарегистрировался и работает.
 
 ## Известные ограничения / принятый техдолг
-- **Stage-03 — self-check, независимого ревью нет.** Все адаптеры проверены
-  через `MockClient`; реальный запрос с настоящим API-ключом и ручной
-  GUI-streaming в этом проходе не выполнялись. Это главный пункт для ревью
-  stage-03.
+- **Stage-03 — ревью FAIL (2026-10-25).** Блокеры: S03-001 (после ошибки
+  провайдера `errorCode == 'llm_error'` блокирует повторную отправку),
+  S03-002 (обрезка истории может начать запрос с `assistant`), S03-003 (новый
+  тред во время streaming оставляет старый поток активным и подменяет
+  сообщения). До исправления stage-04 заблокирован.
+- Все адаптеры проверены через `MockClient`; реальный запрос с настоящим
+  API-ключом и ручной GUI-streaming не выполнялись. Embeddings используют
+  chat-модель (S03-014) и требуют отдельной embedding-модели.
 - **TD-28 (MINOR, accepted):** в чате нет UI выбора контекста; privacy guard
   вызывается через `ChatController.sendMessage(context:)` и покрыт тестами,
   но обычный пользователь пока не может прикрепить заметку/задачу.
+  PrivacyGuard также не является production-chokepoint (S03-006).
 - Tool calls парсятся, но не исполняются; реестр инструментов пуст до
   stage-04.
 - RAG: только интерфейсы `EmbeddingService`/`VectorStore`, индексации нет.
@@ -237,12 +255,16 @@
 - DST-переход (23/25-часовые сутки) локально не воспроизводился; тест
   `dashboard_period_test.dart` проверяет календарную семантику границ.
 
-## Ближайшие задачи (stage-04 «Инструменты ассистента»)
-- Провести независимое ревью stage-03; отдельно проверить реальный streaming
-  с ключом, отсутствие секретов в БД/логах и privacy guard.
-- Реализовать tools: создание задач/заметок/напоминаний, поиск по данным,
-  обновление трекера; подключить `LlmToolRegistry` к чату и добавить
-  аудит действий без содержимого приватных полей.
+## Ближайшие задачи (сначала исправление stage-03, затем stage-04)
+- Исправить блокеры S03-001…S03-003 и добавить регрессионные тесты:
+  повтор после `llm_error`, выравнивание ролей при обрезке истории,
+  создание треда во время streaming.
+- Закрыть high-impact MINOR: S03-005 (удаление ключа/индикатор), S03-009
+  (модель при fallback), S03-012 (тесты), S03-014 (embedding-модель),
+  S03-015 (`https` для удалённых хостов), S03-018 (маркер partial-ошибки).
+- Провести повторное независимое ревью stage-03 и обновить вердикт.
+- После PASS — stage-04: tools (создание задач/заметок/напоминаний, поиск,
+  обновление трекера), аудит действий без содержимого приватных полей.
 - Добавить UI выбора контекста в чат (TD-28), чтобы privacy guard был
   достижим в пользовательском сценарии.
 - RAG: реализация `EmbeddingService`/`VectorStore` и индексация заметок.
@@ -274,10 +296,14 @@
   **FAIL** (2 MAJOR, 6 MINOR); повторное ревью №2 (2026-10-24) — **FAIL**
   (1 MAJOR R02-009, 2 MINOR, 2 NIT); повторное ревью №3 (2026-10-24) —
   **PASS WITH COMMENTS** (0 MAJOR, 1 MINOR R02-014, 1 NIT R02-015);
-  ревью stage-01 и stage-03 не проводились.
+  независимое ревью stage-03 (reviewer A, 2026-10-25) — **FAIL**
+  (2 MAJOR, 9 MINOR, 6 NIT); ревью stage-01 не проводилось.
+- agent-3: независимое ревью stage-03 (reviewer B, 2026-10-25) — **FAIL**
+  (2 MAJOR, 13 MINOR, 4 NIT).
 
 ## Ссылки
 - Отчёт stage-03: [stages/stage-03.md](stages/stage-03.md)
+- Ревью stage-03: [reviews/stage-03-review.md](reviews/stage-03-review.md)
 - Отчёт stage-02: [stages/stage-02.md](stages/stage-02.md)
 - Отчёт stage-01: [stages/stage-01.md](stages/stage-01.md)
 - Отчёт stage-00: [stages/stage-00.md](stages/stage-00.md)

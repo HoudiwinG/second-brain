@@ -1,17 +1,20 @@
 # INDEX — карта документации
 
 ## Состояние
-- Текущий этап: stage-03 (LLM-слой) завершён — **done (self-check)**;
-  независимое ревью не проводилось, следующий — stage-04 (инструменты
-  ассистента). Stage-02 закрыт с вердиктом **PASS WITH COMMENTS** (ревью №3);
+- Текущий этап: stage-03 (LLM-слой) — **независимое ревью FAIL** (2026-10-25,
+  два независимых агента). Открыты **3 MAJOR**: S03-001 (залипший
+  `llm_error`), S03-002 (обрезка истории без выравнивания ролей), S03-003
+  (новый тред во время streaming). Stage-04 **заблокирован** до исправления
+  и повторного ревью.
+  Stage-02 закрыт с вердиктом **PASS WITH COMMENTS** (ревью №3);
   R02-001…R02-013 закрыты, R02-014/R02-015 остаются не блокирующими
-  комментариями. Stage-03: провайдеры OpenAI-compatible/Anthropic/Google,
-  безопасные ключи, streaming-чат с отменой и историей, privacy guard,
-  контракт tools и интерфейсы RAG. Локально: analyze 0, test **104/104**,
-  Windows debug build success (2026-10-24); CI-run `40112234645` для
-  `0ae0c85` — **success** (проверено через `gh`).
+  комментариями. Локальные гейты stage-03 зелёные (analyze 0, test
+  **104/104**, Windows debug build success, CI-run `40112234645`), но они не
+  покрывают найденные переходы состояния.
 - Снимок состояния: [context.md](context.md)
 - Отчёт stage-03: [stages/stage-03.md](stages/stage-03.md).
+- Ревью stage-03: [reviews/stage-03-review.md](reviews/stage-03-review.md) —
+  **FAIL**, critical 0, major 3, open; полный список S03-001…S03-028.
 - Ревью stage-02: актуальный вердикт **PASS WITH COMMENTS** (ревью №3,
   critical 0, major 0, minor 1, nit 1); исторические **FAIL** — ревью и
   повторное №2; см. [reviews/stage-02-review.md](reviews/stage-02-review.md).
@@ -21,7 +24,8 @@
   [reviews/stage-02-fix-results.md](reviews/stage-02-fix-results.md)
 - Реестр техдолга: [tech-debt.md](tech-debt.md) — открытых TD 0,
   принятых 15, исправлено 37 (включая R02-001…R02-013, TD-27, TD-16);
-  R02-014 (MINOR) и R02-015 (NIT) остаются комментариями ревью №3
+  R02-014 (MINOR) и R02-015 (NIT) остаются комментариями ревью №3.
+  Находки stage-03 ведутся в review-файле: 3 MAJOR, 17 MINOR, 8 NIT.
 
 ## Процесс
 - Исходные промпты (в корне репозитория): PROMPT.md (ТЗ), STAGE_ONE.md (этап 0),
@@ -40,10 +44,11 @@
 - [stage-02](stages/stage-02.md) — UX-каркас (done; **PASS WITH COMMENTS**,
   ревью №3: 0 MAJOR, R02-014/R02-015 — не блокирующие комментарии; локальные
   проверки 77/77, Windows smoke и 6 CI-run подтверждены)
-- [stage-03](stages/stage-03.md) — LLM-слой (done, self-check; 104/104,
-  analyze 0, Windows debug build, CI `40112234645`; независимое ревью не
-  проводилось)
-- stage-04 — инструменты ассистента (следующий)
+- [stage-03](stages/stage-03.md) — LLM-слой (self-check done; независимое
+  ревью **FAIL**, 3 MAJOR; 104/104, analyze 0, Windows debug build,
+  CI `40112234645`; stage-04 заблокирован)
+- stage-04 — инструменты ассистента (после исправления S03-001…S03-003 и
+  повторного ревью)
 
 ## Шаблоны
 - [decisions.template.md](decisions.template.md) — формат ADR
@@ -59,8 +64,9 @@
 - [stage-00-review-results](reviews/stage-00-review-results.md) — краткие
   результаты повторного ревью №2 и задачи для agent-1 (2026-10-22)
 - Ревью stage-01 — не проводилось.
-- Ревью stage-03 — не проводилось (этап закрыт по self-check; независимая
-  проверка запланирована перед stage-04).
+- [stage-03-review](reviews/stage-03-review.md) — **FAIL** (2026-10-25, два
+  независимых прохода): critical 0, major 3, minor 17, nit 8 после
+  объединения дублей. Блокеры: S03-001, S03-002, S03-003.
 - [stage-02-review](reviews/stage-02-review.md) — **PASS WITH COMMENTS**
   (повторное ревью №3, 2026-10-24, agent-2): critical 0, major 0, minor 1
   (R02-014), nit 1 (R02-015); R02-009…R02-013 закрыты. Исторические ревью:
