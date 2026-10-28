@@ -224,6 +224,9 @@ class LlmProviderConfigs extends Table {
 
   TextColumn get model => text().withLength(min: 1, max: 200)();
 
+  /// Отдельная модель embeddings; null — умолчание типа провайдера.
+  TextColumn get embeddingModel => text().nullable()();
+
   /// Жёсткий лимит токенов ответа (защита от больших счетов).
   IntColumn get maxTokens => integer().withDefault(const Constant(1024))();
 
@@ -261,16 +264,16 @@ class ChatThreads extends Table {
   DateTimeColumn get archivedAt => dateTime().nullable()();
 }
 
-/// Сообщение чата. Частичный стриминговый ответ не сохраняется:
-/// в БД попадает только завершённое сообщение (или ошибка без контента).
+/// Сообщение чата.
+///
+/// Завершённый ответ сохраняется целиком; при отмене — уже полученный
+/// фрагмент. Ошибка после partial-ответа сохраняет текст вместе с
+/// `error_code = 'llm_error'`, чтобы он не попал в следующий контекст.
 class ChatMessages extends Table {
   IntColumn get id => integer().autoIncrement()();
 
-  IntColumn get threadId => integer().references(
-    ChatThreads,
-    #id,
-    onDelete: KeyAction.cascade,
-  )();
+  IntColumn get threadId =>
+      integer().references(ChatThreads, #id, onDelete: KeyAction.cascade)();
 
   /// user | assistant | system.
   TextColumn get role => text()();
@@ -284,12 +287,18 @@ class ChatMessages extends Table {
   /// Код ошибки провайдера (без текста ответа и секретов).
   TextColumn get errorCode => text().nullable()();
 
+  /// true — сообщение исключается из контекста следующих LLM-запросов.
+  BoolColumn get isPrivateForLlm =>
+      boolean().withDefault(const Constant(false))();
+
   DateTimeColumn get createdAt => dateTime()();
 }
 
 /// Локальная БД SQLite (Drift).
 ///
-/// Схема v4 — ядро данных stage-01 + напоминания stage-02 + LLM-слой stage-03.
+/// Схема v5 — ядро данных stage-01 + напоминания stage-02 + LLM-слой stage-03
+/// с исправлениями ревью (embedding-модель, приватность сообщений,
+/// единственный default-провайдер).
 /// Полнотекстовый индекс `search_index`
 /// создаётся отдельными SQL-командами: FTS5 — виртуальная таблица, которую
 /// Drift не описывает декларативно (ADR-013).
@@ -329,7 +338,7 @@ class AppDatabase extends _$AppDatabase {
   static AppDatabase inMemory() => AppDatabase(NativeDatabase.memory());
 
   @override
-  int get schemaVersion => 4;
+  int get schemaVersion => 5;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -349,7 +358,7 @@ class AppDatabase extends _$AppDatabase {
       // добавить колонку и индекс, а затем падает, оставляя файл в
       // промежуточном состоянии; downgrade v4 → v3 и вовсе молча
       // перезаписывал user_version (R02-004).
-      if (from > to || from > 4 || to > 4) {
+      if (from > to || from > 5 || to > 5) {
         throw UnsupportedError(
           'AppDatabase: нет миграции схемы $from → $to. '
           'Добавьте явную миграцию в onUpgrade (ADR-012).',
@@ -375,10 +384,22 @@ class AppDatabase extends _$AppDatabase {
       }
       if (from < 4) {
         // v4: конфигурации LLM и офлайн-история чата.
-        // createTable создаёт текущую структуру таблиц; отдельных ALTER нет.
+        // createTable создаёт текущую структуру таблиц (уже с колонками v5).
         await m.createTable(llmProviderConfigs);
         await m.createTable(chatThreads);
         await m.createTable(chatMessages);
+      } else if (from < 5) {
+        // v5: отдельная embedding-модель и приватность сообщений.
+        await m.addColumn(
+          llmProviderConfigs,
+          llmProviderConfigs.embeddingModel,
+        );
+        await m.addColumn(chatMessages, chatMessages.isPrivateForLlm);
+      }
+      if (from < 5) {
+        // Инвариант «ровно один default»: чиним возможные 0/2 default
+        // до создания unique partial index.
+        await _normalizeDefaultConfigs();
         await _createIndexes();
       }
     },
@@ -440,11 +461,26 @@ class AppDatabase extends _$AppDatabase {
     );
     await customStatement(
       'CREATE INDEX IF NOT EXISTS idx_chat_messages_thread '
-      'ON chat_messages(thread_id, created_at)',
+      'ON chat_messages(thread_id, created_at, id)',
     );
+    // Partial unique index гарантирует не больше одного default на уровне БД.
+    await customStatement('DROP INDEX IF EXISTS idx_llm_configs_default');
     await customStatement(
-      'CREATE INDEX IF NOT EXISTS idx_llm_configs_default '
-      'ON llm_provider_configs(is_default)',
+      'CREATE UNIQUE INDEX IF NOT EXISTS idx_llm_configs_default '
+      'ON llm_provider_configs(is_default) WHERE is_default = 1',
     );
+  }
+
+  /// Оставляет максимум один default и назначает его, если есть конфигурации.
+  Future<void> _normalizeDefaultConfigs() async {
+    await customStatement('UPDATE llm_provider_configs SET is_default = 0');
+    await customStatement('''
+      UPDATE llm_provider_configs SET is_default = 1
+      WHERE id = (
+        SELECT id FROM llm_provider_configs
+        ORDER BY updated_at DESC, id ASC
+        LIMIT 1
+      )
+    ''');
   }
 }

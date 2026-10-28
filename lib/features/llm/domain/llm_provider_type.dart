@@ -6,27 +6,27 @@ enum LlmProviderType {
     dbValue: 'openai',
     defaultBaseUrl: 'https://api.openai.com/v1',
     defaultModel: 'gpt-4o-mini',
+    defaultEmbeddingModel: 'text-embedding-3-small',
     suggestedModels: ['gpt-4o-mini', 'gpt-4o', 'gpt-4.1-mini'],
   ),
   openaiCompatible(
     dbValue: 'openai_compatible',
     defaultBaseUrl: 'http://localhost:11434/v1',
     defaultModel: 'llama3.1',
+    defaultEmbeddingModel: 'nomic-embed-text',
     suggestedModels: ['llama3.1', 'qwen2.5', 'mistral'],
   ),
   anthropic(
     dbValue: 'anthropic',
     defaultBaseUrl: 'https://api.anthropic.com/v1',
     defaultModel: 'claude-3-5-sonnet-latest',
-    suggestedModels: [
-      'claude-3-5-sonnet-latest',
-      'claude-3-5-haiku-latest',
-    ],
+    suggestedModels: ['claude-3-5-sonnet-latest', 'claude-3-5-haiku-latest'],
   ),
   google(
     dbValue: 'google',
     defaultBaseUrl: 'https://generativelanguage.googleapis.com/v1beta',
     defaultModel: 'gemini-2.0-flash',
+    defaultEmbeddingModel: 'text-embedding-004',
     suggestedModels: ['gemini-2.0-flash', 'gemini-1.5-pro'],
   );
 
@@ -35,6 +35,7 @@ enum LlmProviderType {
     required this.defaultBaseUrl,
     required this.defaultModel,
     required this.suggestedModels,
+    this.defaultEmbeddingModel,
   });
 
   /// Стабильное значение для БД.
@@ -46,14 +47,17 @@ enum LlmProviderType {
   /// Модель по умолчанию для новой конфигурации.
   final String defaultModel;
 
+  /// Модель embeddings по умолчанию; null — провайдер их не поддерживает.
+  final String? defaultEmbeddingModel;
+
   /// Подсказки в UI; пользователь может ввести собственную модель.
   final List<String> suggestedModels;
 
-  /// true — провайдер умеет строить эмбеддинги.
-  bool get supportsEmbeddings => this != LlmProviderType.anthropic;
-
   /// Разбор значения из БД. Неизвестное значение трактуется как
   /// OpenAI-compatible, чтобы старые/ручные конфиги не роняли приложение.
-  static LlmProviderType fromDb(String raw) => LlmProviderType.values
-      .firstWhere((type) => type.dbValue == raw, orElse: () => openaiCompatible);
+  static LlmProviderType fromDb(String raw) =>
+      LlmProviderType.values.firstWhere(
+        (type) => type.dbValue == raw,
+        orElse: () => openaiCompatible,
+      );
 }

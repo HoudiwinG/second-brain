@@ -4129,6 +4129,17 @@ class $LlmProviderConfigsTable extends LlmProviderConfigs
     type: DriftSqlType.string,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _embeddingModelMeta = const VerificationMeta(
+    'embeddingModel',
+  );
+  @override
+  late final GeneratedColumn<String> embeddingModel = GeneratedColumn<String>(
+    'embedding_model',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _maxTokensMeta = const VerificationMeta(
     'maxTokens',
   );
@@ -4197,6 +4208,7 @@ class $LlmProviderConfigsTable extends LlmProviderConfigs
     displayName,
     baseUrl,
     model,
+    embeddingModel,
     maxTokens,
     secretRef,
     isDefault,
@@ -4255,6 +4267,15 @@ class $LlmProviderConfigsTable extends LlmProviderConfigs
       );
     } else if (isInserting) {
       context.missing(_modelMeta);
+    }
+    if (data.containsKey('embedding_model')) {
+      context.handle(
+        _embeddingModelMeta,
+        embeddingModel.isAcceptableOrUnknown(
+          data['embedding_model']!,
+          _embeddingModelMeta,
+        ),
+      );
     }
     if (data.containsKey('max_tokens')) {
       context.handle(
@@ -4321,6 +4342,10 @@ class $LlmProviderConfigsTable extends LlmProviderConfigs
         DriftSqlType.string,
         data['${effectivePrefix}model'],
       )!,
+      embeddingModel: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}embedding_model'],
+      ),
       maxTokens: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
         data['${effectivePrefix}max_tokens'],
@@ -4362,6 +4387,9 @@ class LlmProviderConfig extends DataClass
   final String baseUrl;
   final String model;
 
+  /// Отдельная модель embeddings; null — умолчание типа провайдера.
+  final String? embeddingModel;
+
   /// Жёсткий лимит токенов ответа (защита от больших счетов).
   final int maxTokens;
 
@@ -4378,6 +4406,7 @@ class LlmProviderConfig extends DataClass
     required this.displayName,
     required this.baseUrl,
     required this.model,
+    this.embeddingModel,
     required this.maxTokens,
     required this.secretRef,
     required this.isDefault,
@@ -4392,6 +4421,9 @@ class LlmProviderConfig extends DataClass
     map['display_name'] = Variable<String>(displayName);
     map['base_url'] = Variable<String>(baseUrl);
     map['model'] = Variable<String>(model);
+    if (!nullToAbsent || embeddingModel != null) {
+      map['embedding_model'] = Variable<String>(embeddingModel);
+    }
     map['max_tokens'] = Variable<int>(maxTokens);
     map['secret_ref'] = Variable<String>(secretRef);
     map['is_default'] = Variable<bool>(isDefault);
@@ -4407,6 +4439,9 @@ class LlmProviderConfig extends DataClass
       displayName: Value(displayName),
       baseUrl: Value(baseUrl),
       model: Value(model),
+      embeddingModel: embeddingModel == null && nullToAbsent
+          ? const Value.absent()
+          : Value(embeddingModel),
       maxTokens: Value(maxTokens),
       secretRef: Value(secretRef),
       isDefault: Value(isDefault),
@@ -4426,6 +4461,7 @@ class LlmProviderConfig extends DataClass
       displayName: serializer.fromJson<String>(json['displayName']),
       baseUrl: serializer.fromJson<String>(json['baseUrl']),
       model: serializer.fromJson<String>(json['model']),
+      embeddingModel: serializer.fromJson<String?>(json['embeddingModel']),
       maxTokens: serializer.fromJson<int>(json['maxTokens']),
       secretRef: serializer.fromJson<String>(json['secretRef']),
       isDefault: serializer.fromJson<bool>(json['isDefault']),
@@ -4442,6 +4478,7 @@ class LlmProviderConfig extends DataClass
       'displayName': serializer.toJson<String>(displayName),
       'baseUrl': serializer.toJson<String>(baseUrl),
       'model': serializer.toJson<String>(model),
+      'embeddingModel': serializer.toJson<String?>(embeddingModel),
       'maxTokens': serializer.toJson<int>(maxTokens),
       'secretRef': serializer.toJson<String>(secretRef),
       'isDefault': serializer.toJson<bool>(isDefault),
@@ -4456,6 +4493,7 @@ class LlmProviderConfig extends DataClass
     String? displayName,
     String? baseUrl,
     String? model,
+    Value<String?> embeddingModel = const Value.absent(),
     int? maxTokens,
     String? secretRef,
     bool? isDefault,
@@ -4467,6 +4505,9 @@ class LlmProviderConfig extends DataClass
     displayName: displayName ?? this.displayName,
     baseUrl: baseUrl ?? this.baseUrl,
     model: model ?? this.model,
+    embeddingModel: embeddingModel.present
+        ? embeddingModel.value
+        : this.embeddingModel,
     maxTokens: maxTokens ?? this.maxTokens,
     secretRef: secretRef ?? this.secretRef,
     isDefault: isDefault ?? this.isDefault,
@@ -4484,6 +4525,9 @@ class LlmProviderConfig extends DataClass
           : this.displayName,
       baseUrl: data.baseUrl.present ? data.baseUrl.value : this.baseUrl,
       model: data.model.present ? data.model.value : this.model,
+      embeddingModel: data.embeddingModel.present
+          ? data.embeddingModel.value
+          : this.embeddingModel,
       maxTokens: data.maxTokens.present ? data.maxTokens.value : this.maxTokens,
       secretRef: data.secretRef.present ? data.secretRef.value : this.secretRef,
       isDefault: data.isDefault.present ? data.isDefault.value : this.isDefault,
@@ -4500,6 +4544,7 @@ class LlmProviderConfig extends DataClass
           ..write('displayName: $displayName, ')
           ..write('baseUrl: $baseUrl, ')
           ..write('model: $model, ')
+          ..write('embeddingModel: $embeddingModel, ')
           ..write('maxTokens: $maxTokens, ')
           ..write('secretRef: $secretRef, ')
           ..write('isDefault: $isDefault, ')
@@ -4516,6 +4561,7 @@ class LlmProviderConfig extends DataClass
     displayName,
     baseUrl,
     model,
+    embeddingModel,
     maxTokens,
     secretRef,
     isDefault,
@@ -4531,6 +4577,7 @@ class LlmProviderConfig extends DataClass
           other.displayName == this.displayName &&
           other.baseUrl == this.baseUrl &&
           other.model == this.model &&
+          other.embeddingModel == this.embeddingModel &&
           other.maxTokens == this.maxTokens &&
           other.secretRef == this.secretRef &&
           other.isDefault == this.isDefault &&
@@ -4544,6 +4591,7 @@ class LlmProviderConfigsCompanion extends UpdateCompanion<LlmProviderConfig> {
   final Value<String> displayName;
   final Value<String> baseUrl;
   final Value<String> model;
+  final Value<String?> embeddingModel;
   final Value<int> maxTokens;
   final Value<String> secretRef;
   final Value<bool> isDefault;
@@ -4555,6 +4603,7 @@ class LlmProviderConfigsCompanion extends UpdateCompanion<LlmProviderConfig> {
     this.displayName = const Value.absent(),
     this.baseUrl = const Value.absent(),
     this.model = const Value.absent(),
+    this.embeddingModel = const Value.absent(),
     this.maxTokens = const Value.absent(),
     this.secretRef = const Value.absent(),
     this.isDefault = const Value.absent(),
@@ -4567,6 +4616,7 @@ class LlmProviderConfigsCompanion extends UpdateCompanion<LlmProviderConfig> {
     required String displayName,
     required String baseUrl,
     required String model,
+    this.embeddingModel = const Value.absent(),
     this.maxTokens = const Value.absent(),
     required String secretRef,
     this.isDefault = const Value.absent(),
@@ -4585,6 +4635,7 @@ class LlmProviderConfigsCompanion extends UpdateCompanion<LlmProviderConfig> {
     Expression<String>? displayName,
     Expression<String>? baseUrl,
     Expression<String>? model,
+    Expression<String>? embeddingModel,
     Expression<int>? maxTokens,
     Expression<String>? secretRef,
     Expression<bool>? isDefault,
@@ -4597,6 +4648,7 @@ class LlmProviderConfigsCompanion extends UpdateCompanion<LlmProviderConfig> {
       if (displayName != null) 'display_name': displayName,
       if (baseUrl != null) 'base_url': baseUrl,
       if (model != null) 'model': model,
+      if (embeddingModel != null) 'embedding_model': embeddingModel,
       if (maxTokens != null) 'max_tokens': maxTokens,
       if (secretRef != null) 'secret_ref': secretRef,
       if (isDefault != null) 'is_default': isDefault,
@@ -4611,6 +4663,7 @@ class LlmProviderConfigsCompanion extends UpdateCompanion<LlmProviderConfig> {
     Value<String>? displayName,
     Value<String>? baseUrl,
     Value<String>? model,
+    Value<String?>? embeddingModel,
     Value<int>? maxTokens,
     Value<String>? secretRef,
     Value<bool>? isDefault,
@@ -4623,6 +4676,7 @@ class LlmProviderConfigsCompanion extends UpdateCompanion<LlmProviderConfig> {
       displayName: displayName ?? this.displayName,
       baseUrl: baseUrl ?? this.baseUrl,
       model: model ?? this.model,
+      embeddingModel: embeddingModel ?? this.embeddingModel,
       maxTokens: maxTokens ?? this.maxTokens,
       secretRef: secretRef ?? this.secretRef,
       isDefault: isDefault ?? this.isDefault,
@@ -4648,6 +4702,9 @@ class LlmProviderConfigsCompanion extends UpdateCompanion<LlmProviderConfig> {
     }
     if (model.present) {
       map['model'] = Variable<String>(model.value);
+    }
+    if (embeddingModel.present) {
+      map['embedding_model'] = Variable<String>(embeddingModel.value);
     }
     if (maxTokens.present) {
       map['max_tokens'] = Variable<int>(maxTokens.value);
@@ -4675,6 +4732,7 @@ class LlmProviderConfigsCompanion extends UpdateCompanion<LlmProviderConfig> {
           ..write('displayName: $displayName, ')
           ..write('baseUrl: $baseUrl, ')
           ..write('model: $model, ')
+          ..write('embeddingModel: $embeddingModel, ')
           ..write('maxTokens: $maxTokens, ')
           ..write('secretRef: $secretRef, ')
           ..write('isDefault: $isDefault, ')
@@ -5246,6 +5304,21 @@ class $ChatMessagesTable extends ChatMessages
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _isPrivateForLlmMeta = const VerificationMeta(
+    'isPrivateForLlm',
+  );
+  @override
+  late final GeneratedColumn<bool> isPrivateForLlm = GeneratedColumn<bool>(
+    'is_private_for_llm',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("is_private_for_llm" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
   static const VerificationMeta _createdAtMeta = const VerificationMeta(
     'createdAt',
   );
@@ -5266,6 +5339,7 @@ class $ChatMessagesTable extends ChatMessages
     promptTokens,
     completionTokens,
     errorCode,
+    isPrivateForLlm,
     createdAt,
   ];
   @override
@@ -5331,6 +5405,15 @@ class $ChatMessagesTable extends ChatMessages
         errorCode.isAcceptableOrUnknown(data['error_code']!, _errorCodeMeta),
       );
     }
+    if (data.containsKey('is_private_for_llm')) {
+      context.handle(
+        _isPrivateForLlmMeta,
+        isPrivateForLlm.isAcceptableOrUnknown(
+          data['is_private_for_llm']!,
+          _isPrivateForLlmMeta,
+        ),
+      );
+    }
     if (data.containsKey('created_at')) {
       context.handle(
         _createdAtMeta,
@@ -5376,6 +5459,10 @@ class $ChatMessagesTable extends ChatMessages
         DriftSqlType.string,
         data['${effectivePrefix}error_code'],
       ),
+      isPrivateForLlm: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}is_private_for_llm'],
+      )!,
       createdAt: attachedDatabase.typeMapping.read(
         DriftSqlType.dateTime,
         data['${effectivePrefix}created_at'],
@@ -5401,6 +5488,9 @@ class ChatMessage extends DataClass implements Insertable<ChatMessage> {
 
   /// Код ошибки провайдера (без текста ответа и секретов).
   final String? errorCode;
+
+  /// true — сообщение исключается из контекста следующих LLM-запросов.
+  final bool isPrivateForLlm;
   final DateTime createdAt;
   const ChatMessage({
     required this.id,
@@ -5410,6 +5500,7 @@ class ChatMessage extends DataClass implements Insertable<ChatMessage> {
     this.promptTokens,
     this.completionTokens,
     this.errorCode,
+    required this.isPrivateForLlm,
     required this.createdAt,
   });
   @override
@@ -5428,6 +5519,7 @@ class ChatMessage extends DataClass implements Insertable<ChatMessage> {
     if (!nullToAbsent || errorCode != null) {
       map['error_code'] = Variable<String>(errorCode);
     }
+    map['is_private_for_llm'] = Variable<bool>(isPrivateForLlm);
     map['created_at'] = Variable<DateTime>(createdAt);
     return map;
   }
@@ -5447,6 +5539,7 @@ class ChatMessage extends DataClass implements Insertable<ChatMessage> {
       errorCode: errorCode == null && nullToAbsent
           ? const Value.absent()
           : Value(errorCode),
+      isPrivateForLlm: Value(isPrivateForLlm),
       createdAt: Value(createdAt),
     );
   }
@@ -5464,6 +5557,7 @@ class ChatMessage extends DataClass implements Insertable<ChatMessage> {
       promptTokens: serializer.fromJson<int?>(json['promptTokens']),
       completionTokens: serializer.fromJson<int?>(json['completionTokens']),
       errorCode: serializer.fromJson<String?>(json['errorCode']),
+      isPrivateForLlm: serializer.fromJson<bool>(json['isPrivateForLlm']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
     );
   }
@@ -5478,6 +5572,7 @@ class ChatMessage extends DataClass implements Insertable<ChatMessage> {
       'promptTokens': serializer.toJson<int?>(promptTokens),
       'completionTokens': serializer.toJson<int?>(completionTokens),
       'errorCode': serializer.toJson<String?>(errorCode),
+      'isPrivateForLlm': serializer.toJson<bool>(isPrivateForLlm),
       'createdAt': serializer.toJson<DateTime>(createdAt),
     };
   }
@@ -5490,6 +5585,7 @@ class ChatMessage extends DataClass implements Insertable<ChatMessage> {
     Value<int?> promptTokens = const Value.absent(),
     Value<int?> completionTokens = const Value.absent(),
     Value<String?> errorCode = const Value.absent(),
+    bool? isPrivateForLlm,
     DateTime? createdAt,
   }) => ChatMessage(
     id: id ?? this.id,
@@ -5501,6 +5597,7 @@ class ChatMessage extends DataClass implements Insertable<ChatMessage> {
         ? completionTokens.value
         : this.completionTokens,
     errorCode: errorCode.present ? errorCode.value : this.errorCode,
+    isPrivateForLlm: isPrivateForLlm ?? this.isPrivateForLlm,
     createdAt: createdAt ?? this.createdAt,
   );
   ChatMessage copyWithCompanion(ChatMessagesCompanion data) {
@@ -5516,6 +5613,9 @@ class ChatMessage extends DataClass implements Insertable<ChatMessage> {
           ? data.completionTokens.value
           : this.completionTokens,
       errorCode: data.errorCode.present ? data.errorCode.value : this.errorCode,
+      isPrivateForLlm: data.isPrivateForLlm.present
+          ? data.isPrivateForLlm.value
+          : this.isPrivateForLlm,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
     );
   }
@@ -5530,6 +5630,7 @@ class ChatMessage extends DataClass implements Insertable<ChatMessage> {
           ..write('promptTokens: $promptTokens, ')
           ..write('completionTokens: $completionTokens, ')
           ..write('errorCode: $errorCode, ')
+          ..write('isPrivateForLlm: $isPrivateForLlm, ')
           ..write('createdAt: $createdAt')
           ..write(')'))
         .toString();
@@ -5544,6 +5645,7 @@ class ChatMessage extends DataClass implements Insertable<ChatMessage> {
     promptTokens,
     completionTokens,
     errorCode,
+    isPrivateForLlm,
     createdAt,
   );
   @override
@@ -5557,6 +5659,7 @@ class ChatMessage extends DataClass implements Insertable<ChatMessage> {
           other.promptTokens == this.promptTokens &&
           other.completionTokens == this.completionTokens &&
           other.errorCode == this.errorCode &&
+          other.isPrivateForLlm == this.isPrivateForLlm &&
           other.createdAt == this.createdAt);
 }
 
@@ -5568,6 +5671,7 @@ class ChatMessagesCompanion extends UpdateCompanion<ChatMessage> {
   final Value<int?> promptTokens;
   final Value<int?> completionTokens;
   final Value<String?> errorCode;
+  final Value<bool> isPrivateForLlm;
   final Value<DateTime> createdAt;
   const ChatMessagesCompanion({
     this.id = const Value.absent(),
@@ -5577,6 +5681,7 @@ class ChatMessagesCompanion extends UpdateCompanion<ChatMessage> {
     this.promptTokens = const Value.absent(),
     this.completionTokens = const Value.absent(),
     this.errorCode = const Value.absent(),
+    this.isPrivateForLlm = const Value.absent(),
     this.createdAt = const Value.absent(),
   });
   ChatMessagesCompanion.insert({
@@ -5587,6 +5692,7 @@ class ChatMessagesCompanion extends UpdateCompanion<ChatMessage> {
     this.promptTokens = const Value.absent(),
     this.completionTokens = const Value.absent(),
     this.errorCode = const Value.absent(),
+    this.isPrivateForLlm = const Value.absent(),
     required DateTime createdAt,
   }) : threadId = Value(threadId),
        role = Value(role),
@@ -5600,6 +5706,7 @@ class ChatMessagesCompanion extends UpdateCompanion<ChatMessage> {
     Expression<int>? promptTokens,
     Expression<int>? completionTokens,
     Expression<String>? errorCode,
+    Expression<bool>? isPrivateForLlm,
     Expression<DateTime>? createdAt,
   }) {
     return RawValuesInsertable({
@@ -5610,6 +5717,7 @@ class ChatMessagesCompanion extends UpdateCompanion<ChatMessage> {
       if (promptTokens != null) 'prompt_tokens': promptTokens,
       if (completionTokens != null) 'completion_tokens': completionTokens,
       if (errorCode != null) 'error_code': errorCode,
+      if (isPrivateForLlm != null) 'is_private_for_llm': isPrivateForLlm,
       if (createdAt != null) 'created_at': createdAt,
     });
   }
@@ -5622,6 +5730,7 @@ class ChatMessagesCompanion extends UpdateCompanion<ChatMessage> {
     Value<int?>? promptTokens,
     Value<int?>? completionTokens,
     Value<String?>? errorCode,
+    Value<bool>? isPrivateForLlm,
     Value<DateTime>? createdAt,
   }) {
     return ChatMessagesCompanion(
@@ -5632,6 +5741,7 @@ class ChatMessagesCompanion extends UpdateCompanion<ChatMessage> {
       promptTokens: promptTokens ?? this.promptTokens,
       completionTokens: completionTokens ?? this.completionTokens,
       errorCode: errorCode ?? this.errorCode,
+      isPrivateForLlm: isPrivateForLlm ?? this.isPrivateForLlm,
       createdAt: createdAt ?? this.createdAt,
     );
   }
@@ -5660,6 +5770,9 @@ class ChatMessagesCompanion extends UpdateCompanion<ChatMessage> {
     if (errorCode.present) {
       map['error_code'] = Variable<String>(errorCode.value);
     }
+    if (isPrivateForLlm.present) {
+      map['is_private_for_llm'] = Variable<bool>(isPrivateForLlm.value);
+    }
     if (createdAt.present) {
       map['created_at'] = Variable<DateTime>(createdAt.value);
     }
@@ -5676,6 +5789,7 @@ class ChatMessagesCompanion extends UpdateCompanion<ChatMessage> {
           ..write('promptTokens: $promptTokens, ')
           ..write('completionTokens: $completionTokens, ')
           ..write('errorCode: $errorCode, ')
+          ..write('isPrivateForLlm: $isPrivateForLlm, ')
           ..write('createdAt: $createdAt')
           ..write(')'))
         .toString();
@@ -9627,6 +9741,7 @@ typedef $$LlmProviderConfigsTableCreateCompanionBuilder =
       required String displayName,
       required String baseUrl,
       required String model,
+      Value<String?> embeddingModel,
       Value<int> maxTokens,
       required String secretRef,
       Value<bool> isDefault,
@@ -9640,6 +9755,7 @@ typedef $$LlmProviderConfigsTableUpdateCompanionBuilder =
       Value<String> displayName,
       Value<String> baseUrl,
       Value<String> model,
+      Value<String?> embeddingModel,
       Value<int> maxTokens,
       Value<String> secretRef,
       Value<bool> isDefault,
@@ -9710,6 +9826,11 @@ class $$LlmProviderConfigsTableFilterComposer
 
   ColumnFilters<String> get model => $composableBuilder(
     column: $table.model,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get embeddingModel => $composableBuilder(
+    column: $table.embeddingModel,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -9798,6 +9919,11 @@ class $$LlmProviderConfigsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get embeddingModel => $composableBuilder(
+    column: $table.embeddingModel,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<int> get maxTokens => $composableBuilder(
     column: $table.maxTokens,
     builder: (column) => ColumnOrderings(column),
@@ -9851,6 +9977,11 @@ class $$LlmProviderConfigsTableAnnotationComposer
 
   GeneratedColumn<String> get model =>
       $composableBuilder(column: $table.model, builder: (column) => column);
+
+  GeneratedColumn<String> get embeddingModel => $composableBuilder(
+    column: $table.embeddingModel,
+    builder: (column) => column,
+  );
 
   GeneratedColumn<int> get maxTokens =>
       $composableBuilder(column: $table.maxTokens, builder: (column) => column);
@@ -9931,6 +10062,7 @@ class $$LlmProviderConfigsTableTableManager
                 Value<String> displayName = const Value.absent(),
                 Value<String> baseUrl = const Value.absent(),
                 Value<String> model = const Value.absent(),
+                Value<String?> embeddingModel = const Value.absent(),
                 Value<int> maxTokens = const Value.absent(),
                 Value<String> secretRef = const Value.absent(),
                 Value<bool> isDefault = const Value.absent(),
@@ -9942,6 +10074,7 @@ class $$LlmProviderConfigsTableTableManager
                 displayName: displayName,
                 baseUrl: baseUrl,
                 model: model,
+                embeddingModel: embeddingModel,
                 maxTokens: maxTokens,
                 secretRef: secretRef,
                 isDefault: isDefault,
@@ -9955,6 +10088,7 @@ class $$LlmProviderConfigsTableTableManager
                 required String displayName,
                 required String baseUrl,
                 required String model,
+                Value<String?> embeddingModel = const Value.absent(),
                 Value<int> maxTokens = const Value.absent(),
                 required String secretRef,
                 Value<bool> isDefault = const Value.absent(),
@@ -9966,6 +10100,7 @@ class $$LlmProviderConfigsTableTableManager
                 displayName: displayName,
                 baseUrl: baseUrl,
                 model: model,
+                embeddingModel: embeddingModel,
                 maxTokens: maxTokens,
                 secretRef: secretRef,
                 isDefault: isDefault,
@@ -10486,6 +10621,7 @@ typedef $$ChatMessagesTableCreateCompanionBuilder =
       Value<int?> promptTokens,
       Value<int?> completionTokens,
       Value<String?> errorCode,
+      Value<bool> isPrivateForLlm,
       required DateTime createdAt,
     });
 typedef $$ChatMessagesTableUpdateCompanionBuilder =
@@ -10497,6 +10633,7 @@ typedef $$ChatMessagesTableUpdateCompanionBuilder =
       Value<int?> promptTokens,
       Value<int?> completionTokens,
       Value<String?> errorCode,
+      Value<bool> isPrivateForLlm,
       Value<DateTime> createdAt,
     });
 
@@ -10558,6 +10695,11 @@ class $$ChatMessagesTableFilterComposer
 
   ColumnFilters<String> get errorCode => $composableBuilder(
     column: $table.errorCode,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get isPrivateForLlm => $composableBuilder(
+    column: $table.isPrivateForLlm,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -10629,6 +10771,11 @@ class $$ChatMessagesTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<bool> get isPrivateForLlm => $composableBuilder(
+    column: $table.isPrivateForLlm,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<DateTime> get createdAt => $composableBuilder(
     column: $table.createdAt,
     builder: (column) => ColumnOrderings(column),
@@ -10688,6 +10835,11 @@ class $$ChatMessagesTableAnnotationComposer
 
   GeneratedColumn<String> get errorCode =>
       $composableBuilder(column: $table.errorCode, builder: (column) => column);
+
+  GeneratedColumn<bool> get isPrivateForLlm => $composableBuilder(
+    column: $table.isPrivateForLlm,
+    builder: (column) => column,
+  );
 
   GeneratedColumn<DateTime> get createdAt =>
       $composableBuilder(column: $table.createdAt, builder: (column) => column);
@@ -10751,6 +10903,7 @@ class $$ChatMessagesTableTableManager
                 Value<int?> promptTokens = const Value.absent(),
                 Value<int?> completionTokens = const Value.absent(),
                 Value<String?> errorCode = const Value.absent(),
+                Value<bool> isPrivateForLlm = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
               }) => ChatMessagesCompanion(
                 id: id,
@@ -10760,6 +10913,7 @@ class $$ChatMessagesTableTableManager
                 promptTokens: promptTokens,
                 completionTokens: completionTokens,
                 errorCode: errorCode,
+                isPrivateForLlm: isPrivateForLlm,
                 createdAt: createdAt,
               ),
           createCompanionCallback:
@@ -10771,6 +10925,7 @@ class $$ChatMessagesTableTableManager
                 Value<int?> promptTokens = const Value.absent(),
                 Value<int?> completionTokens = const Value.absent(),
                 Value<String?> errorCode = const Value.absent(),
+                Value<bool> isPrivateForLlm = const Value.absent(),
                 required DateTime createdAt,
               }) => ChatMessagesCompanion.insert(
                 id: id,
@@ -10780,6 +10935,7 @@ class $$ChatMessagesTableTableManager
                 promptTokens: promptTokens,
                 completionTokens: completionTokens,
                 errorCode: errorCode,
+                isPrivateForLlm: isPrivateForLlm,
                 createdAt: createdAt,
               ),
           withReferenceMapper: (p0) => p0

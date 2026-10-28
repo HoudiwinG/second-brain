@@ -17,6 +17,7 @@ LlmProviderConfig _config({
   required LlmProviderType type,
   String? baseUrl,
   String model = 'test-model',
+  String? embeddingModel,
   int maxTokens = 256,
 }) => LlmProviderConfig(
   id: 1,
@@ -24,6 +25,7 @@ LlmProviderConfig _config({
   displayName: 'Test',
   baseUrl: baseUrl ?? type.defaultBaseUrl,
   model: model,
+  embeddingModel: embeddingModel,
   maxTokens: maxTokens,
   secretRef: 'llm.api_key.test',
   isDefault: true,
@@ -220,6 +222,79 @@ void main() {
 
       expect(vector, [0.1, 0.25]);
     });
+
+    test('embeddings используют отдельную embedding-модель', () async {
+      late String body;
+      final client = MockClient((request) async {
+        body = request.body;
+        return http.Response(
+          '{"data":[{"embedding":[1.0]}]}',
+          200,
+          headers: {'content-type': 'application/json'},
+        );
+      });
+      final config = _config(
+        type: LlmProviderType.openai,
+        baseUrl: 'https://api.test/v1',
+        model: 'chat-model',
+        embeddingModel: 'embed-model',
+      );
+      final provider = OpenAiCompatibleProvider(
+        config,
+        client: _api(config.baseUrl, client),
+        apiKey: 'key',
+      );
+
+      (await provider.embed('hello')).unwrap();
+
+      expect(jsonDecode(body)['model'], 'embed-model');
+    });
+
+    test('stream_options повторяется без него при HTTP 400', () async {
+      final bodies = <String>[];
+      var calls = 0;
+      final client = MockClient.streaming((request, bodyStream) async {
+        calls++;
+        bodies.add(await bodyStream.transform(utf8.decoder).join());
+        if (calls == 1 &&
+            (jsonDecode(bodies.last) as Map<String, Object?>).containsKey(
+              'stream_options',
+            )) {
+          return http.StreamedResponse(
+            Stream.value(utf8.encode('unknown field')),
+            400,
+            request: request,
+          );
+        }
+        return _sse(
+          'data: {"choices":[{"delta":{"content":"ok"}}]}\n\n'
+          'data: [DONE]\n\n',
+          request: request,
+        );
+      });
+      final config = _config(
+        type: LlmProviderType.openaiCompatible,
+        baseUrl: 'http://localhost:11434/v1',
+      );
+      final provider = OpenAiCompatibleProvider(
+        config,
+        client: _api(config.baseUrl, client),
+        apiKey: 'key',
+      );
+
+      final response = (await provider.complete(_request())).unwrap();
+
+      expect(response.content, 'ok');
+      expect(calls, 2);
+      expect(
+        (jsonDecode(bodies.first) as Map<String, Object?>),
+        contains('stream_options'),
+      );
+      expect(
+        (jsonDecode(bodies.last) as Map<String, Object?>),
+        isNot(contains('stream_options')),
+      );
+    });
   });
 
   group('Anthropic provider', () {
@@ -287,12 +362,37 @@ void main() {
       expect(response.content, 'Gemini');
       expect(response.usage.promptTokens, 2);
       expect(response.usage.completionTokens, 3);
-      expect(
-        captured.url.path,
-        contains('test-model:streamGenerateContent'),
-      );
+      expect(captured.url.path, contains('test-model:streamGenerateContent'));
       expect(captured.url.queryParameters['alt'], 'sse');
       expect(captured.headers['x-goog-api-key'], 'google-secret');
+    });
+
+    test('embeddings используют отдельную embedding-модель', () async {
+      late http.Request captured;
+      final client = MockClient((request) async {
+        captured = request;
+        return http.Response(
+          '{"embedding":{"values":[0.1,0.2]}}',
+          200,
+          headers: {'content-type': 'application/json'},
+        );
+      });
+      final config = _config(
+        type: LlmProviderType.google,
+        model: 'gemini-chat',
+        embeddingModel: 'text-embedding-004',
+      );
+      final provider = GoogleProvider(
+        config,
+        client: _api(config.baseUrl, client),
+        apiKey: 'key',
+      );
+
+      final vector = (await provider.embed('hello')).unwrap();
+
+      expect(vector, [0.1, 0.2]);
+      expect(captured.url.path, contains('text-embedding-004:embedContent'));
+      expect(captured.url.path, isNot(contains('gemini-chat')));
     });
   });
 }

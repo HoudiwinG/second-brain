@@ -452,6 +452,33 @@ class AppLocalizationsRu extends AppLocalizations {
   String get llmApiKeyStored => 'Ключ сохранён';
 
   @override
+  String get llmApiKeyNotStored => 'Ключ не задан';
+
+  @override
+  String get llmApiKeyDelete => 'Удалить сохранённый ключ';
+
+  @override
+  String get llmApiKeyDeleteHint =>
+      'Сохранённый ключ будет удалён при сохранении.';
+
+  @override
+  String get llmEmbeddingModel => 'Модель embeddings';
+
+  @override
+  String get llmEmbeddingModelHint =>
+      'Используется для RAG отдельно от чат-модели';
+
+  @override
+  String get validationRequired => 'Обязательное поле';
+
+  @override
+  String get validationMaxTokens => 'Введите число от 1 до 32768';
+
+  @override
+  String get validationBaseUrl =>
+      'Нужен http(s) URL; http допустим только для localhost';
+
+  @override
   String get llmMaxTokens => 'Лимит токенов ответа';
 
   @override
@@ -519,7 +546,28 @@ class AppLocalizationsRu extends AppLocalizations {
   String get chatError => 'Не удалось получить ответ. Проверьте ключ и сеть.';
 
   @override
+  String get chatRetry => 'Повторить';
+
+  @override
+  String get chatApiKeyMissing =>
+      'Для провайдера не сохранён API-ключ. Добавьте его в настройках.';
+
+  @override
   String get chatCancelled => 'Ответ остановлен';
+
+  @override
+  String get chatPrivateMessage => 'Исключено из контекста';
+
+  @override
+  String get chatMarkPrivate => 'Исключить из будущего контекста';
+
+  @override
+  String get chatUnmarkPrivate => 'Включить в будущий контекст';
+
+  @override
+  String chatModelParams(String model, int tokens) {
+    return '$model · $tokens токенов';
+  }
 
   @override
   String get chatPrivacyHint =>

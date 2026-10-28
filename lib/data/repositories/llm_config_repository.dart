@@ -6,6 +6,7 @@ import '../../core/error/app_exception.dart';
 import '../../core/logging/app_logger.dart';
 import '../../core/result/result.dart';
 import '../../core/secrets/secret_store.dart';
+import '../../features/llm/domain/llm_endpoint.dart';
 import '../../features/llm/domain/llm_provider_config.dart';
 import '../../features/llm/domain/llm_provider_type.dart';
 import '../db/app_database.dart' as db;
@@ -50,19 +51,18 @@ final class DriftLlmConfigRepository implements LlmConfigRepository {
           await (_db.select(_db.llmProviderConfigs)..orderBy([
                 (t) => OrderingTerm.desc(t.isDefault),
                 (t) => OrderingTerm.desc(t.updatedAt),
+                (t) => OrderingTerm.asc(t.id),
               ]))
               .get();
-      return [for (final row in rows) _config(row)];
+      return Future.wait([for (final row in rows) _configWithKey(row)]);
     });
   }
 
   @override
   Future<Result<LlmProviderConfig?>> getById(int id) {
     return RepositoryGuard.guard('LlmConfigRepository.getById', () async {
-      final row = await (_db.select(
-        _db.llmProviderConfigs,
-      )..where((t) => t.id.equals(id))).getSingleOrNull();
-      return row == null ? null : _config(row);
+      final row = await _find(id);
+      return row == null ? null : await _configWithKey(row);
     });
   }
 
@@ -72,7 +72,7 @@ final class DriftLlmConfigRepository implements LlmConfigRepository {
       final row = await (_db.select(
         _db.llmProviderConfigs,
       )..where((t) => t.isDefault.equals(true))).getSingleOrNull();
-      return row == null ? null : _config(row);
+      return row == null ? null : await _configWithKey(row);
     });
   }
 
@@ -84,16 +84,11 @@ final class DriftLlmConfigRepository implements LlmConfigRepository {
       final apiKey = normalized.apiKey?.trim();
       final hasKey = apiKey != null && apiKey.isNotEmpty;
       if (hasKey) {
-        final saved = await _secrets.write(secretRef, apiKey);
-        final error = saved.when<AppException?>(
-          success: (_) => null,
-          failure: (error) => error,
-        );
-        if (error != null) throw error;
+        await _writeSecret(secretRef, apiKey);
       }
 
       try {
-        final config = await _db.transaction(() async {
+        final row = await _db.transaction(() async {
           final count = await _count();
           final makeDefault = normalized.isDefault || count == 0;
           if (makeDefault) await _clearDefault();
@@ -106,6 +101,7 @@ final class DriftLlmConfigRepository implements LlmConfigRepository {
                   displayName: normalized.displayName,
                   baseUrl: normalized.baseUrl,
                   model: normalized.model,
+                  embeddingModel: Value(normalized.embeddingModel),
                   maxTokens: Value(normalized.maxTokens),
                   secretRef: secretRef,
                   isDefault: Value(makeDefault),
@@ -113,14 +109,15 @@ final class DriftLlmConfigRepository implements LlmConfigRepository {
                   updatedAt: now,
                 ),
               );
-          final row = await (_db.select(
+          final inserted = await (_db.select(
             _db.llmProviderConfigs,
           )..where((t) => t.id.equals(id))).getSingle();
-          return _config(row);
+          await _ensureDefaultExists();
+          return inserted;
         });
-        return config;
+        return await _configWithKey(row);
       } on Object {
-        if (hasKey) await _secrets.delete(secretRef);
+        if (hasKey) await _deleteSecretBestEffort(secretRef);
         rethrow;
       }
     });
@@ -139,49 +136,48 @@ final class DriftLlmConfigRepository implements LlmConfigRepository {
 
       if (normalized.apiKey != null) {
         final key = normalized.apiKey!.trim();
-        final saved = key.isEmpty
-            ? await _secrets.delete(current.secretRef)
-            : await _secrets.write(current.secretRef, key);
-        final error = saved.when<AppException?>(
-          success: (_) => null,
-          failure: (error) => error,
-        );
-        if (error != null) throw error;
+        if (key.isEmpty) {
+          await _deleteSecret(secretRef: current.secretRef);
+        } else {
+          await _writeSecret(current.secretRef, key);
+        }
       }
 
       try {
-        final config = await _db.transaction(() async {
+        final row = await _db.transaction(() async {
           if (normalized.isDefault) await _clearDefault();
-          final updated = await (_db.update(
-            _db.llmProviderConfigs,
-          )..where((t) => t.id.equals(id))).write(
-            db.LlmProviderConfigsCompanion(
-              providerType: Value(normalized.type.dbValue),
-              displayName: Value(normalized.displayName),
-              baseUrl: Value(normalized.baseUrl),
-              model: Value(normalized.model),
-              maxTokens: Value(normalized.maxTokens),
-              isDefault: Value(normalized.isDefault),
-              updatedAt: Value(DateTime.now().toUtc()),
-            ),
-          );
+          final updated =
+              await (_db.update(
+                _db.llmProviderConfigs,
+              )..where((t) => t.id.equals(id))).write(
+                db.LlmProviderConfigsCompanion(
+                  providerType: Value(normalized.type.dbValue),
+                  displayName: Value(normalized.displayName),
+                  baseUrl: Value(normalized.baseUrl),
+                  model: Value(normalized.model),
+                  embeddingModel: Value(normalized.embeddingModel),
+                  maxTokens: Value(normalized.maxTokens),
+                  isDefault: Value(normalized.isDefault),
+                  updatedAt: Value(DateTime.now().toUtc()),
+                ),
+              );
           if (updated == 0) {
             throw ValidationException('LlmConfig: конфигурация $id не найдена');
           }
-          final row = await (_db.select(
+          // Если пользователь снял default с текущей конфигурации и есть
+          // другие — назначаем default другую, а не её же.
+          await _ensureDefaultExists(
+            avoidId: current.isDefault && !normalized.isDefault ? id : null,
+          );
+          return await (_db.select(
             _db.llmProviderConfigs,
           )..where((t) => t.id.equals(id))).getSingle();
-          return _config(row);
         });
-        return config;
+        return await _configWithKey(row);
       } on Object {
         // Восстанавливаем старый ключ, если запись конфигурации не удалась.
         if (normalized.apiKey != null) {
-          if (oldKey == null || oldKey.isEmpty) {
-            await _secrets.delete(current.secretRef);
-          } else {
-            await _secrets.write(current.secretRef, oldKey);
-          }
+          await _restoreSecret(current.secretRef, oldKey);
         }
         rethrow;
       }
@@ -192,18 +188,14 @@ final class DriftLlmConfigRepository implements LlmConfigRepository {
   Future<Result<void>> delete(int id) {
     return RepositoryGuard.guard('LlmConfigRepository.delete', () async {
       final current = await _find(id);
-      await (_db.delete(
-        _db.llmProviderConfigs,
-      )..where((t) => t.id.equals(id))).go();
+      await _db.transaction(() async {
+        await (_db.delete(
+          _db.llmProviderConfigs,
+        )..where((t) => t.id.equals(id))).go();
+        await _ensureDefaultExists();
+      });
       if (current != null) {
-        final result = await _secrets.delete(current.secretRef);
-        result.when(
-          success: (_) {},
-          failure: (error) => AppLogger.w(
-            'LlmConfigRepository: не удалось удалить секрет конфигурации $id',
-            error.message,
-          ),
-        );
+        await _deleteSecretBestEffort(current.secretRef);
       }
     });
   }
@@ -225,6 +217,7 @@ final class DriftLlmConfigRepository implements LlmConfigRepository {
             updatedAt: Value(DateTime.now().toUtc()),
           ),
         );
+        await _ensureDefaultExists();
       });
     });
   }
@@ -251,33 +244,108 @@ final class DriftLlmConfigRepository implements LlmConfigRepository {
   }
 
   Future<void> _clearDefault() async {
-    await _db.update(_db.llmProviderConfigs).write(
-      db.LlmProviderConfigsCompanion(isDefault: const Value(false)),
+    await _db
+        .update(_db.llmProviderConfigs)
+        .write(db.LlmProviderConfigsCompanion(isDefault: const Value(false)));
+  }
+
+  /// Инвариант «ровно один default, если есть конфигурации».
+  ///
+  /// [avoidId] исключается при выборе новой default-конфигурации (если есть
+  /// альтернатива): так снятие флага не возвращает его той же записи.
+  Future<void> _ensureDefaultExists({int? avoidId}) async {
+    final rows = await _db.select(_db.llmProviderConfigs).get();
+    if (rows.isEmpty) return;
+    final defaults = rows.where((row) => row.isDefault).toList(growable: false);
+    if (defaults.length == 1) return;
+
+    await _clearDefault();
+    final preferred = avoidId == null
+        ? rows
+        : rows.where((row) => row.id != avoidId).toList(growable: false);
+    final pool = preferred.isEmpty ? rows : preferred;
+    final chosen = pool.reduce(
+      (a, b) => b.updatedAt.isAfter(a.updatedAt) ? b : a,
     );
+    await (_db.update(_db.llmProviderConfigs)
+          ..where((t) => t.id.equals(chosen.id)))
+        .write(db.LlmProviderConfigsCompanion(isDefault: const Value(true)));
+  }
+
+  Future<void> _writeSecret(String secretRef, String value) async {
+    final saved = await _secrets.write(secretRef, value);
+    saved.when(success: (_) {}, failure: (error) => throw error);
+  }
+
+  Future<void> _deleteSecret({required String secretRef}) async {
+    final deleted = await _secrets.delete(secretRef);
+    deleted.when(success: (_) {}, failure: (error) => throw error);
+  }
+
+  Future<void> _deleteSecretBestEffort(String secretRef) async {
+    final result = await _secrets.delete(secretRef);
+    result.when(
+      success: (_) {},
+      failure: (error) => AppLogger.w(
+        'LlmConfigRepository: не удалось удалить секрет $secretRef',
+        error,
+      ),
+    );
+  }
+
+  Future<void> _restoreSecret(String secretRef, String? oldKey) async {
+    final result = oldKey == null || oldKey.isEmpty
+        ? await _secrets.delete(secretRef)
+        : await _secrets.write(secretRef, oldKey);
+    result.when(
+      success: (_) {},
+      failure: (error) => AppLogger.w(
+        'LlmConfigRepository: не удалось восстановить секрет $secretRef',
+        error,
+      ),
+    );
+  }
+
+  Future<LlmProviderConfig> _configWithKey(db.LlmProviderConfig row) async {
+    var hasKey = false;
+    final result = await _secrets.read(row.secretRef);
+    result.when(
+      success: (value) => hasKey = value != null && value.isNotEmpty,
+      failure: (error) => AppLogger.w(
+        'LlmConfigRepository: не удалось проверить ключ ${row.id}',
+        error,
+      ),
+    );
+    return _config(row, hasApiKey: hasKey);
   }
 
   String _newSecretRef() =>
       'llm.api_key.${DateTime.now().microsecondsSinceEpoch}'
       '.${_random.nextInt(1 << 32)}';
 
-  static LlmProviderConfig _config(db.LlmProviderConfig row) =>
-      LlmProviderConfig(
-        id: row.id,
-        type: LlmProviderType.fromDb(row.providerType),
-        displayName: row.displayName,
-        baseUrl: row.baseUrl,
-        model: row.model,
-        maxTokens: row.maxTokens,
-        secretRef: row.secretRef,
-        isDefault: row.isDefault,
-        createdAt: row.createdAt,
-        updatedAt: row.updatedAt,
-      );
+  static LlmProviderConfig _config(
+    db.LlmProviderConfig row, {
+    required bool hasApiKey,
+  }) => LlmProviderConfig(
+    id: row.id,
+    type: LlmProviderType.fromDb(row.providerType),
+    displayName: row.displayName,
+    baseUrl: row.baseUrl,
+    model: row.model,
+    embeddingModel: row.embeddingModel,
+    maxTokens: row.maxTokens,
+    secretRef: row.secretRef,
+    isDefault: row.isDefault,
+    createdAt: row.createdAt,
+    updatedAt: row.updatedAt,
+    hasApiKey: hasApiKey,
+  );
 
   static LlmConfigDraft _validate(LlmConfigDraft draft) {
     final displayName = draft.displayName.trim();
     final model = draft.model.trim();
     final baseUrl = draft.baseUrl.trim().replaceFirst(RegExp(r'/+$'), '');
+    final embeddingModel = draft.embeddingModel?.trim();
     if (displayName.isEmpty) {
       throw const ValidationException(
         'LlmConfig: название конфигурации не может быть пустым',
@@ -291,12 +359,10 @@ final class DriftLlmConfigRepository implements LlmConfigRepository {
         'LlmConfig: лимит токенов должен быть от 1 до 32768',
       );
     }
-    final uri = Uri.tryParse(baseUrl);
-    if (uri == null ||
-        (uri.scheme != 'http' && uri.scheme != 'https') ||
-        uri.host.isEmpty) {
+    if (!LlmEndpoint.isValid(baseUrl)) {
       throw const ValidationException(
-        'LlmConfig: base URL должен начинаться с http:// или https://',
+        'LlmConfig: base URL должен быть http(s); http допустим только '
+        'для localhost',
       );
     }
     return LlmConfigDraft(
@@ -304,6 +370,9 @@ final class DriftLlmConfigRepository implements LlmConfigRepository {
       displayName: displayName,
       baseUrl: baseUrl,
       model: model,
+      embeddingModel: embeddingModel == null || embeddingModel.isEmpty
+          ? null
+          : embeddingModel,
       maxTokens: draft.maxTokens,
       apiKey: draft.apiKey,
       isDefault: draft.isDefault,

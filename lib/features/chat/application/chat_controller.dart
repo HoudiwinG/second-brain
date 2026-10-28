@@ -6,12 +6,15 @@ import '../../../app/di.dart';
 import '../../../core/error/app_exception.dart';
 import '../../../core/logging/app_logger.dart';
 import '../../llm/application/llm_config_controller.dart';
+import '../../llm/application/llm_context_loader.dart';
 import '../../llm/application/privacy_guard.dart';
 import '../../llm/domain/llm_chat.dart';
+import '../../llm/domain/llm_endpoint.dart';
 import '../../llm/domain/llm_message.dart';
 import '../../llm/domain/llm_provider_config.dart';
 import '../domain/chat_message.dart';
 import '../domain/chat_thread.dart';
+import 'chat_request_builder.dart';
 
 const Object _unset = Object();
 
@@ -32,7 +35,7 @@ final class ChatState {
   final bool isStreaming;
   final String streamingText;
 
-  /// no_config | provider_missing | llm_error | cancelled.
+  /// no_config | provider_missing | api_key_missing | llm_error | cancelled.
   final String? errorCode;
 
   ChatThread? get activeThread {
@@ -64,15 +67,25 @@ final class ChatState {
 }
 
 /// Контроллер чата: история, streaming, отмена и privacy guard.
+///
+/// Один экземпляр обслуживает ровно один активный запрос. Смена/создание/
+/// удаление треда во время streaming сначала отменяют запрос, а поздние
+/// колбэки старого потока игнорируются по [requestId].
 final class ChatController extends AsyncNotifier<ChatState> {
   StreamSubscription<LlmChunk>? _subscription;
   Completer<void>? _activeCompleter;
+  int _nextRequestId = 0;
+  int? _activeRequestId;
+  bool _sending = false;
+  List<LlmContextRef> _lastContextRefs = const [];
 
   @override
   Future<ChatState> build() async {
     ref.onDispose(() {
+      _activeRequestId = null;
       unawaited(_subscription?.cancel());
-      _activeCompleter?.complete();
+      final completer = _activeCompleter;
+      if (completer != null && !completer.isCompleted) completer.complete();
     });
     // Конфигурации нужны только для проверки наличия провайдера; чат
     // не должен пересоздаваться при каждом изменении настроек.
@@ -90,7 +103,15 @@ final class ChatController extends AsyncNotifier<ChatState> {
     );
   }
 
+  /// Создаёт тред. Если идёт streaming, сначала отменяет его.
   Future<bool> createThread(String title) async {
+    if (_sending) await cancel();
+    return _createThreadInternal(title);
+  }
+
+  Future<bool> _createThreadInternal(String title) async {
+    final normalizedTitle = title.trim();
+    if (normalizedTitle.isEmpty) return false;
     final config = _defaultConfig();
     if (config == null) {
       _setError('no_config');
@@ -99,7 +120,7 @@ final class ChatController extends AsyncNotifier<ChatState> {
     final repo = await ref.read(chatRepositoryProvider.future);
     final result = await repo.createThread(
       ChatThreadDraft(
-        title: title.trim().isEmpty ? 'Chat' : title.trim(),
+        title: normalizedTitle,
         providerConfigId: config.id,
         model: config.model,
       ),
@@ -127,8 +148,9 @@ final class ChatController extends AsyncNotifier<ChatState> {
     );
   }
 
+  /// Переключает тред. Активный streaming сначала отменяется и сохраняется.
   Future<void> selectThread(int threadId) async {
-    if (_subscription != null) await cancel();
+    if (_sending) await cancel();
     final repo = await ref.read(chatRepositoryProvider.future);
     final result = await repo.listMessages(threadId);
     result.when(
@@ -153,7 +175,8 @@ final class ChatController extends AsyncNotifier<ChatState> {
   }
 
   Future<bool> deleteThread(int threadId) async {
-    if (state.value?.activeThreadId == threadId) await cancel();
+    final isActive = state.value?.activeThreadId == threadId;
+    if (isActive && _sending) await cancel();
     final repo = await ref.read(chatRepositoryProvider.future);
     final result = await repo.deleteThread(threadId);
     return result.when(
@@ -191,65 +214,162 @@ final class ChatController extends AsyncNotifier<ChatState> {
     );
   }
 
-  /// Отправляет сообщение и стримит ответ.
+  /// Отправляет сообщение и запускает streaming.
   ///
-  /// [context] проходит через [PrivacyGuard] до формирования запроса.
-  Future<void> sendMessage(
+  /// Возвращает `true` сразу после принятия сообщения (оно сохранено и запрос
+  /// запущен). `false` означает, что ввод не принят и UI должен его сохранить.
+  /// Контекст передаётся только ссылками: флаги приватности читает
+  /// [LlmContextLoader] из БД, а не вызывающий код.
+  Future<bool> sendMessage(
     String text, {
-    List<LlmContextItem> context = const [],
+    List<LlmContextRef> contextRefs = const [],
   }) async {
     final current = state.value;
-    if (current == null || current.isStreaming) return;
+    if (current == null || _sending) return false;
     final normalized = text.trim();
-    if (normalized.isEmpty) return;
+    if (normalized.isEmpty) return false;
 
-    var thread = current.activeThread;
-    if (thread == null) {
-      final created = await createThread(_titleFrom(normalized));
-      if (!created) return;
-      thread = state.value?.activeThread;
+    _sending = true;
+    final requestId = ++_nextRequestId;
+    _activeRequestId = requestId;
+    _lastContextRefs = List<LlmContextRef>.unmodifiable(contextRefs);
+    state = AsyncData(
+      current.copyWith(isStreaming: false, streamingText: '', errorCode: null),
+    );
+
+    try {
+      var thread = current.activeThread;
+      if (thread == null) {
+        final created = await _createThreadInternal(_titleFrom(normalized));
+        if (!created || !_isActive(requestId)) return false;
+        thread = state.value?.activeThread;
+      }
+      if (thread == null || !_isActive(requestId)) return false;
+      return await _startRequest(
+        requestId,
+        thread,
+        userText: normalized,
+        contextRefs: _lastContextRefs,
+      );
+    } on Object catch (error, stack) {
+      if (_isActive(requestId)) {
+        _logError('ChatController.sendMessage', error, stack);
+        _setError('llm_error');
+      }
+      return false;
+    } finally {
+      if (_activeRequestId == requestId && _activeCompleter == null) {
+        _activeRequestId = null;
+        _sending = false;
+      }
     }
-    if (thread == null) return;
+  }
 
+  /// Повторяет последний запрос без добавления нового сообщения пользователя.
+  Future<bool> retryLast() async {
+    if (_sending) return false;
+    final current = state.value;
+    final thread = current?.activeThread;
+    if (current == null || thread == null) return false;
+    final hasUserMessage = current.messages.any(
+      (message) =>
+          message.role == LlmRole.user &&
+          message.errorCode == null &&
+          message.content.isNotEmpty,
+    );
+    if (!hasUserMessage) return false;
+
+    _sending = true;
+    final requestId = ++_nextRequestId;
+    _activeRequestId = requestId;
+    state = AsyncData(
+      current.copyWith(isStreaming: false, streamingText: '', errorCode: null),
+    );
+    try {
+      return await _startRequest(
+        requestId,
+        thread,
+        contextRefs: _lastContextRefs,
+      );
+    } on Object catch (error, stack) {
+      if (_isActive(requestId)) {
+        _logError('ChatController.retryLast', error, stack);
+        _setError('llm_error');
+      }
+      return false;
+    } finally {
+      if (_activeRequestId == requestId && _activeCompleter == null) {
+        _activeRequestId = null;
+        _sending = false;
+      }
+    }
+  }
+
+  Future<bool> _startRequest(
+    int requestId,
+    ChatThread thread, {
+    String? userText,
+    required List<LlmContextRef> contextRefs,
+  }) async {
     final config = _configFor(thread);
     if (config == null) {
       _setError('provider_missing');
-      return;
+      return false;
     }
+    if (!_isActive(requestId)) return false;
 
     final configRepo = await ref.read(llmConfigRepositoryProvider.future);
+    if (!_isActive(requestId)) return false;
     final keyResult = await configRepo.readApiKey(config.id);
-    final key = keyResult.when<String?>(
-      success: (value) => value,
+    if (!_isActive(requestId)) return false;
+
+    String? apiKey;
+    var keyReadFailed = false;
+    keyResult.when(
+      success: (value) => apiKey = value,
       failure: (error) {
+        keyReadFailed = true;
         AppLogger.appError(error);
-        _setError('llm_error');
-        return null;
       },
     );
-    if (state.value?.errorCode == 'llm_error') return;
+    if (keyReadFailed) {
+      _setError('llm_error');
+      return false;
+    }
+    if ((apiKey == null || apiKey!.isEmpty) &&
+        LlmEndpoint.requiresApiKey(config.type, config.baseUrl)) {
+      _setError('api_key_missing');
+      return false;
+    }
 
     final chatRepo = await ref.read(chatRepositoryProvider.future);
-    final savedUser = await chatRepo.appendMessage(
-      ChatMessageDraft(
-        threadId: thread.id,
-        role: LlmRole.user,
-        content: normalized,
-      ),
-    );
-    final userMessage = savedUser.when<ChatMessage?>(
-      success: (message) => message,
-      failure: (error) {
-        AppLogger.appError(error);
-        _setError('llm_error');
-        return null;
-      },
-    );
-    if (userMessage == null) return;
+    if (!_isActive(requestId)) return false;
+    ChatMessage? savedUser;
+    if (userText != null) {
+      final saved = await chatRepo.appendMessage(
+        ChatMessageDraft(
+          threadId: thread.id,
+          role: LlmRole.user,
+          content: userText,
+        ),
+      );
+      if (!_isActive(requestId)) return false;
+      savedUser = saved.when<ChatMessage?>(
+        success: (message) => message,
+        failure: (error) {
+          AppLogger.appError(error);
+          _setError('llm_error');
+          return null;
+        },
+      );
+      if (savedUser == null) return false;
+    }
 
-    final baseMessages = [...?state.value?.messages, userMessage];
+    final current = state.value;
+    if (current == null) return false;
+    final baseMessages = [...current.messages, ?savedUser];
     state = AsyncData(
-      (state.value ?? current).copyWith(
+      current.copyWith(
         messages: baseMessages,
         isStreaming: true,
         streamingText: '',
@@ -257,28 +377,36 @@ final class ChatController extends AsyncNotifier<ChatState> {
       ),
     );
 
-    final filtered = PrivacyGuard.filter(context);
+    final loader = await ref.read(llmContextLoaderProvider.future);
+    final loadedContext = await loader.load(contextRefs);
+    if (!_isActive(requestId)) return false;
+    final filtered = PrivacyGuard.filter(loadedContext);
     final contextText = filtered.allowed
         .map((item) => '[${item.entityType}] ${item.title}\n${item.body}')
         .join('\n\n');
-    final requestMessages = _toRequestMessages(baseMessages, contextText);
-    final tools = ref.read(llmToolRegistryProvider).definitions;
+    final requestMessages = buildChatRequestMessages(
+      baseMessages,
+      contextText: contextText,
+    );
+    if (requestMessages.isEmpty) {
+      _setError('llm_error');
+      return false;
+    }
+
     final request = LlmChatRequest(
-      model: thread.model,
+      model: _effectiveModel(thread, config),
       messages: requestMessages,
       maxTokens: config.maxTokens,
-      tools: tools,
+      tools: ref.read(llmToolRegistryProvider).definitions,
     );
+    final provider = ref
+        .read(llmProviderFactoryProvider)
+        .create(config: config, apiKey: apiKey);
 
-    final provider = ref.read(llmProviderFactoryProvider).create(
-      config: config,
-      apiKey: key,
-    );
     final buffer = StringBuffer();
     LlmUsage? usage;
     final completer = Completer<void>();
     _activeCompleter = completer;
-
     try {
       _subscription = provider
           .streamChat(request)
@@ -287,21 +415,34 @@ final class ChatController extends AsyncNotifier<ChatState> {
               if (chunk.usage != null) usage = chunk.usage;
               if (chunk.delta.isEmpty) return;
               buffer.write(chunk.delta);
+              if (!_isActive(requestId)) return;
               final currentState = state.value;
-              if (currentState == null) return;
+              if (currentState == null ||
+                  currentState.activeThreadId != thread.id ||
+                  !currentState.isStreaming) {
+                return;
+              }
               state = AsyncData(
                 currentState.copyWith(streamingText: buffer.toString()),
               );
             },
             onError: (Object error, StackTrace stack) {
               unawaited(
-                _fail(thread!.id, error, stack, completer, buffer.toString()),
+                _fail(
+                  thread.id,
+                  requestId,
+                  error,
+                  stack,
+                  completer,
+                  buffer.toString(),
+                ),
               );
             },
             onDone: () {
               unawaited(
                 _complete(
-                  thread!.id,
+                  thread.id,
+                  requestId,
                   buffer.toString(),
                   usage,
                   completer,
@@ -311,27 +452,34 @@ final class ChatController extends AsyncNotifier<ChatState> {
             cancelOnError: true,
           );
     } on Object catch (error, stack) {
-      await _fail(thread.id, error, stack, completer, '');
-      return;
+      await _fail(
+        thread.id,
+        requestId,
+        error,
+        stack,
+        completer,
+        buffer.toString(),
+      );
     }
-    await completer.future;
-    _subscription = null;
-    if (identical(_activeCompleter, completer)) _activeCompleter = null;
+    unawaited(_awaitRequest(requestId, completer));
+    return true;
   }
 
   /// Останавливает текущий запрос и сохраняет уже полученный текст.
   Future<void> cancel() async {
+    _activeRequestId = null;
     final subscription = _subscription;
     _subscription = null;
     // Не ждём завершения cancel(): некоторые HTTP-потоки закрываются
     // асинхронно, а UI должен остановиться сразу.
     if (subscription != null) unawaited(subscription.cancel());
 
-    final current = state.value;
     final completer = _activeCompleter;
     _activeCompleter = null;
+    final current = state.value;
     if (current == null || !current.isStreaming) {
-      completer?.complete();
+      _sending = false;
+      if (completer != null && !completer.isCompleted) completer.complete();
       return;
     }
 
@@ -344,22 +492,27 @@ final class ChatController extends AsyncNotifier<ChatState> {
         null,
         errorCode: partial.isEmpty ? 'cancelled' : null,
       );
-      state = AsyncData(
-        partial.isEmpty
-            ? _withError(current, 'cancelled')
-            : current.copyWith(
-                isStreaming: false,
-                streamingText: '',
-                errorCode: null,
-              ),
-      );
-      await _refreshMessages(threadId);
+      final latest = state.value;
+      if (latest != null && latest.activeThreadId == threadId) {
+        state = AsyncData(
+          partial.isEmpty
+              ? _withError(latest, 'cancelled')
+              : latest.copyWith(
+                  isStreaming: false,
+                  streamingText: '',
+                  errorCode: null,
+                ),
+        );
+        await _refreshMessages(threadId, force: true);
+      }
     }
-    completer?.complete();
+    _sending = false;
+    if (completer != null && !completer.isCompleted) completer.complete();
   }
 
   Future<void> _complete(
     int threadId,
+    int requestId,
     String content,
     LlmUsage? usage,
     Completer<void> completer,
@@ -367,67 +520,49 @@ final class ChatController extends AsyncNotifier<ChatState> {
     if (completer.isCompleted) return;
     if (content.trim().isEmpty) {
       await _saveAssistant(threadId, '', null, errorCode: 'llm_error');
+      if (_isActive(requestId)) {
+        await _refreshMessages(threadId, requestId: requestId);
+        _setError('llm_error');
+      }
+      if (!completer.isCompleted) completer.complete();
+      return;
+    }
+
+    await _saveAssistant(threadId, content, usage);
+    if (_isActive(requestId)) {
+      await _refreshMessages(threadId, requestId: requestId);
       final current = state.value;
       if (current != null) {
         state = AsyncData(
           current.copyWith(
             isStreaming: false,
             streamingText: '',
-            errorCode: 'llm_error',
+            errorCode: null,
           ),
         );
       }
-      await _refreshMessages(threadId);
-      completer.complete();
-      return;
     }
-
-    await _saveAssistant(threadId, content, usage);
-    await _refreshMessages(threadId);
-    final current = state.value;
-    if (current != null) {
-      state = AsyncData(
-        current.copyWith(
-          isStreaming: false,
-          streamingText: '',
-          errorCode: null,
-        ),
-      );
-    }
-    completer.complete();
+    if (!completer.isCompleted) completer.complete();
   }
 
   Future<void> _fail(
     int threadId,
+    int requestId,
     Object error,
     StackTrace stack,
     Completer<void> completer,
     String partial,
   ) async {
     if (completer.isCompleted) return;
-    if (error is AppException) {
-      AppLogger.appError(error, stack);
-    } else {
-      AppLogger.e('ChatController: ошибка streaming-ответа', error, stack);
+    _logError('ChatController: ошибка streaming-ответа', error, stack);
+    // Partial-ответ с ошибкой тоже сохраняется, но с маркером: иначе
+    // следующий запрос отправит неполный ответ как успешную историю.
+    await _saveAssistant(threadId, partial, null, errorCode: 'llm_error');
+    if (_isActive(requestId)) {
+      await _refreshMessages(threadId, requestId: requestId);
+      _setError('llm_error');
     }
-    await _saveAssistant(
-      threadId,
-      partial,
-      null,
-      errorCode: partial.isEmpty ? 'llm_error' : null,
-    );
-    await _refreshMessages(threadId);
-    final current = state.value;
-    if (current != null) {
-      state = AsyncData(
-        current.copyWith(
-          isStreaming: false,
-          streamingText: '',
-          errorCode: partial.isEmpty ? 'llm_error' : null,
-        ),
-      );
-    }
-    completer.complete();
+    if (!completer.isCompleted) completer.complete();
   }
 
   Future<void> _saveAssistant(
@@ -448,19 +583,22 @@ final class ChatController extends AsyncNotifier<ChatState> {
         errorCode: errorCode,
       ),
     );
-    result.when(
-      success: (_) {},
-      failure: (error) => AppLogger.appError(error),
-    );
+    result.when(success: (_) {}, failure: (error) => AppLogger.appError(error));
   }
 
-  Future<void> _refreshMessages(int threadId) async {
+  Future<void> _refreshMessages(
+    int threadId, {
+    int? requestId,
+    bool force = false,
+  }) async {
+    if (!force && requestId != null && !_isActive(requestId)) return;
     final repo = await ref.read(chatRepositoryProvider.future);
     final result = await repo.listMessages(threadId);
     result.when(
       success: (messages) {
         final current = state.value;
-        if (current == null) return;
+        if (current == null || current.activeThreadId != threadId) return;
+        if (!force && requestId != null && !_isActive(requestId)) return;
         state = AsyncData(
           current.copyWith(
             messages: messages,
@@ -470,6 +608,51 @@ final class ChatController extends AsyncNotifier<ChatState> {
         );
       },
       failure: (error) => AppLogger.appError(error),
+    );
+  }
+
+  Future<void> _awaitRequest(int requestId, Completer<void> completer) async {
+    await completer.future;
+    if (identical(_activeCompleter, completer)) _activeCompleter = null;
+    if (_activeRequestId == requestId) {
+      _activeRequestId = null;
+      _sending = false;
+      _subscription = null;
+    }
+  }
+
+  /// Ждёт завершения текущего запроса (для тестов и фоновых сценариев).
+  Future<void> waitForIdle() async {
+    final completer = _activeCompleter;
+    if (completer != null && !completer.isCompleted) await completer.future;
+  }
+
+  /// Переключает приватность сохранённого сообщения.
+  Future<bool> setMessagePrivate(int messageId, bool isPrivate) async {
+    final current = state.value;
+    if (current == null) return false;
+    final repo = await ref.read(chatRepositoryProvider.future);
+    final result = await repo.setMessagePrivate(messageId, isPrivate);
+    return result.when(
+      success: (_) {
+        final latest = state.value;
+        if (latest == null) return false;
+        state = AsyncData(
+          latest.copyWith(
+            messages: [
+              for (final message in latest.messages)
+                message.id == messageId
+                    ? message.copyWith(isPrivateForLlm: isPrivate)
+                    : message,
+            ],
+          ),
+        );
+        return true;
+      },
+      failure: (error) {
+        AppLogger.appError(error);
+        return false;
+      },
     );
   }
 
@@ -486,6 +669,8 @@ final class ChatController extends AsyncNotifier<ChatState> {
     return defaultLlmConfig(configs);
   }
 
+  bool _isActive(int requestId) => _activeRequestId == requestId;
+
   void _setError(String code) {
     final current = state.value;
     if (current == null) return;
@@ -495,42 +680,21 @@ final class ChatController extends AsyncNotifier<ChatState> {
   static ChatState _withError(ChatState current, String code) =>
       current.copyWith(isStreaming: false, errorCode: code);
 
+  static String _effectiveModel(ChatThread thread, LlmProviderConfig config) =>
+      config.id == thread.providerConfigId ? thread.model : config.model;
+
+  static void _logError(String message, Object error, StackTrace stack) {
+    if (error is AppException) {
+      AppLogger.appError(error, stack);
+    } else {
+      AppLogger.e(message, error, stack);
+    }
+  }
+
   static String _titleFrom(String text) {
     final firstLine = text.split('\n').first.trim();
     if (firstLine.length <= 60) return firstLine;
     return '${firstLine.substring(0, 57)}…';
-  }
-
-  /// Ограничивает историю, чтобы не отправить в LLM весь архив.
-  static List<LlmMessage> _toRequestMessages(
-    List<ChatMessage> history,
-    String contextText,
-  ) {
-    final usable = history
-        .where((message) => message.errorCode == null && message.content.isNotEmpty)
-        .toList(growable: false);
-    final tail = usable.length > 40
-        ? usable.sublist(usable.length - 40)
-        : usable;
-    var totalChars = 0;
-    final selected = <ChatMessage>[];
-    for (final message in tail.reversed) {
-      if (totalChars + message.content.length > 60000 && selected.isNotEmpty) {
-        break;
-      }
-      selected.add(message);
-      totalChars += message.content.length;
-    }
-    final ordered = selected.reversed.toList(growable: false);
-    return [
-      for (final message in ordered)
-        LlmMessage(
-          role: message.role,
-          content: message == ordered.last && contextText.isNotEmpty
-              ? '${message.content}\n\n[context]\n$contextText'
-              : message.content,
-        ),
-    ];
   }
 }
 

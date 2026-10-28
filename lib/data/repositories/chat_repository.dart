@@ -23,6 +23,9 @@ abstract interface class ChatRepository {
   Future<Result<List<ChatMessage>>> listMessages(int threadId);
 
   Future<Result<ChatMessage>> appendMessage(ChatMessageDraft draft);
+
+  /// Помечает сообщение как исключённое из контекста следующих запросов.
+  Future<Result<void>> setMessagePrivate(int id, bool isPrivate);
 }
 
 /// Drift-реализация истории чата.
@@ -32,12 +35,13 @@ final class DriftChatRepository implements ChatRepository {
   final db.AppDatabase _db;
 
   @override
-  Future<Result<List<ChatThread>>> listThreads({
-    bool includeArchived = false,
-  }) {
+  Future<Result<List<ChatThread>>> listThreads({bool includeArchived = false}) {
     return RepositoryGuard.guard('ChatRepository.listThreads', () async {
       final query = _db.select(_db.chatThreads)
-        ..orderBy([(t) => OrderingTerm.desc(t.updatedAt)]);
+        ..orderBy([
+          (t) => OrderingTerm.desc(t.updatedAt),
+          (t) => OrderingTerm.desc(t.id),
+        ]);
       if (!includeArchived) {
         query.where((t) => t.archivedAt.isNull());
       }
@@ -96,14 +100,15 @@ final class DriftChatRepository implements ChatRepository {
           'ChatRepository: заголовок треда не может быть пустым',
         );
       }
-      final updated = await (_db.update(
-        _db.chatThreads,
-      )..where((t) => t.id.equals(id))).write(
-        db.ChatThreadsCompanion(
-          title: Value(normalized),
-          updatedAt: Value(DateTime.now().toUtc()),
-        ),
-      );
+      final updated =
+          await (_db.update(
+            _db.chatThreads,
+          )..where((t) => t.id.equals(id))).write(
+            db.ChatThreadsCompanion(
+              title: Value(normalized),
+              updatedAt: Value(DateTime.now().toUtc()),
+            ),
+          );
       if (updated == 0) {
         throw ValidationException('ChatRepository: тред $id не найден');
       }
@@ -117,9 +122,7 @@ final class DriftChatRepository implements ChatRepository {
   @override
   Future<Result<void>> deleteThread(int id) {
     return RepositoryGuard.guard('ChatRepository.deleteThread', () async {
-      await (_db.delete(
-        _db.chatThreads,
-      )..where((t) => t.id.equals(id))).go();
+      await (_db.delete(_db.chatThreads)..where((t) => t.id.equals(id))).go();
     });
   }
 
@@ -129,7 +132,10 @@ final class DriftChatRepository implements ChatRepository {
       final rows =
           await (_db.select(_db.chatMessages)
                 ..where((m) => m.threadId.equals(threadId))
-                ..orderBy([(m) => OrderingTerm.asc(m.createdAt)]))
+                ..orderBy([
+                  (m) => OrderingTerm.asc(m.createdAt),
+                  (m) => OrderingTerm.asc(m.id),
+                ]))
               .get();
       return [for (final row in rows) _message(row)];
     });
@@ -144,28 +150,44 @@ final class DriftChatRepository implements ChatRepository {
         );
       }
       final now = DateTime.now().toUtc();
-      final id = await _db
-          .into(_db.chatMessages)
-          .insert(
-            db.ChatMessagesCompanion.insert(
-              threadId: draft.threadId,
-              role: draft.role.dbValue,
-              content: draft.content,
-              promptTokens: Value(draft.promptTokens),
-              completionTokens: Value(draft.completionTokens),
-              errorCode: Value(draft.errorCode),
-              createdAt: now,
-            ),
+      return _db.transaction(() async {
+        final id = await _db
+            .into(_db.chatMessages)
+            .insert(
+              db.ChatMessagesCompanion.insert(
+                threadId: draft.threadId,
+                role: draft.role.dbValue,
+                content: draft.content,
+                promptTokens: Value(draft.promptTokens),
+                completionTokens: Value(draft.completionTokens),
+                errorCode: Value(draft.errorCode),
+                createdAt: now,
+                isPrivateForLlm: Value(draft.isPrivateForLlm),
+              ),
+            );
+        await (_db.update(_db.chatThreads)
+              ..where((t) => t.id.equals(draft.threadId)))
+            .write(db.ChatThreadsCompanion(updatedAt: Value(now)));
+        final row = await (_db.select(
+          _db.chatMessages,
+        )..where((m) => m.id.equals(id))).getSingle();
+        return _message(row);
+      });
+    });
+  }
+
+  @override
+  Future<Result<void>> setMessagePrivate(int id, bool isPrivate) {
+    return RepositoryGuard.guard('ChatRepository.setMessagePrivate', () async {
+      final updated =
+          await (_db.update(
+            _db.chatMessages,
+          )..where((m) => m.id.equals(id))).write(
+            db.ChatMessagesCompanion(isPrivateForLlm: Value(isPrivate)),
           );
-      await (_db.update(
-        _db.chatThreads,
-      )..where((t) => t.id.equals(draft.threadId))).write(
-        db.ChatThreadsCompanion(updatedAt: Value(now)),
-      );
-      final row = await (_db.select(
-        _db.chatMessages,
-      )..where((m) => m.id.equals(id))).getSingle();
-      return _message(row);
+      if (updated == 0) {
+        throw ValidationException('ChatRepository: сообщение $id не найдено');
+      }
     });
   }
 
@@ -188,5 +210,6 @@ final class DriftChatRepository implements ChatRepository {
     completionTokens: row.completionTokens,
     errorCode: row.errorCode,
     createdAt: row.createdAt,
+    isPrivateForLlm: row.isPrivateForLlm,
   );
 }

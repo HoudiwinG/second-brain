@@ -19,6 +19,7 @@ import '../data/repositories/tags_repository.dart';
 import '../data/repositories/tasks_repository.dart';
 import '../features/finance/domain/finance_transaction.dart';
 import '../features/ideas/domain/idea_entry.dart';
+import '../features/llm/application/llm_context_loader.dart';
 import '../features/llm/data/llm_provider_factory.dart';
 import '../features/llm/tools/llm_tool_registry.dart';
 import '../features/notes/domain/category.dart';
@@ -105,6 +106,12 @@ final llmConfigRepositoryProvider = FutureProvider<LlmConfigRepository>((
 ) async {
   final db = await ref.watch(appDatabaseProvider.future);
   return DriftLlmConfigRepository(db, ref.watch(secretStoreProvider));
+});
+
+/// Production-загрузчик LLM-контекста: флаги приватности берутся из БД.
+final llmContextLoaderProvider = FutureProvider<LlmContextLoader>((ref) async {
+  final db = await ref.watch(appDatabaseProvider.future);
+  return DriftLlmContextLoader(db);
 });
 
 /// Фабрика LLM-провайдеров; HTTP-клиент живёт вместе с ProviderScope.

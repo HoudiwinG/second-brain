@@ -8,6 +8,7 @@ import '../../../core/result/result.dart';
 import '../domain/llm_chat.dart';
 import '../domain/llm_provider.dart';
 import '../domain/llm_provider_config.dart';
+import '../domain/llm_provider_type.dart';
 import '../domain/llm_tool.dart';
 
 /// OpenAI-compatible Chat Completions API.
@@ -34,21 +35,27 @@ final class OpenAiCompatibleProvider extends LlmProvider {
   @override
   Stream<LlmChunk> streamChat(LlmChatRequest request) async* {
     _validate(request);
-    final response = await _client.streamLines(
+    var response = await _client.streamLines(
       method: 'POST',
       path: '/chat/completions',
       headers: _headers,
-      body: {
-        'model': request.model,
-        'messages': [for (final message in request.messages) message.toOpenAiJson()],
-        'stream': true,
-        'stream_options': {'include_usage': true},
-        'max_tokens': request.maxTokens,
-        if (request.temperature != null) 'temperature': request.temperature,
-        if (request.tools.isNotEmpty)
-          'tools': [for (final tool in request.tools) tool.toOpenAiJson()],
-      },
+      body: _chatBody(request, includeUsage: true),
     );
+    // Старые Ollama/vLLM возвращают 400 на незнакомый stream_options.
+    // Повторяем один раз без него; usage в таком ответе может отсутствовать.
+    if (response is Failure<Stream<String>>) {
+      final error = response.error;
+      if (config.type == LlmProviderType.openaiCompatible &&
+          error is NetworkException &&
+          (error.statusCode == 400 || error.statusCode == 422)) {
+        response = await _client.streamLines(
+          method: 'POST',
+          path: '/chat/completions',
+          headers: _headers,
+          body: _chatBody(request, includeUsage: false),
+        );
+      }
+    }
     final lines = response.when<Stream<String>>(
       success: (stream) => stream,
       failure: (error) => throw error,
@@ -104,13 +111,35 @@ final class OpenAiCompatibleProvider extends LlmProvider {
     yield LlmChunk(done: true, usage: lastUsage);
   }
 
+  Map<String, Object?> _chatBody(
+    LlmChatRequest request, {
+    required bool includeUsage,
+  }) => {
+    'model': request.model,
+    'messages': [
+      for (final message in request.messages) message.toOpenAiJson(),
+    ],
+    'stream': true,
+    if (includeUsage) 'stream_options': {'include_usage': true},
+    'max_tokens': request.maxTokens,
+    if (request.temperature != null) 'temperature': request.temperature,
+    if (request.tools.isNotEmpty)
+      'tools': [for (final tool in request.tools) tool.toOpenAiJson()],
+  };
+
+  String get _embeddingModel {
+    final configured = config.embeddingModel?.trim();
+    if (configured != null && configured.isNotEmpty) return configured;
+    return config.type.defaultEmbeddingModel ?? config.model;
+  }
+
   @override
   Future<Result<List<double>>> embed(String input) async {
     final response = await _client.requestJson<List<double>>(
       method: 'POST',
       path: '/embeddings',
       headers: _headers,
-      body: {'model': config.model, 'input': input},
+      body: {'model': _embeddingModel, 'input': input},
       parse: (json) {
         if (json is! Map<String, Object?>) {
           throw const LlmException('LLM: некорректный ответ embeddings');
@@ -120,7 +149,9 @@ final class OpenAiCompatibleProvider extends LlmProvider {
           throw const LlmException('LLM: пустой ответ embeddings');
         }
         final first = data.first;
-        final embedding = first is Map<String, Object?> ? first['embedding'] : null;
+        final embedding = first is Map<String, Object?>
+            ? first['embedding']
+            : null;
         if (embedding is! List) {
           throw const LlmException('LLM: нет вектора embeddings');
         }

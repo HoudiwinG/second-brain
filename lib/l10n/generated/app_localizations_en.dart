@@ -451,6 +451,33 @@ class AppLocalizationsEn extends AppLocalizations {
   String get llmApiKeyStored => 'Key saved';
 
   @override
+  String get llmApiKeyNotStored => 'No key';
+
+  @override
+  String get llmApiKeyDelete => 'Delete saved key';
+
+  @override
+  String get llmApiKeyDeleteHint =>
+      'The saved key will be deleted when you save.';
+
+  @override
+  String get llmEmbeddingModel => 'Embedding model';
+
+  @override
+  String get llmEmbeddingModelHint =>
+      'Used for RAG, separate from the chat model';
+
+  @override
+  String get validationRequired => 'Required';
+
+  @override
+  String get validationMaxTokens => 'Enter a number from 1 to 32768';
+
+  @override
+  String get validationBaseUrl =>
+      'Use an http(s) URL; http is allowed only for localhost';
+
+  @override
   String get llmMaxTokens => 'Output token limit';
 
   @override
@@ -519,7 +546,28 @@ class AppLocalizationsEn extends AppLocalizations {
       'Could not get a response. Check the key and network.';
 
   @override
+  String get chatRetry => 'Retry';
+
+  @override
+  String get chatApiKeyMissing =>
+      'No API key saved for this provider. Add it in Settings.';
+
+  @override
   String get chatCancelled => 'Response stopped';
+
+  @override
+  String get chatPrivateMessage => 'Excluded from context';
+
+  @override
+  String get chatMarkPrivate => 'Exclude from future context';
+
+  @override
+  String get chatUnmarkPrivate => 'Include in future context';
+
+  @override
+  String chatModelParams(String model, int tokens) {
+    return '$model · $tokens tokens';
+  }
 
   @override
   String get chatPrivacyHint =>

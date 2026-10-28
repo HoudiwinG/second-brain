@@ -15,6 +15,8 @@ final class LlmProviderConfig {
     required this.isDefault,
     required this.createdAt,
     required this.updatedAt,
+    this.embeddingModel,
+    this.hasApiKey = false,
   });
 
   final int id;
@@ -28,10 +30,11 @@ final class LlmProviderConfig {
   final DateTime createdAt;
   final DateTime updatedAt;
 
-  /// Есть ли у конфигурации сохранённый ключ (проверяется репозиторием).
-  bool get isLocal =>
-      type == LlmProviderType.openaiCompatible &&
-      (baseUrl.contains('localhost') || baseUrl.contains('127.0.0.1'));
+  /// Модель embeddings. null — использовать тип/чат-модель по умолчанию.
+  final String? embeddingModel;
+
+  /// true, если в secure storage есть непустой ключ. Сам ключ не хранится.
+  final bool hasApiKey;
 }
 
 /// Данные создания/редактирования конфигурации.
@@ -42,6 +45,7 @@ final class LlmConfigDraft {
     required this.baseUrl,
     required this.model,
     this.maxTokens = 1024,
+    this.embeddingModel,
     this.apiKey,
     this.isDefault = false,
   });
@@ -51,6 +55,9 @@ final class LlmConfigDraft {
   final String baseUrl;
   final String model;
   final int maxTokens;
+
+  /// Модель embeddings; пустое значение — умолчание провайдера.
+  final String? embeddingModel;
 
   /// null при обновлении означает «не менять ключ»; пустая строка — удалить.
   final String? apiKey;
@@ -63,6 +70,7 @@ final class LlmConfigDraft {
     String? baseUrl,
     String? model,
     int? maxTokens,
+    Object? embeddingModel = _unset,
     Object? apiKey = _unset,
     bool? isDefault,
   }) => LlmConfigDraft(
@@ -71,6 +79,9 @@ final class LlmConfigDraft {
     baseUrl: baseUrl ?? this.baseUrl,
     model: model ?? this.model,
     maxTokens: maxTokens ?? this.maxTokens,
+    embeddingModel: identical(embeddingModel, _unset)
+        ? this.embeddingModel
+        : embeddingModel as String?,
     apiKey: identical(apiKey, _unset) ? this.apiKey : apiKey as String?,
     isDefault: isDefault ?? this.isDefault,
   );

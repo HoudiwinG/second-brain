@@ -43,8 +43,18 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   Future<void> _send() async {
     final text = _input.text;
     if (text.trim().isEmpty) return;
-    _input.clear();
-    await ref.read(chatControllerProvider.notifier).sendMessage(text);
+    final accepted = await ref
+        .read(chatControllerProvider.notifier)
+        .sendMessage(text);
+    if (!mounted) return;
+    // Поле очищается только после подтверждения приёма: при ошибке
+    // конфигурации/ключа текст остаётся у пользователя.
+    if (accepted) _input.clear();
+    _scrollToBottom();
+  }
+
+  Future<void> _retry() async {
+    await ref.read(chatControllerProvider.notifier).retryLast();
     _scrollToBottom();
   }
 
@@ -68,10 +78,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
         .read(chatControllerProvider.notifier)
         .deleteThread(thread.id);
     if (!mounted) return;
-    showMessageSnackBar(
-      context,
-      ok ? lcm.chatThreadDeleted : lcm.chatError,
-    );
+    showMessageSnackBar(context, ok ? lcm.chatThreadDeleted : lcm.chatError);
   }
 
   @override
@@ -95,41 +102,38 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
           ),
         ],
       ),
-      body: configs.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, stack) => ErrorState(
-          message: lcm.errorUnexpected,
-          retryLabel: lcm.retryAction,
-          onRetry: () => ref.invalidate(llmConfigControllerProvider),
-        ),
-        data: (items) {
-          if (items.isEmpty) {
-            return EmptyListState(
-              icon: Icons.key_outlined,
-              message: lcm.chatNoConfig,
-            ).withSettingsButton(lcm);
-          }
-          return chat.when(
-            loading: () => const Center(child: CircularProgressIndicator()),
-            error: (error, stack) => ErrorState(
+      body: configs.hasError
+          ? ErrorState(
               message: lcm.errorUnexpected,
               retryLabel: lcm.retryAction,
-              onRetry: () => ref.invalidate(chatControllerProvider),
+              onRetry: () => ref.invalidate(llmConfigControllerProvider),
+            )
+          : chat.when(
+              loading: () => const Center(child: CircularProgressIndicator()),
+              error: (error, stack) => ErrorState(
+                message: lcm.errorUnexpected,
+                retryLabel: lcm.retryAction,
+                onRetry: () => ref.invalidate(chatControllerProvider),
+              ),
+              data: (state) => _ChatBody(
+                state: state,
+                configs: configs.value ?? const [],
+                input: _input,
+                scroll: _scroll,
+                onSend: _send,
+                onStop: () =>
+                    ref.read(chatControllerProvider.notifier).cancel(),
+                onNewThread: () => _newThread(lcm),
+                onDeleteThread: () => _deleteThread(lcm),
+                onOpenSettings: () => context.go('/settings'),
+                onRetry: _retry,
+                onTogglePrivacy: (messageId, isPrivate) {
+                  ref
+                      .read(chatControllerProvider.notifier)
+                      .setMessagePrivate(messageId, isPrivate);
+                },
+              ),
             ),
-            data: (state) => _ChatBody(
-              state: state,
-              configs: items,
-              input: _input,
-              scroll: _scroll,
-              onSend: _send,
-              onStop: () => ref.read(chatControllerProvider.notifier).cancel(),
-              onNewThread: () => _newThread(lcm),
-              onDeleteThread: () => _deleteThread(lcm),
-              onOpenSettings: () => context.go('/settings'),
-            ),
-          );
-        },
-      ),
     );
   }
 }
@@ -145,6 +149,8 @@ class _ChatBody extends StatelessWidget {
     required this.onNewThread,
     required this.onDeleteThread,
     required this.onOpenSettings,
+    required this.onRetry,
+    required this.onTogglePrivacy,
   });
 
   final ChatState state;
@@ -156,6 +162,8 @@ class _ChatBody extends StatelessWidget {
   final VoidCallback onNewThread;
   final VoidCallback onDeleteThread;
   final VoidCallback onOpenSettings;
+  final VoidCallback onRetry;
+  final void Function(int messageId, bool isPrivate) onTogglePrivacy;
 
   LlmProviderConfig? get _activeConfig {
     final id = state.activeThread?.providerConfigId;
@@ -165,27 +173,51 @@ class _ChatBody extends StatelessWidget {
     return defaultLlmConfig(configs);
   }
 
+  String? get _modelLabel {
+    final config = _activeConfig;
+    if (config == null) return null;
+    final thread = state.activeThread;
+    return config.id == thread?.providerConfigId ? thread!.model : config.model;
+  }
+
   @override
   Widget build(BuildContext context) {
     final lcm = AppLocalizations.of(context)!;
+    final hasConfigs = configs.isNotEmpty;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
+        if (!hasConfigs)
+          _ConfigBanner(
+            message: lcm.chatNoConfig,
+            actionLabel: lcm.chatOpenSettings,
+            onOpenSettings: onOpenSettings,
+          ),
         _ThreadBar(
           state: state,
           config: _activeConfig,
-          onSelect: (id) => ProviderScope.containerOf(
-            context,
-          ).read(chatControllerProvider.notifier).selectThread(id),
+          modelLabel: _modelLabel,
+          onSelect: (id) =>
+              ProviderScope.containerOf(context)
+                  .read(chatControllerProvider.notifier)
+                  .selectThread(id),
           onNewThread: onNewThread,
           onDelete: onDeleteThread,
         ),
         const Divider(height: 1),
         Expanded(
-          child: _MessagesView(state: state, scroll: scroll),
+          child: _MessagesView(
+            state: state,
+            scroll: scroll,
+            onTogglePrivacy: onTogglePrivacy,
+          ),
         ),
         if (state.errorCode != null)
-          _ErrorBanner(code: state.errorCode!, onOpenSettings: onOpenSettings),
+          _ErrorBanner(
+            code: state.errorCode!,
+            onOpenSettings: onOpenSettings,
+            onRetry: onRetry,
+          ),
         Padding(
           padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
           child: Text(
@@ -196,6 +228,7 @@ class _ChatBody extends StatelessWidget {
         _Composer(
           controller: input,
           isStreaming: state.isStreaming,
+          enabled: hasConfigs,
           onSend: onSend,
           onStop: onStop,
         ),
@@ -204,10 +237,42 @@ class _ChatBody extends StatelessWidget {
   }
 }
 
+class _ConfigBanner extends StatelessWidget {
+  const _ConfigBanner({
+    required this.message,
+    required this.actionLabel,
+    required this.onOpenSettings,
+  });
+
+  final String message;
+  final String actionLabel;
+  final VoidCallback onOpenSettings;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+    return Material(
+      color: colors.secondaryContainer,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        child: Row(
+          children: [
+            Icon(Icons.key_outlined, color: colors.onSecondaryContainer),
+            const SizedBox(width: 8),
+            Expanded(child: Text(message)),
+            TextButton(onPressed: onOpenSettings, child: Text(actionLabel)),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 class _ThreadBar extends StatelessWidget {
   const _ThreadBar({
     required this.state,
     required this.config,
+    required this.modelLabel,
     required this.onSelect,
     required this.onNewThread,
     required this.onDelete,
@@ -215,6 +280,7 @@ class _ThreadBar extends StatelessWidget {
 
   final ChatState state;
   final LlmProviderConfig? config;
+  final String? modelLabel;
   final ValueChanged<int> onSelect;
   final VoidCallback onNewThread;
   final VoidCallback onDelete;
@@ -252,11 +318,10 @@ class _ThreadBar extends StatelessWidget {
                     },
                   ),
           ),
-          if (config != null) ...[
+          if (config != null && modelLabel != null) ...[
             const SizedBox(width: 12),
             Text(
-              '${state.activeThread?.model ?? config!.model} · '
-              '${config!.maxTokens}',
+              lcm.chatModelParams(modelLabel!, config!.maxTokens),
               style: Theme.of(context).textTheme.bodySmall,
             ),
           ],
@@ -278,10 +343,15 @@ class _ThreadBar extends StatelessWidget {
 }
 
 class _MessagesView extends StatelessWidget {
-  const _MessagesView({required this.state, required this.scroll});
+  const _MessagesView({
+    required this.state,
+    required this.scroll,
+    required this.onTogglePrivacy,
+  });
 
   final ChatState state;
   final ScrollController scroll;
+  final void Function(int messageId, bool isPrivate) onTogglePrivacy;
 
   @override
   Widget build(BuildContext context) {
@@ -303,7 +373,12 @@ class _MessagesView extends StatelessWidget {
             streaming: true,
           );
         }
-        return _MessageBubble.forMessage(state.messages[index]);
+        final message = state.messages[index];
+        return _MessageBubble.forMessage(
+          message,
+          onTogglePrivacy: () =>
+              onTogglePrivacy(message.id, !message.isPrivateForLlm),
+        );
       },
     );
   }
@@ -315,18 +390,27 @@ class _MessageBubble extends StatelessWidget {
     required this.content,
     this.streaming = false,
     this.errorCode,
+    this.isPrivateForLlm = false,
+    this.onTogglePrivacy,
   });
 
-  factory _MessageBubble.forMessage(ChatMessage message) => _MessageBubble(
+  factory _MessageBubble.forMessage(
+    ChatMessage message, {
+    required VoidCallback onTogglePrivacy,
+  }) => _MessageBubble(
     role: message.role,
     content: message.content,
     errorCode: message.errorCode,
+    isPrivateForLlm: message.isPrivateForLlm,
+    onTogglePrivacy: onTogglePrivacy,
   );
 
   final LlmRole role;
   final String content;
   final bool streaming;
   final String? errorCode;
+  final bool isPrivateForLlm;
+  final VoidCallback? onTogglePrivacy;
 
   @override
   Widget build(BuildContext context) {
@@ -358,22 +442,50 @@ class _MessageBubble extends StatelessWidget {
               style: theme.textTheme.labelSmall,
             ),
             const SizedBox(height: 4),
-            if (errorText != null)
-              Text(
-                errorText,
-                style: TextStyle(color: theme.colorScheme.error),
-              )
-            else if (content.isEmpty && streaming)
+            if (content.isEmpty && streaming)
               const SizedBox(
                 height: 18,
                 width: 18,
                 child: CircularProgressIndicator(strokeWidth: 2),
               )
-            else
+            else if (content.isNotEmpty)
               SelectableText(content),
+            if (errorText != null) ...[
+              if (content.isNotEmpty) const SizedBox(height: 6),
+              Text(errorText, style: TextStyle(color: theme.colorScheme.error)),
+            ],
             if (streaming) ...[
               const SizedBox(height: 6),
               const LinearProgressIndicator(minHeight: 2),
+            ],
+            if (onTogglePrivacy != null) ...[
+              const SizedBox(height: 2),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (isPrivateForLlm)
+                    Text(
+                      lcm.chatPrivateMessage,
+                      style: theme.textTheme.labelSmall?.copyWith(
+                        color: theme.colorScheme.tertiary,
+                      ),
+                    ),
+                  const Spacer(),
+                  IconButton(
+                    visualDensity: VisualDensity.compact,
+                    tooltip: isPrivateForLlm
+                        ? lcm.chatUnmarkPrivate
+                        : lcm.chatMarkPrivate,
+                    onPressed: onTogglePrivacy,
+                    icon: Icon(
+                      isPrivateForLlm
+                          ? Icons.visibility_off_outlined
+                          : Icons.visibility_outlined,
+                      size: 18,
+                    ),
+                  ),
+                ],
+              ),
             ],
           ],
         ),
@@ -383,10 +495,15 @@ class _MessageBubble extends StatelessWidget {
 }
 
 class _ErrorBanner extends StatelessWidget {
-  const _ErrorBanner({required this.code, required this.onOpenSettings});
+  const _ErrorBanner({
+    required this.code,
+    required this.onOpenSettings,
+    required this.onRetry,
+  });
 
   final String code;
   final VoidCallback onOpenSettings;
+  final VoidCallback onRetry;
 
   @override
   Widget build(BuildContext context) {
@@ -394,9 +511,15 @@ class _ErrorBanner extends StatelessWidget {
     final text = switch (code) {
       'no_config' => lcm.chatNoConfig,
       'provider_missing' => lcm.chatProviderMissing,
+      'api_key_missing' => lcm.chatApiKeyMissing,
       'cancelled' => lcm.chatCancelled,
       _ => lcm.chatError,
     };
+    final configError =
+        code == 'no_config' ||
+        code == 'provider_missing' ||
+        code == 'api_key_missing';
+    final canRetry = code == 'llm_error';
     return Material(
       color: Theme.of(context).colorScheme.errorContainer,
       child: Padding(
@@ -409,10 +532,13 @@ class _ErrorBanner extends StatelessWidget {
             ),
             const SizedBox(width: 8),
             Expanded(child: Text(text)),
-            TextButton(
-              onPressed: onOpenSettings,
-              child: Text(lcm.chatOpenSettings),
-            ),
+            if (configError)
+              TextButton(
+                onPressed: onOpenSettings,
+                child: Text(lcm.chatOpenSettings),
+              ),
+            if (canRetry)
+              TextButton(onPressed: onRetry, child: Text(lcm.chatRetry)),
           ],
         ),
       ),
@@ -424,18 +550,21 @@ class _Composer extends StatelessWidget {
   const _Composer({
     required this.controller,
     required this.isStreaming,
+    required this.enabled,
     required this.onSend,
     required this.onStop,
   });
 
   final TextEditingController controller;
   final bool isStreaming;
+  final bool enabled;
   final VoidCallback onSend;
   final VoidCallback onStop;
 
   @override
   Widget build(BuildContext context) {
     final lcm = AppLocalizations.of(context)!;
+    final canSend = enabled || isStreaming;
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
       child: Row(
@@ -444,42 +573,26 @@ class _Composer extends StatelessWidget {
           Expanded(
             child: TextField(
               controller: controller,
+              enabled: enabled || isStreaming,
               minLines: 1,
               maxLines: 5,
               textInputAction: TextInputAction.send,
               onSubmitted: (_) {
-                if (!isStreaming) onSend();
+                if (!isStreaming && enabled) onSend();
               },
-              decoration: dataFieldDecoration(lcm.chatInputHint),
+              decoration: dataFieldDecoration(
+                enabled ? lcm.chatInputHint : lcm.chatNoConfig,
+              ),
             ),
           ),
           const SizedBox(width: 8),
           IconButton.filled(
             tooltip: isStreaming ? lcm.chatStop : lcm.chatSend,
-            onPressed: isStreaming ? onStop : onSend,
+            onPressed: canSend ? (isStreaming ? onStop : onSend) : null,
             icon: Icon(isStreaming ? Icons.stop : Icons.send),
           ),
         ],
       ),
     );
   }
-}
-
-extension on EmptyListState {
-  Widget withSettingsButton(AppLocalizations lcm) => Center(
-    child: Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        this,
-        const SizedBox(height: 12),
-        Builder(
-          builder: (context) => FilledButton.icon(
-            onPressed: () => context.go('/settings'),
-            icon: const Icon(Icons.settings_outlined),
-            label: Text(lcm.chatOpenSettings),
-          ),
-        ),
-      ],
-    ),
-  );
 }

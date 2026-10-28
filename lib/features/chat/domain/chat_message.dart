@@ -11,6 +11,7 @@ final class ChatMessage {
     required this.completionTokens,
     required this.errorCode,
     required this.createdAt,
+    this.isPrivateForLlm = false,
   });
 
   final int id;
@@ -21,6 +22,21 @@ final class ChatMessage {
   final int? completionTokens;
   final String? errorCode;
   final DateTime createdAt;
+
+  /// true — сообщение не включается в контекст следующих запросов.
+  final bool isPrivateForLlm;
+
+  ChatMessage copyWith({bool? isPrivateForLlm}) => ChatMessage(
+    id: id,
+    threadId: threadId,
+    role: role,
+    content: content,
+    promptTokens: promptTokens,
+    completionTokens: completionTokens,
+    errorCode: errorCode,
+    createdAt: createdAt,
+    isPrivateForLlm: isPrivateForLlm ?? this.isPrivateForLlm,
+  );
 }
 
 /// Данные для добавления сообщения.
@@ -32,6 +48,7 @@ final class ChatMessageDraft {
     this.promptTokens,
     this.completionTokens,
     this.errorCode,
+    this.isPrivateForLlm = false,
   });
 
   final int threadId;
@@ -40,4 +57,5 @@ final class ChatMessageDraft {
   final int? promptTokens;
   final int? completionTokens;
   final String? errorCode;
+  final bool isPrivateForLlm;
 }

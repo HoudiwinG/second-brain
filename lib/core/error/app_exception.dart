@@ -14,11 +14,7 @@ sealed class AppException implements Exception {
   final StackTrace? stackTrace;
 
   @override
-  String toString() {
-    final sb = StringBuffer('$runtimeType: $message');
-    if (cause != null) sb.write(' | cause: $cause');
-    return sb.toString();
-  }
+  String toString() => '$runtimeType: $message';
 }
 
 /// Операция не могла быть выполнена — неверные входные данные.
@@ -33,10 +29,19 @@ final class DataException extends AppException {
 
 /// Ошибка сетевого/API-слоя.
 final class NetworkException extends AppException {
-  const NetworkException(super.message, {super.cause, super.stackTrace, this.retryable = false});
+  const NetworkException(
+    super.message, {
+    super.cause,
+    super.stackTrace,
+    this.retryable = false,
+    this.statusCode,
+  });
 
   /// Повторяемая ли ошибка (сеть недоступна, таймаут, 5xx).
   final bool retryable;
+
+  /// HTTP-статус, если ошибка получена от сервера. Тело ответа не хранится.
+  final int? statusCode;
 }
 
 /// Ошибка интеграции с внешним сервисом (почта, календарь и т.п.).

@@ -956,6 +956,54 @@ abstract class AppLocalizations {
   /// **'Key saved'**
   String get llmApiKeyStored;
 
+  /// No description provided for @llmApiKeyNotStored.
+  ///
+  /// In en, this message translates to:
+  /// **'No key'**
+  String get llmApiKeyNotStored;
+
+  /// No description provided for @llmApiKeyDelete.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete saved key'**
+  String get llmApiKeyDelete;
+
+  /// No description provided for @llmApiKeyDeleteHint.
+  ///
+  /// In en, this message translates to:
+  /// **'The saved key will be deleted when you save.'**
+  String get llmApiKeyDeleteHint;
+
+  /// No description provided for @llmEmbeddingModel.
+  ///
+  /// In en, this message translates to:
+  /// **'Embedding model'**
+  String get llmEmbeddingModel;
+
+  /// No description provided for @llmEmbeddingModelHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Used for RAG, separate from the chat model'**
+  String get llmEmbeddingModelHint;
+
+  /// No description provided for @validationRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Required'**
+  String get validationRequired;
+
+  /// No description provided for @validationMaxTokens.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a number from 1 to 32768'**
+  String get validationMaxTokens;
+
+  /// No description provided for @validationBaseUrl.
+  ///
+  /// In en, this message translates to:
+  /// **'Use an http(s) URL; http is allowed only for localhost'**
+  String get validationBaseUrl;
+
   /// No description provided for @llmMaxTokens.
   ///
   /// In en, this message translates to:
@@ -1088,11 +1136,47 @@ abstract class AppLocalizations {
   /// **'Could not get a response. Check the key and network.'**
   String get chatError;
 
+  /// No description provided for @chatRetry.
+  ///
+  /// In en, this message translates to:
+  /// **'Retry'**
+  String get chatRetry;
+
+  /// No description provided for @chatApiKeyMissing.
+  ///
+  /// In en, this message translates to:
+  /// **'No API key saved for this provider. Add it in Settings.'**
+  String get chatApiKeyMissing;
+
   /// No description provided for @chatCancelled.
   ///
   /// In en, this message translates to:
   /// **'Response stopped'**
   String get chatCancelled;
+
+  /// No description provided for @chatPrivateMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Excluded from context'**
+  String get chatPrivateMessage;
+
+  /// No description provided for @chatMarkPrivate.
+  ///
+  /// In en, this message translates to:
+  /// **'Exclude from future context'**
+  String get chatMarkPrivate;
+
+  /// No description provided for @chatUnmarkPrivate.
+  ///
+  /// In en, this message translates to:
+  /// **'Include in future context'**
+  String get chatUnmarkPrivate;
+
+  /// No description provided for @chatModelParams.
+  ///
+  /// In en, this message translates to:
+  /// **'{model} · {tokens} tokens'**
+  String chatModelParams(String model, int tokens);
 
   /// No description provided for @chatPrivacyHint.
   ///

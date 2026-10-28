@@ -108,8 +108,8 @@ final class ApiClient {
         final retryable = _isRetryableStatus(streamed.statusCode);
         lastError = NetworkException(
           'ApiClient: HTTP ${streamed.statusCode} ($method $path)',
-          cause: {'statusCode': streamed.statusCode},
           retryable: retryable,
+          statusCode: streamed.statusCode,
         );
         AppLogger.w(
           'ApiClient: попытка $attempt/$maxRetries, HTTP ${streamed.statusCode}',

@@ -141,9 +141,17 @@ final class GoogleProvider extends LlmProvider {
     yield LlmChunk(done: true, usage: lastUsage);
   }
 
+  String get _embeddingModelId {
+    final configured = config.embeddingModel?.trim();
+    final raw = configured != null && configured.isNotEmpty
+        ? configured
+        : (config.type.defaultEmbeddingModel ?? config.model);
+    return raw.startsWith('models/') ? raw.substring(7) : raw;
+  }
+
   @override
   Future<Result<List<double>>> embed(String input) async {
-    final modelId = _modelId;
+    final modelId = _embeddingModelId;
     return _client.requestJson<List<double>>(
       method: 'POST',
       path: '/models/${Uri.encodeComponent(modelId)}:embedContent',

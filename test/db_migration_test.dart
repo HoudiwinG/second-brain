@@ -16,14 +16,14 @@ import 'helpers/in_memory_db.dart';
 ///
 /// Нужна, чтобы проверить политику ADR-012: непокрытый переход onUpgrade
 /// обязан падать, а не молча создавать недостающие таблицы.
-final class _AppDatabaseV5 extends AppDatabase {
-  _AppDatabaseV5(super.executor);
+final class _AppDatabaseV6 extends AppDatabase {
+  _AppDatabaseV6(super.executor);
 
   @override
-  int get schemaVersion => 5;
+  int get schemaVersion => 6;
 }
 
-/// База, которая «не понимает» файл v4: нужна для проверки downgrade.
+/// База, которая «не понимает» файл v5: нужна для проверки downgrade.
 final class _AppDatabaseV3 extends AppDatabase {
   _AppDatabaseV3(super.executor);
 
@@ -33,11 +33,11 @@ final class _AppDatabaseV3 extends AppDatabase {
 
 /// Интеграционные тесты миграций drift.
 void main() {
-  group('AppDatabase схема v4', () {
-    test('schemaVersion = 4 (ядро, напоминания и LLM-слой)', () {
+  group('AppDatabase схема v5', () {
+    test('schemaVersion = 5 (ядро, напоминания и LLM-слой)', () {
       final db = InMemoryDbFactory.open();
       addTearDown(db.close);
-      expect(db.schemaVersion, 4);
+      expect(db.schemaVersion, 5);
     });
 
     test('onCreate создаёт app_settings и таблицы ядра', () async {
@@ -111,36 +111,36 @@ void main() {
         });
         final file = File('${dir.path}/migration.sqlite');
 
-        final v4 = AppDatabase(NativeDatabase(file));
-        await v4
-            .into(v4.appSettings)
+        final v5 = AppDatabase(NativeDatabase(file));
+        await v5
+            .into(v5.appSettings)
             .insert(
               AppSettingsCompanion.insert(
                 key: 'keep.me',
-                value: 'v4',
+                value: 'v5',
                 updatedAt: DateTime.utc(2026, 1, 1),
               ),
             );
-        await v4.close();
+        await v5.close();
 
-        final v5 = _AppDatabaseV5(NativeDatabase(file));
+        final v6 = _AppDatabaseV6(NativeDatabase(file));
         addTearDown(() async {
           try {
-            await v5.close();
+            await v6.close();
           } on Object {
             // Соединение могло остаться в незавершённой миграции.
           }
         });
 
         await expectLater(
-          () => v5.select(v5.appSettings).get(),
+          () => v6.select(v6.appSettings).get(),
           throwsA(isA<UnsupportedError>()),
         );
       },
     );
   });
 
-  group('Миграция v1 → v4', () {
+  group('Миграция v1 → v5', () {
     test('сохраняет app_settings и создаёт таблицы ядра + FTS + LLM', () async {
       final dir = await Directory.systemTemp.createTemp('second_brain_db_');
       addTearDown(() async {
@@ -186,7 +186,7 @@ void main() {
       final hits = (await search.search('миграции')).unwrap();
       expect(hits, hasLength(1));
       expect(hits.single.entityId, note.id);
-      expect(db.schemaVersion, 4);
+      expect(db.schemaVersion, 5);
       expect(await db.select(db.llmProviderConfigs).get(), isEmpty);
       expect(await db.select(db.chatThreads).get(), isEmpty);
       expect(await db.select(db.chatMessages).get(), isEmpty);
@@ -195,22 +195,22 @@ void main() {
 
   group('Защита миграций (R02-004)', () {
     test(
-      'v2 → v5 падает до DDL и не оставляет файл в промежуточном виде',
+      'v2 → v6 падает до DDL и не оставляет файл в промежуточном виде',
       () async {
         final dir = await Directory.systemTemp.createTemp('second_brain_db_');
         addTearDown(() async {
           if (dir.existsSync()) await dir.delete(recursive: true);
         });
-        final file = File('${dir.path}/v2_to_v5.sqlite');
+        final file = File('${dir.path}/v2_to_v6.sqlite');
         await _seedV2(file);
 
-        final v5 = _AppDatabaseV5(NativeDatabase(file));
+        final v6 = _AppDatabaseV6(NativeDatabase(file));
         await expectLater(
-          () => v5.select(v5.appSettings).get(),
+          () => v6.select(v6.appSettings).get(),
           throwsA(isA<UnsupportedError>()),
         );
         try {
-          await v5.close();
+          await v6.close();
         } on Object {
           // Соединение могло остаться в незавершённой миграции.
         }
@@ -226,7 +226,7 @@ void main() {
         expect(columns, isNot(contains('reminder_sent_at')));
         expect(version, 2);
 
-        // Файл должен остаться пригодным для штатной миграции v2 → v4.
+        // Файл должен остаться пригодным для штатной миграции v2 → v5.
         final recovered = AppDatabase(NativeDatabase(file));
         addTearDown(recovered.close);
         final task = await recovered.select(recovered.tasks).getSingle();
@@ -236,6 +236,7 @@ void main() {
     );
 
     test('v4 → v3 падает и не перезаписывает user_version', () async {
+      // Проверяем политику downgrade: любая версия выше целевой запрещена.
       final dir = await Directory.systemTemp.createTemp('second_brain_db_');
       addTearDown(() async {
         if (dir.existsSync()) await dir.delete(recursive: true);
@@ -281,55 +282,187 @@ void main() {
     });
   });
 
-  group('Миграция v2 → v4', () {
-    test('добавляет reminder_sent_at, таблицы LLM и сохраняет задачи', () async {
+  group('Миграция v2 → v5', () {
+    test(
+      'добавляет reminder_sent_at, таблицы LLM и сохраняет задачи',
+      () async {
+        final dir = await Directory.systemTemp.createTemp('second_brain_db_');
+        addTearDown(() async {
+          if (dir.existsSync()) await dir.delete(recursive: true);
+        });
+        final file = File('${dir.path}/v2.sqlite');
+
+        // Готовим полноценную БД, затем откатываем её до схемы v2:
+        // удаляем новую колонку и индекс и выставляем user_version = 2.
+        final seed = AppDatabase(NativeDatabase(file));
+        await seed
+            .into(seed.tasks)
+            .insert(
+              TasksCompanion.insert(
+                title: 'Напоминание после миграции',
+                remindAt: Value(DateTime.utc(2026, 2, 1, 10)),
+                createdAt: DateTime.utc(2026, 1, 1),
+                updatedAt: DateTime.utc(2026, 1, 1),
+              ),
+            );
+        await seed.customStatement('DROP INDEX IF EXISTS idx_tasks_remind');
+        await seed.customStatement(
+          'ALTER TABLE tasks DROP COLUMN reminder_sent_at',
+        );
+        await seed.customStatement('PRAGMA user_version = 2');
+        await seed.close();
+
+        final db = AppDatabase(NativeDatabase(file));
+        addTearDown(db.close);
+        expect(db.schemaVersion, 5);
+
+        final task = await db.select(db.tasks).getSingle();
+        expect(task.title, 'Напоминание после миграции');
+        expect(task.reminderSentAt, isNull);
+        expect(task.remindAt?.toUtc(), DateTime.utc(2026, 2, 1, 10));
+        expect(await db.select(db.llmProviderConfigs).get(), isEmpty);
+
+        final index = await db
+            .customSelect(
+              "SELECT name FROM sqlite_master WHERE type = 'index' "
+              "AND name = 'idx_tasks_remind'",
+            )
+            .getSingleOrNull();
+        expect(index, isNotNull);
+      },
+    );
+  });
+
+  group('Миграция v4 → v5', () {
+    test('добавляет embedding-модель, privacy-флаг и чинит default', () async {
       final dir = await Directory.systemTemp.createTemp('second_brain_db_');
       addTearDown(() async {
         if (dir.existsSync()) await dir.delete(recursive: true);
       });
-      final file = File('${dir.path}/v2.sqlite');
+      final file = File('${dir.path}/v4.sqlite');
 
-      // Готовим полноценную БД, затем откатываем её до схемы v2:
-      // удаляем новую колонку и индекс и выставляем user_version = 2.
+      final now = DateTime.utc(2026, 1, 1);
       final seed = AppDatabase(NativeDatabase(file));
-      await seed
-          .into(seed.tasks)
+      final firstConfig = await seed
+          .into(seed.llmProviderConfigs)
           .insert(
-            TasksCompanion.insert(
-              title: 'Напоминание после миграции',
-              remindAt: Value(DateTime.utc(2026, 2, 1, 10)),
-              createdAt: DateTime.utc(2026, 1, 1),
-              updatedAt: DateTime.utc(2026, 1, 1),
+            LlmProviderConfigsCompanion.insert(
+              providerType: 'openai',
+              displayName: 'First',
+              baseUrl: 'https://api.test/v1',
+              model: 'first',
+              embeddingModel: const Value('embed-first'),
+              secretRef: 'llm.api_key.v4.first',
+              isDefault: const Value(true),
+              createdAt: now,
+              updatedAt: now,
             ),
           );
-      await seed.customStatement('DROP INDEX IF EXISTS idx_tasks_remind');
+      await seed
+          .into(seed.llmProviderConfigs)
+          .insert(
+            LlmProviderConfigsCompanion.insert(
+              providerType: 'anthropic',
+              displayName: 'Second',
+              baseUrl: 'https://api.anthropic.com/v1',
+              model: 'second',
+              embeddingModel: const Value('embed-second'),
+              secretRef: 'llm.api_key.v4.second',
+              isDefault: const Value(false),
+              createdAt: now,
+              updatedAt: now,
+            ),
+          );
+      final threadId = await seed
+          .into(seed.chatThreads)
+          .insert(
+            ChatThreadsCompanion.insert(
+              title: 'V4 thread',
+              providerConfigId: Value(firstConfig),
+              model: 'first',
+              createdAt: now,
+              updatedAt: now,
+            ),
+          );
+      await seed
+          .into(seed.chatMessages)
+          .insert(
+            ChatMessagesCompanion.insert(
+              threadId: threadId,
+              role: 'user',
+              content: 'saved in v4',
+              isPrivateForLlm: const Value(true),
+              createdAt: now,
+            ),
+          );
+
+      // Откатываем структуру к v4: колонок v5 ещё нет, default не уникален.
       await seed.customStatement(
-        'ALTER TABLE tasks DROP COLUMN reminder_sent_at',
+        'DROP INDEX IF EXISTS idx_llm_configs_default',
       );
-      await seed.customStatement('PRAGMA user_version = 2');
+      await seed.customStatement(
+        'ALTER TABLE llm_provider_configs DROP COLUMN embedding_model',
+      );
+      await seed.customStatement(
+        'ALTER TABLE chat_messages DROP COLUMN is_private_for_llm',
+      );
+      await seed.customStatement(
+        'CREATE INDEX idx_llm_configs_default '
+        'ON llm_provider_configs(is_default)',
+      );
+      await seed.customStatement(
+        'UPDATE llm_provider_configs SET is_default = 1',
+      );
+      await seed.customStatement('PRAGMA user_version = 4');
       await seed.close();
 
       final db = AppDatabase(NativeDatabase(file));
       addTearDown(db.close);
-      expect(db.schemaVersion, 4);
+      expect(db.schemaVersion, 5);
 
-      final task = await db.select(db.tasks).getSingle();
-      expect(task.title, 'Напоминание после миграции');
-      expect(task.reminderSentAt, isNull);
-      expect(task.remindAt?.toUtc(), DateTime.utc(2026, 2, 1, 10));
-      expect(await db.select(db.llmProviderConfigs).get(), isEmpty);
+      final configColumns = await db
+          .customSelect('PRAGMA table_info(llm_provider_configs)')
+          .get();
+      expect(
+        configColumns.map((row) => row.data['name']),
+        contains('embedding_model'),
+      );
+      final messageColumns = await db
+          .customSelect('PRAGMA table_info(chat_messages)')
+          .get();
+      expect(
+        messageColumns.map((row) => row.data['name']),
+        contains('is_private_for_llm'),
+      );
+
+      final configs = await db.select(db.llmProviderConfigs).get();
+      expect(configs, hasLength(2));
+      expect(configs.where((row) => row.isDefault), hasLength(1));
+      expect(configs.every((row) => row.embeddingModel == null), isTrue);
+
+      final message = await db.select(db.chatMessages).getSingle();
+      expect(message.content, 'saved in v4');
+      expect(message.isPrivateForLlm, isFalse);
 
       final index = await db
           .customSelect(
-            "SELECT name FROM sqlite_master WHERE type = 'index' "
-            "AND name = 'idx_tasks_remind'",
+            "SELECT sql FROM sqlite_master WHERE type = 'index' "
+            "AND name = 'idx_llm_configs_default'",
           )
-          .getSingleOrNull();
-      expect(index, isNotNull);
+          .getSingle();
+      expect(index.data['sql'], contains('UNIQUE'));
+      expect(index.data['sql'], contains('WHERE is_default = 1'));
+
+      await expectLater(
+        () => db.customStatement(
+          'UPDATE llm_provider_configs SET is_default = 1',
+        ),
+        throwsA(anything),
+      );
     });
   });
 
-  group('Миграция v3 → v4', () {
+  group('Миграция v3 → v5', () {
     test('создаёт LLM-таблицы и сохраняет задачи', () async {
       final dir = await Directory.systemTemp.createTemp('second_brain_db_');
       addTearDown(() async {
@@ -350,7 +483,9 @@ void main() {
       await seed.customStatement('DROP TABLE IF EXISTS chat_messages');
       await seed.customStatement('DROP TABLE IF EXISTS chat_threads');
       await seed.customStatement('DROP TABLE IF EXISTS llm_provider_configs');
-      await seed.customStatement('DROP INDEX IF EXISTS idx_chat_threads_updated');
+      await seed.customStatement(
+        'DROP INDEX IF EXISTS idx_chat_threads_updated',
+      );
       await seed.customStatement(
         'DROP INDEX IF EXISTS idx_chat_messages_thread',
       );
@@ -362,7 +497,7 @@ void main() {
 
       final db = AppDatabase(NativeDatabase(file));
       addTearDown(db.close);
-      expect(db.schemaVersion, 4);
+      expect(db.schemaVersion, 5);
       expect((await db.select(db.tasks).getSingle()).title, 'До LLM-слоя');
       expect(await db.select(db.llmProviderConfigs).get(), isEmpty);
       expect(await db.select(db.chatThreads).get(), isEmpty);

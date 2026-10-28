@@ -16,7 +16,8 @@ abstract interface class LlmTool {
   Future<Result<Map<String, Object?>>> execute(Map<String, Object?> arguments);
 
   LlmToolDefinition get definition => LlmToolDefinition(
-    name: name,
+    // Реестр ищет по trim(), поэтому провайдер должен получить то же имя.
+    name: name.trim(),
     description: description,
     parameters: parameters,
   );
@@ -30,7 +31,9 @@ final class LlmToolRegistry {
   void register(LlmTool tool) {
     final name = tool.name.trim();
     if (name.isEmpty) {
-      throw const ValidationException('LlmToolRegistry: пустое имя инструмента');
+      throw const ValidationException(
+        'LlmToolRegistry: пустое имя инструмента',
+      );
     }
     if (_tools.containsKey(name)) {
       throw ValidationException(
@@ -43,7 +46,12 @@ final class LlmToolRegistry {
   LlmTool? find(String name) => _tools[name];
 
   List<LlmToolDefinition> get definitions => [
-    for (final tool in _tools.values) tool.definition,
+    for (final tool in _tools.values)
+      LlmToolDefinition(
+        name: tool.name.trim(),
+        description: tool.description,
+        parameters: tool.parameters,
+      ),
   ];
 
   int get length => _tools.length;

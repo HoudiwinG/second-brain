@@ -11,7 +11,9 @@ abstract final class RepositoryGuard {
       return Result.success(await action());
     } on AppException catch (e) {
       return Result.failure(e);
-    } on Exception catch (e, s) {
+    } on Object catch (e, s) {
+      // Включая StateError/TypeError: репозиторий никогда не выпускает
+      // непойманные ошибки наружу, даже при нарушенном инварианте БД.
       return Result.failure(DataException(operation, cause: e, stackTrace: s));
     }
   }
