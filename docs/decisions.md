@@ -768,8 +768,8 @@ ADR-016 (быстрый ввод и хоткей), TD-27, R02-009
 
 ---
 
-## ADR-018: Схема v4 — LLM-конфигурации, офлайн-чат и секреты вне БД
-- **Дата (UTC):** 2026-10-24
+## ADR-018: Схема v5 — LLM-конфигурации, офлайн-чат и секреты вне БД
+- **Дата (UTC):** 2026-10-24; обновлено 2026-10-28 (v4 → v5)
 - **Этап:** stage-03 (LLM-слой)
 - **Тип:** schema / security
 - **Автор/агент:** agent-1
@@ -782,32 +782,42 @@ Stage-03 требует хранить несколько LLM-провайдер
 удаление конфигурации провайдера и не потеряет историю диалогов.
 
 ### Решение
-`schemaVersion = 4`; добавлены три таблицы:
+`schemaVersion = 5`; таблицы LLM-слоя:
 
 - `llm_provider_configs` — `provider_type`, `display_name`, `base_url`,
-  `model`, `max_tokens` (default 1024), `secret_ref` (unique), `is_default`,
-  `created_at`, `updated_at`;
+  `model`, nullable `embedding_model`, `max_tokens` (default 1024),
+  `secret_ref` (unique), `is_default`, `created_at`, `updated_at`;
 - `chat_threads` — `title`, nullable `provider_config_id` с
   `ON DELETE SET NULL`, снимок `model`, timestamps и nullable `archived_at`;
 - `chat_messages` — `thread_id` с `ON DELETE CASCADE`, `role`, `content`,
   nullable `prompt_tokens`/`completion_tokens`, nullable `error_code`,
-  `created_at`.
+  `is_private_for_llm` (default false), `created_at`.
 
 Ключ API в БД не хранится: `secret_ref` — имя записи в `SecretStore`
 (`llm.api_key.<random>`). Экспорт БД не содержит секретов. При удалении
 конфигурации история чата остаётся, но тред теряет ссылку на провайдера.
 
-История пишется только по завершении ответа, при отмене — сохранённый
-фрагмент, при ошибке — маркер без тела ответа. Непрерывное сохранение
-частичного streaming-текста не выполняется, чтобы не создавать тысячи
-промежуточных записей.
+Для конфигураций поддерживается инвариант «ровно один default, если список
+не пуст»: репозиторий нормализует флаг после create/update/delete/setDefault,
+а partial unique index `idx_llm_configs_default ... WHERE is_default = 1`
+защищает инвариант на уровне БД.
 
-Миграция `v3 → v4` создаёт таблицы и индексы
-(`idx_llm_configs_default`, `idx_chat_threads_updated`,
-`idx_chat_messages_thread`). `v1 → v4` создаёт ядро, FTS5, напоминания и
-LLM-таблицы; индексы создаются после всех таблиц, чтобы порядок веток не
-влиял на результат. Guard `from > to || from > 4 || to > 4` стоит до DDL
-(ADR-012).
+История пишется только по завершении ответа; при отмене сохраняется уже
+полученный фрагмент, при ошибке — маркер без тела ответа. Partial-ответ после
+ошибки сохраняется вместе с `error_code = 'llm_error'`, чтобы следующий запрос
+не включал неполный текст. Непрерывное сохранение streaming-дельт не
+выполняется, чтобы не создавать тысячи промежуточных записей.
+
+`embedding_model` отделяет embeddings от чат-модели: явное значение
+конфигурации, затем провайдерский default. `is_private_for_llm` у сообщения
+исключает его из будущих LLM-запросов, не удаляя из локальной истории.
+
+Миграции: `v3 → v4` создаёт LLM-таблицы; `v4 → v5` добавляет
+`embedding_model`, `is_private_for_llm`, нормализует default-конфигурации и
+заменяет индекс на partial unique; `v1/v2 → v5` создаёт ядро, FTS5,
+напоминания и LLM-таблицы текущей структуры. Индексы создаются после всех
+таблиц, чтобы порядок веток не влиял на результат. Guard
+`from > to || from > 5 || to > 5` стоит до DDL (ADR-012).
 
 ### Альтернативы
 - Хранить ключ в БД в зашифрованном виде: дублирует secure storage и повышает
@@ -824,7 +834,7 @@ LLM-таблицы; индексы создаются после всех таб
 - Отрицательные/риски: `secret_ref` может осиротеть при ручном удалении
   записи из secure storage; репозиторий компенсирует ошибки записи, но
   восстановление после внешнего удаления ключа — ручное. Схема требует
-  миграции v3 → v4.
+  миграции v4 → v5 (и v3 → v5 для старых БД).
 - Влияние на совместимость: старые БД мигрируют автоматически; JSON-бэкап
   stage-01/02 не содержит LLM-конфигураций и чата (они не входят в старый
   формат экспорта).
@@ -835,10 +845,12 @@ LLM-таблицы; индексы создаются после всех таб
 - `lib/data/repositories/chat_repository.dart`.
 - `lib/features/llm/domain/llm_provider_config.dart`.
 - `lib/features/chat/domain/chat_thread.dart`, `chat_message.dart`.
-- `test/db_migration_test.dart`, `test/llm_repositories_test.dart`.
+- `test/db_migration_test.dart`, `test/llm_repositories_test.dart`,
+  `test/chat_controller_test.dart`, `test/chat_request_builder_test.dart`.
 
 ### Связанные записи
-ADR-003 (SecretStore), ADR-012 (политика миграций), ADR-020 (контракт LLM)
+ADR-003 (SecretStore), ADR-012 (политика миграций), ADR-019 (транспорт),
+ADR-020 (контракт LLM)
 
 ---
 
@@ -857,8 +869,8 @@ POST-запросов, потокового чтения SSE, таймаутов
 
 ### Решение
 - Транспорт — `http 1.6.0` за `ApiClient`; клиент можно подменить в тестах.
-- `connectTimeout` 15 с, `receiveTimeout` 60 с, `maxRetries` 3, backoff
-  200/400/800 мс.
+- `connectTimeout` 15 с, `receiveTimeout` 60 с; `maxRetries = 3` означает
+  **3 попытки всего** (первая + два повтора), паузы между ними — 200 и 400 мс.
 - Retry выполняется для `408`, `425`, `429`, `5xx`, таймаутов и сетевых
   ошибок **только при получении ответа до чтения тела**. Успешный
   `StreamedResponse` сразу отдаётся вызывающему; повторное чтение SSE-потока
@@ -919,17 +931,25 @@ SSE-событий, usage и tool-call-дельт. UI и чат не должн�
 - `LlmProvider` — единый контракт: `streamChat`, `complete`, `embed`.
   `streamChat` отдаёт `LlmChunk` с текстом, `done`, usage и tool-call-дельтами;
   `complete` собирает текст, usage и tool calls.
-- Каждый адаптер обязан завершить поток финальным `done`-чанком с накопленным
-  usage. Частичные usage объединяются через `LlmUsage.merge`, а не
-  перезаписываются (для Anthropic это `message_start` + `message_delta`).
+- Каждый адаптер обязан завершить поток финальным `done`-чанком. Usage в нём
+  заполнен, если провайдер его вернул; иначе `usage == null`. Частичные usage
+  объединяются через `LlmUsage.merge`, а не перезаписываются (для Anthropic
+  это `message_start` + `message_delta`).
 - `LlmProviderFactory` выбирает адаптер по `LlmProviderType`; базовый URL и
   модель берутся из конфигурации, поэтому поддерживаются агрегаторы и
   локальные OpenAI-совместимые серверы.
 - `maxTokens` — обязательный параметр запроса, хранится в конфигурации
   (1…32768, default 1024) и защищает от случайного большого счёта.
-- `ChatController.sendMessage(context:)` сначала вызывает
-  `PrivacyGuard.filter`; всё с `isPrivateForLlm = true` исключается. В лог
-  попадают только количество и типы, без содержимого.
+- Вызывающий код передаёт только `LlmContextRef(type, id)`;
+  `DriftLlmContextLoader` читает сущность и `isPrivateForLlm` из БД. Это
+  production-chokepoint: подделать флаг из UI нельзя. `PrivacyGuard.filter`
+  исключает всё с `isPrivateForLlm = true`; в лог попадают только количество
+  и типы, без содержимого.
+- `buildChatRequestMessages` — единая точка сборки истории: последние 40
+  сообщений, не более 60 000 символов с контекстом, без ведущего `assistant`,
+  со склейкой одинаковых ролей и без приватных/ошибочных сообщений.
+- При удалении конфигурации чат использует default-провайдера **и его модель**,
+  а не снимок модели удалённого провайдера.
 - `LlmToolRegistry` и `LlmTool` — только контракт и реестр на stage-03.
   Определения передаются провайдеру, tool-call-дельты парсятся, но
   выполнение и аудит действий откладываются до stage-04.
@@ -938,6 +958,15 @@ SSE-событий, usage и tool-call-дельт. UI и чат не должн�
 - Отмена (`ChatController.cancel`) не ждёт закрытия HTTP-потока: UI
   останавливается сразу, частичный текст сохраняется. Это защищает интерфейс
   от зависания на медленном/открытом stream.
+- Ошибка после начала потока сохраняет partial-текст с
+  `error_code = 'llm_error'`; такой ответ не входит в следующий запрос.
+  Смена/создание/удаление треда во время streaming отменяет запрос, а
+  `requestId` не даёт поздним чанкам попасть в другой тред.
+- Embeddings используют отдельную `embeddingModel` (явное значение, затем
+  провайдерский default), а не чат-модель.
+- Для удалённых провайдеров требуется `https`; `http` допустим только для
+  loopback. Проверка сосредоточена в `LlmEndpoint` и применяется в форме и
+  репозитории.
 
 ### Альтернативы
 - Отдельные UI-потоки для каждого провайдера: дублирование логики и
@@ -961,13 +990,16 @@ SSE-событий, usage и tool-call-дельт. UI и чат не должн�
   `llm_message.dart`, `llm_provider_type.dart`, `llm_tool.dart`.
 - `lib/features/llm/data/` — три адаптера и `llm_provider_factory.dart`.
 - `lib/features/llm/application/privacy_guard.dart`,
-  `llm_config_controller.dart`.
-- `lib/features/chat/application/chat_controller.dart`.
+  `llm_context_loader.dart`, `llm_config_controller.dart`.
+- `lib/features/llm/domain/llm_endpoint.dart`.
+- `lib/features/chat/application/chat_controller.dart`,
+  `chat_request_builder.dart`.
 - `lib/features/llm/tools/llm_tool_registry.dart`.
 - `lib/features/llm/rag/embedding_service.dart`, `vector_store.dart`.
 - `test/llm_provider_test.dart`, `test/privacy_guard_test.dart`,
-  `test/chat_controller_test.dart`.
+  `test/llm_safety_test.dart`, `test/chat_controller_test.dart`,
+  `test/chat_request_builder_test.dart`.
 
 ### Связанные записи
-ADR-003 (секреты), ADR-018 (схема v4), ADR-019 (транспорт), ADR-013
+ADR-003 (секреты), ADR-018 (схема v5), ADR-019 (транспорт), ADR-013
 (приватность в FTS)

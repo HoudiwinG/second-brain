@@ -1,20 +1,26 @@
 # INDEX — карта документации
 
 ## Состояние
-- Текущий этап: stage-03 (LLM-слой) — **независимое ревью FAIL** (2026-10-25,
-  два независимых агента). Открыты **3 MAJOR**: S03-001 (залипший
-  `llm_error`), S03-002 (обрезка истории без выравнивания ролей), S03-003
-  (новый тред во время streaming). Stage-04 **заблокирован** до исправления
-  и повторного ревью.
+- Текущий этап: stage-03 (LLM-слой). Исходное независимое ревью —
+  **FAIL** (2026-10-25, два агента), вердикт сохранён. Все 28 находок
+  S03-001…S03-028 исправлены коммитом `14e63a7`; **повторное независимое
+  ревью ещё не проводилось**, поэтому stage-04 **заблокирован**.
   Stage-02 закрыт с вердиктом **PASS WITH COMMENTS** (ревью №3);
   R02-001…R02-013 закрыты, R02-014/R02-015 остаются не блокирующими
-  комментариями. Локальные гейты stage-03 зелёные (analyze 0, test
-  **104/104**, Windows debug build success, CI-run `40112234645`), но они не
-  покрывают найденные переходы состояния.
+  комментариями.
+- Локальные гейты после исправлений (2026-10-28): `flutter analyze
+  --fatal-infos` — **No issues found**, `flutter test` — **132/132**,
+  `flutter build windows --debug` — **success**. CI для `14e63a7` ещё не
+  проверялся; CI `40112234645` относится к базовой реализации `0ae0c85`.
 - Снимок состояния: [context.md](context.md)
 - Отчёт stage-03: [stages/stage-03.md](stages/stage-03.md).
 - Ревью stage-03: [reviews/stage-03-review.md](reviews/stage-03-review.md) —
-  **FAIL**, critical 0, major 3, open; полный список S03-001…S03-028.
+  **FAIL**, critical 0, major 3, minor 17, nit 8; полный список
+  S03-001…S03-028.
+- Исправления stage-03:
+  [reviews/stage-03-fix-results.md](reviews/stage-03-fix-results.md) —
+  все 28 закрыты в коде и тестах, новых TD нет; ожидается независимое
+  подтверждение.
 - Ревью stage-02: актуальный вердикт **PASS WITH COMMENTS** (ревью №3,
   critical 0, major 0, minor 1, nit 1); исторические **FAIL** — ревью и
   повторное №2; см. [reviews/stage-02-review.md](reviews/stage-02-review.md).
@@ -25,7 +31,8 @@
 - Реестр техдолга: [tech-debt.md](tech-debt.md) — открытых TD 0,
   принятых 15, исправлено 37 (включая R02-001…R02-013, TD-27, TD-16);
   R02-014 (MINOR) и R02-015 (NIT) остаются комментариями ревью №3.
-  Находки stage-03 ведутся в review-файле: 3 MAJOR, 17 MINOR, 8 NIT.
+  S03-находки — не TD: 28 fixed, ожидают повторного ревью. TD-28
+  (UI выбора контекста) остаётся accepted.
 
 ## Процесс
 - Исходные промпты (в корне репозитория): PROMPT.md (ТЗ), STAGE_ONE.md (этап 0),
@@ -44,11 +51,11 @@
 - [stage-02](stages/stage-02.md) — UX-каркас (done; **PASS WITH COMMENTS**,
   ревью №3: 0 MAJOR, R02-014/R02-015 — не блокирующие комментарии; локальные
   проверки 77/77, Windows smoke и 6 CI-run подтверждены)
-- [stage-03](stages/stage-03.md) — LLM-слой (self-check done; независимое
-  ревью **FAIL**, 3 MAJOR; 104/104, analyze 0, Windows debug build,
-  CI `40112234645`; stage-04 заблокирован)
-- stage-04 — инструменты ассистента (после исправления S03-001…S03-003 и
-  повторного ревью)
+- [stage-03](stages/stage-03.md) — LLM-слой (self-check исправлений done;
+  исходное ревью **FAIL**, 28 находок fixed в `14e63a7`, 132/132, analyze 0,
+  Windows debug build; CI и повторное ревью ожидаются; stage-04 заблокирован)
+- stage-04 — инструменты ассистента (только после успешного повторного ревью
+  stage-03)
 
 ## Шаблоны
 - [decisions.template.md](decisions.template.md) — формат ADR
@@ -66,7 +73,10 @@
 - Ревью stage-01 — не проводилось.
 - [stage-03-review](reviews/stage-03-review.md) — **FAIL** (2026-10-25, два
   независимых прохода): critical 0, major 3, minor 17, nit 8 после
-  объединения дублей. Блокеры: S03-001, S03-002, S03-003.
+  объединения дублей. Блокеры: S03-001, S03-002, S03-003. Вердикт сохранён.
+- [stage-03-fix-results](reviews/stage-03-fix-results.md) — self-check
+  исправлений S03-001…S03-028 (2026-10-28): все fixed, 132/132, analyze 0,
+  build success; исходный FAIL не переписан, повторное ревью ожидается.
 - [stage-02-review](reviews/stage-02-review.md) — **PASS WITH COMMENTS**
   (повторное ревью №3, 2026-10-24, agent-2): critical 0, major 0, minor 1
   (R02-014), nit 1 (R02-015); R02-009…R02-013 закрыты. Исторические ревью:
@@ -102,7 +112,7 @@
 ## Архитектура
 - Схема слоёв: см. ADR-001, ADR-008 (feature-first + core + data)
 - Схема БД: см. ADR-002 (v1: app_settings), ADR-012 (политика миграций),
-  ADR-015 (v3: напоминания), ADR-018 (v4: LLM-конфигурации и чат),
+  ADR-015 (v3: напоминания), ADR-018 (v5: LLM-конфигурации и чат),
   [context.md](context.md)
 - FTS5: ADR-013; экспорт/импорт: ADR-014
 - Навигация: см. ADR-005 (11 веток FeatureBranch)
