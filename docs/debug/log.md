@@ -588,8 +588,10 @@ CI `40095276919` (`92a9642`), `40095857001` (`07fa5b9`) и `40097546532`
 Проверки после форматирования только изменённых Dart-файлов (Flutter 3.47.7):
 `flutter analyze --fatal-infos` — **No issues found**; `flutter test` —
 **132/132**; `flutter build windows --debug` — **success**
-(`build\windows\x64\runner\Debug\second_brain.exe`). CI для `14e63a7`
-проверяется после push. Живой API и ручной GUI-streaming не прогонялись.
+(`build\windows\x64\runner\Debug\second_brain.exe`). CI-run
+[40636764573](https://github.com/HoudiwinG/second-brain/actions/runs/40636764573)
+(`49bc00f`, включающий `14e63a7`) — **success** (`analyze-and-test` и
+`build-windows`). Живой API и ручной GUI-streaming не прогонялись.
 
 ### Дополнение к паттернам ошибок (исправления stage-03)
 

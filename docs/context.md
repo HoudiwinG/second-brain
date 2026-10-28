@@ -14,7 +14,7 @@
   RAG. Схема БД — **v5** (`embedding_model`, `is_private_for_llm`, partial
   unique index default). Локальные гейты после исправлений зелёные: analyze
   **No issues found**, test **132/132**, Windows debug build **success**
-  (2026-10-28); CI для `14e63a7` ещё не проверялся.
+  (2026-10-28); CI-run\n  [40636764573](https://github.com/HoudiwinG/second-brain/actions/runs/40636764573)\n  (`49bc00f`, включающий `14e63a7`) — **success**.
 - **Ревью stage-03:** [reviews/stage-03-review.md](reviews/stage-03-review.md) —
   **FAIL**: reviewer A — 2 major/9 minor/6 nit, reviewer B — 2 major/13 minor/
   4 nit; после объединения дублей — 3 major, 17 minor, 8 nit. Исходный вердикт
@@ -369,7 +369,9 @@
 - CI stage-03 (базовая реализация): run
   [40112234645](https://github.com/HoudiwinG/second-brain/actions/runs/40112234645)
   (`0ae0c85`) — `analyze-and-test` и `build-windows` **success**
-  (проверено через `gh run watch`). CI для `14e63a7` — после push.
+  (проверено через `gh run watch`). CI исправлений:
+  [40636764573](https://github.com/HoudiwinG/second-brain/actions/runs/40636764573)
+  (`49bc00f`, включающий `14e63a7`) — **success** (оба job'а).
 - CI: GitHub Actions (`.github/workflows/ci.yml`) — pub get
   `--enforce-lockfile` + analyze + test (ubuntu) + test + build windows
   --debug (windows-latest).

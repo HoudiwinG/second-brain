@@ -12,8 +12,10 @@
   заблокированным до успешного повторного ревью. Локально после исправлений:
   `flutter analyze --fatal-infos` — **No issues found**, `flutter test` —
   **132/132**, `flutter build windows --debug` — **success**
-  (`build\windows\x64\runner\Debug\second_brain.exe`). CI-run для `14e63a7`
-  ещё не проверялся.
+  (`build\windows\x64\runner\Debug\second_brain.exe`). CI-run
+  [40636764573](https://github.com/HoudiwinG/second-brain/actions/runs/40636764573)
+  (`49bc00f`, включающий `14e63a7`) — `analyze-and-test` и `build-windows`
+  **success**.
 - **Ревью:** [reviews/stage-03-review.md](../reviews/stage-03-review.md) —
   два независимых прохода, **FAIL**: reviewer A — 2 MAJOR/9 MINOR/6 NIT,
   reviewer B — 2 MAJOR/13 MINOR/4 NIT; после объединения дублей — 3 MAJOR,

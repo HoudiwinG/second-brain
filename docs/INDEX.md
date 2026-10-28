@@ -10,8 +10,9 @@
   комментариями.
 - Локальные гейты после исправлений (2026-10-28): `flutter analyze
   --fatal-infos` — **No issues found**, `flutter test` — **132/132**,
-  `flutter build windows --debug` — **success**. CI для `14e63a7` ещё не
-  проверялся; CI `40112234645` относится к базовой реализации `0ae0c85`.
+  `flutter build windows --debug` — **success**. CI-run
+  [40636764573](https://github.com/HoudiwinG/second-brain/actions/runs/40636764573)
+  (`49bc00f`, включающий `14e63a7`) — **success** (оба job'а).
 - Снимок состояния: [context.md](context.md)
 - Отчёт stage-03: [stages/stage-03.md](stages/stage-03.md).
 - Ревью stage-03: [reviews/stage-03-review.md](reviews/stage-03-review.md) —
@@ -53,7 +54,8 @@
   проверки 77/77, Windows smoke и 6 CI-run подтверждены)
 - [stage-03](stages/stage-03.md) — LLM-слой (self-check исправлений done;
   исходное ревью **FAIL**, 28 находок fixed в `14e63a7`, 132/132, analyze 0,
-  Windows debug build; CI и повторное ревью ожидаются; stage-04 заблокирован)
+  Windows debug build, CI `40636764573` success; повторное ревью ожидается;
+  stage-04 заблокирован)
 - stage-04 — инструменты ассистента (только после успешного повторного ревью
   stage-03)
 

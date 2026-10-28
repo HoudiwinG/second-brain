@@ -337,8 +337,9 @@
 | `flutter build windows --debug` | **success** (`build\windows\x64\runner\Debug\second_brain.exe`) |
 | `git status --short` перед коммитом | только ожидаемые файлы кода/тестов |
 
-CI-run для `14e63a7` должен быть проверен после push; в этом документе
-результат CI не заявляется до его фактического завершения.
+CI-run [40636764573](https://github.com/HoudiwinG/second-brain/actions/runs/40636764573)
+(`49bc00f`, включающий `14e63a7`) — **success**: `analyze-and-test` и
+`build-windows` завершились успешно.
 
 ## Ограничения
 

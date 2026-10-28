@@ -383,8 +383,9 @@ Windows-сценарий занятой комбинации — там же.
 — **success** (оба job'а).
 
 Проверки после исправлений S03 (2026-10-28): analyze **No issues found**,
-test **132/132**, Windows debug build **success**, коммит `14e63a7`. CI для
-него проверяется после push; результаты — в
+test **132/132**, Windows debug build **success**, коммит `14e63a7`. CI-run
+[40636764573](https://github.com/HoudiwinG/second-brain/actions/runs/40636764573)
+(`49bc00f`, включающий `14e63a7`) — **success** (оба job'а); результаты — в
 [reviews/stage-03-fix-results.md](reviews/stage-03-fix-results.md).
 
 ---
