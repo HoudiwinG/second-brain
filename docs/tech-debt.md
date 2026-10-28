@@ -52,8 +52,14 @@
 > S03-001…S03-028 закрыты в коде и тестах, новых TD не заведено. Доказательства
 > по каждому ID — [reviews/stage-03-fix-results.md](reviews/stage-03-fix-results.md).
 > Локально: analyze **No issues found**, test **132/132**, Windows debug build
-> **success**. Исходный вердикт **FAIL** сохранён; stage-04 остаётся
-> заблокированным до независимого повторного ревью.
+> **success**. Исходный вердикт **FAIL** сохранён.
+>
+> **Повторное независимое ревью stage-03 (2026-10-28):** **PASS**; все 28
+> исходных находок verified (28/28), 0 CRITICAL/0 MAJOR. Неблокирующие
+> S03R-001…S03R-004 (2 MINOR, 2 NIT) учитываются на stage-04 и не заведены
+> как TD. Отчёт —
+> [reviews/stage-03-repeat-review.md](reviews/stage-03-repeat-review.md).
+> Stage-04 разблокирован.
 
 Проверка после исправлений R02-009…R02-013 (2026-10-24, Flutter 3.47.7):
 `flutter pub get --enforce-lockfile` → OK; `flutter analyze --fatal-infos` →
