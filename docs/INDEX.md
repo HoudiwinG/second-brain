@@ -38,6 +38,12 @@
   S03-находки — не TD: 28 fixed и подтверждены повторным ревью; S03R-001…
   S03R-004 — неблокирующие комментарии. TD-28 (UI выбора контекста) остаётся
   accepted.
+- Независимое ревью stage-04 (2026-10-29):
+  [reviews/stage-04-review.md](reviews/stage-04-review.md) — **FAIL**, critical 0,
+  major 1 (`S04-001`), minor 7, nit 1. Блокер: Google-провайдер при нескольких
+  tool calls в одном ответе формирует невалидную историю (N подряд идущих
+  `user`-contents). Остальные находки — аудит, приватность `update_task_status`,
+  тесты и документация.
 
 ## Процесс
 - Исходные промпты (в корне репозитория): PROMPT.md (ТЗ), STAGE_ONE.md (этап 0),
@@ -86,6 +92,9 @@
   повторное ревью (2026-10-28): **PASS**, 28/28 verified, 0 critical/0 major,
   2 minor (S03R-001/S03R-002) и 2 nit (S03R-003/S03R-004); stage-04
   разблокирован.
+- [stage-04-review](reviews/stage-04-review.md) — независимое ревью (2026-10-29,
+  agent-2): **FAIL**, critical 0, major 1 (S04-001: Google ломается на нескольких
+  tool calls), minor 7, nit 1; гейты и CI подтверждены.
 - [stage-02-review](reviews/stage-02-review.md) — **PASS WITH COMMENTS**
   (повторное ревью №3, 2026-10-24, agent-2): critical 0, major 0, minor 1
   (R02-014), nit 1 (R02-015); R02-009…R02-013 закрыты. Исторические ревью:
@@ -106,8 +115,8 @@
 - [decisions.md](decisions.md) — все ADR
 - Разделы:
   - architecture: ADR-001, ADR-002, ADR-004, ADR-005, ADR-008, ADR-012,
-    ADR-016, ADR-018, ADR-019, ADR-020
-  - security: ADR-003, ADR-018, ADR-020
+    ADR-016, ADR-018, ADR-019, ADR-020, ADR-021
+  - security: ADR-003, ADR-018, ADR-020, ADR-021
   - dependency: ADR-006, ADR-007, ADR-011, ADR-017
   - integration: ADR-006, ADR-009, ADR-014, ADR-017, ADR-019
   - ux: ADR-005, ADR-008, ADR-010, ADR-016
