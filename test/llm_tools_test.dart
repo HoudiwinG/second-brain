@@ -1,5 +1,8 @@
+import 'package:drift/drift.dart' show Value;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:second_brain/core/result/result.dart';
+import 'package:second_brain/data/db/app_database.dart'
+    show ToolAuditEntriesCompanion;
 import 'package:second_brain/data/repositories/notes_repository.dart';
 import 'package:second_brain/data/repositories/search_repository.dart';
 import 'package:second_brain/data/repositories/tasks_repository.dart';
@@ -113,13 +116,26 @@ void main() {
       )).unwrap();
       final tool = UpdateTaskStatusTool(tasks);
 
+      final privateResult = await tool.execute({
+        'task_id': secret.id,
+        'status': 'done',
+      });
+      final missingResult = await tool.execute({
+        'task_id': 9999,
+        'status': 'done',
+      });
+
+      expect(privateResult, isA<Failure<Map<String, Object?>>>());
+      expect(missingResult, isA<Failure<Map<String, Object?>>>());
       expect(
-        await tool.execute({'task_id': secret.id, 'status': 'done'}),
-        isA<Failure<Map<String, Object?>>>(),
-      );
-      expect(
-        await tool.execute({'task_id': 9999, 'status': 'done'}),
-        isA<Failure<Map<String, Object?>>>(),
+        [privateResult, missingResult]
+            .map(
+              (result) =>
+                  (result as Failure<Map<String, Object?>>).error.message,
+            )
+            .toSet(),
+        {'Задача недоступна'},
+        reason: 'ответы не должны раскрывать существование задачи',
       );
       expect(
         (await tasks.getById(secret.id)).unwrap()!.status,
@@ -185,6 +201,43 @@ void main() {
       expect(recent.single.argumentNames, ['title', 'body']);
       expect(recent.single.entityId, 7);
       expect(recent.single.status, ToolAuditStatus.ok);
+    });
+
+    test('не ломает имя аргумента с запятой', () async {
+      final db = InMemoryDbFactory.open();
+      addTearDown(db.close);
+      final audit = DriftToolAuditRepository(db);
+
+      await audit.record(
+        ToolAuditDraft(
+          toolName: 'create_note',
+          status: ToolAuditStatus.ok,
+          argumentNames: const ['a,b'],
+          createdAt: DateTime.utc(2026, 10, 29, 11),
+        ),
+      );
+
+      final recent = (await audit.listRecent()).unwrap();
+      expect(recent.single.argumentNames, ['a,b']);
+    });
+
+    test('читает старый формат имён через запятую', () async {
+      final db = InMemoryDbFactory.open();
+      addTearDown(db.close);
+      final audit = DriftToolAuditRepository(db);
+      await db
+          .into(db.toolAuditEntries)
+          .insert(
+            ToolAuditEntriesCompanion.insert(
+              toolName: 'create_note',
+              status: 'ok',
+              argumentNames: const Value('title,body'),
+              createdAt: DateTime.utc(2026, 10, 29, 12),
+            ),
+          );
+
+      final recent = (await audit.listRecent()).unwrap();
+      expect(recent.single.argumentNames, ['title', 'body']);
     });
 
     test('сортирует от новых к старым', () async {

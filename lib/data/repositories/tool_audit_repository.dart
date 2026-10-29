@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:drift/drift.dart';
 
 import '../../core/result/result.dart';
@@ -55,7 +57,7 @@ class DriftToolAuditRepository implements ToolAuditRepository {
             db.ToolAuditEntriesCompanion.insert(
               toolName: draft.toolName,
               status: draft.status.dbValue,
-              argumentNames: Value(draft.argumentNames.join(',')),
+              argumentNames: Value(_encodeNames(draft.argumentNames)),
               entityId: Value(draft.entityId),
               createdAt: draft.createdAt,
             ),
@@ -81,13 +83,34 @@ class DriftToolAuditRepository implements ToolAuditRepository {
               (value) => value.dbValue == row.status,
               orElse: () => ToolAuditStatus.error,
             ),
-            argumentNames: row.argumentNames.isEmpty
-                ? const []
-                : row.argumentNames.split(','),
+            argumentNames: _decodeNames(row.argumentNames),
             entityId: row.entityId,
             createdAt: row.createdAt,
           ),
       ];
     });
+  }
+
+  /// JSON-массив не ломается на именах с запятыми, в отличие от `join(',')`.
+  static String _encodeNames(List<String> names) => jsonEncode(names);
+
+  /// До исправления S04-003 имена хранились через запятую. Читаем оба
+  /// формата, чтобы не терять уже записанный аудит.
+  static List<String> _decodeNames(String raw) {
+    if (raw.isEmpty) return const [];
+    if (raw.startsWith('[')) {
+      try {
+        final decoded = jsonDecode(raw);
+        if (decoded is List) {
+          return [
+            for (final item in decoded)
+              if (item is String) item,
+          ];
+        }
+      } on FormatException {
+        // Повреждённое значение читаем как старый формат.
+      }
+    }
+    return raw.split(',');
   }
 }

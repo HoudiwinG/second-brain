@@ -31,19 +31,32 @@ final class GoogleProvider extends LlmProvider {
     return model.startsWith('models/') ? model.substring(7) : model;
   }
 
+  static Map<String, Object?> _functionResponsePart(LlmMessage message) => {
+    'functionResponse': {
+      'name': message.name ?? '',
+      'response': {'result': message.content},
+    },
+  };
+
+  /// true, если content — `user`-реплика только с результатами инструментов.
+  static bool _isToolResponseContent(Map<String, Object?> content) {
+    if (content['role'] != 'user') return false;
+    final parts = content['parts'];
+    return parts is List &&
+        parts.isNotEmpty &&
+        parts.every(
+          (part) =>
+              part is Map<String, Object?> &&
+              part.containsKey('functionResponse'),
+        );
+  }
+
   /// Gemini не выдаёт id вызовов: результат связывается с вызовом по имени.
   static Map<String, Object?> _googleContent(LlmMessage message) {
     if (message.role == LlmRole.tool) {
       return {
         'role': 'user',
-        'parts': [
-          {
-            'functionResponse': {
-              'name': message.name ?? '',
-              'response': {'result': message.content},
-            },
-          },
-        ],
+        'parts': [_functionResponsePart(message)],
       };
     }
     final hasCalls = message.toolCalls.isNotEmpty;
@@ -70,10 +83,24 @@ final class GoogleProvider extends LlmProvider {
         .map((message) => message.content)
         .where((content) => content.trim().isNotEmpty)
         .toList();
-    final contents = [
-      for (final message in request.messages)
-        if (message.role != LlmRole.system) _googleContent(message),
-    ];
+    //
+    // Gemini требует чередования ролей, а результаты параллельных вызовов
+    // приходят несколькими tool-сообщениями подряд. Поэтому они собираются
+    // в один `user`-content с несколькими `functionResponse`: иначе
+    // generateContent отклоняет историю с подряд идущими `user`.
+    final contents = <Map<String, Object?>>[];
+    for (final message in request.messages) {
+      if (message.role == LlmRole.system) continue;
+      if (message.role == LlmRole.tool &&
+          contents.isNotEmpty &&
+          _isToolResponseContent(contents.last)) {
+        (contents.last['parts']! as List<Object?>).add(
+          _functionResponsePart(message),
+        );
+        continue;
+      }
+      contents.add(_googleContent(message));
+    }
     final modelId = _modelId;
     final response = await _client.streamLines(
       method: 'POST',

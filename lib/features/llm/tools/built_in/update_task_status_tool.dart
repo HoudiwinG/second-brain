@@ -44,15 +44,13 @@ final class UpdateTaskStatusTool extends LlmToolBase {
         throw const ValidationException('Аргумент "status" недопустим');
       }
 
-      final task = (await _tasks.getById(id)).unwrap();
-      if (task == null) {
-        throw const ValidationException('Задача не найдена');
-      }
-      if (task.isPrivateForLlm) {
-        throw const ValidationException('Задача недоступна ассистенту');
-      }
-
-      final updated = (await _tasks.setStatus(id, status.single)).unwrap();
+      // Проверка приватности и запись выполняются одним UPDATE: отдельное
+      // чтение дало бы гонку и позволило бы отличить приватную задачу от
+      // несуществующей.
+      final updated = (await _tasks.setStatusForLlm(
+        id,
+        status.single,
+      )).unwrap();
       return Result.success({
         'id': updated.id,
         'status': updated.status.dbValue,

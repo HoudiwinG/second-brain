@@ -42,6 +42,11 @@ void main() {
     expect(payload(message), {'ok': false, 'error': 'unknown_tool'});
     final recent = (await audit.listRecent()).unwrap();
     expect(recent.single.status, ToolAuditStatus.unknownTool);
+    expect(
+      recent.single.toolName,
+      'unknown',
+      reason: 'произвольное имя от модели не должно попадать в журнал',
+    );
   });
 
   test('некорректный JSON аргументов возвращает invalid_arguments', () async {
@@ -70,6 +75,24 @@ void main() {
       recent.single.argumentNames.join(','),
       isNot(contains('тайный')),
       reason: 'аудит хранит имена аргументов, а не значения',
+    );
+  });
+
+  test('в аудит попадают только объявленные в схеме аргументы', () async {
+    final message = await runner.run(
+      call(
+        'create_note',
+        '{"title":"X","Иван Петров":"секрет","body":"текст"}',
+      ),
+    );
+
+    expect(payload(message)['ok'], isTrue);
+    final recent = (await audit.listRecent()).unwrap();
+    expect(recent.single.argumentNames, ['body', 'title']);
+    expect(
+      recent.single.argumentNames.join(','),
+      isNot(contains('Иван')),
+      reason: 'неизвестные ключи от модели не пишутся в журнал',
     );
   });
 

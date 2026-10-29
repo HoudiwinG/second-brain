@@ -504,6 +504,18 @@ void main() {
       final rows = await db.select(db.toolAuditEntries).get();
       expect(rows, hasLength(1));
       expect(rows.single.argumentNames, '');
+
+      final index = await db
+          .customSelect(
+            "SELECT name FROM sqlite_master WHERE type = 'index' "
+            "AND name = 'idx_tool_audit_created'",
+          )
+          .getSingleOrNull();
+      expect(
+        index,
+        isNotNull,
+        reason: 'миграция должна создавать индекс аудита',
+      );
     });
   });
 

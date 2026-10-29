@@ -140,6 +140,88 @@ void main() {
     );
   });
 
+  test(
+    'Google: результаты нескольких вызовов идут одним user-content',
+    () async {
+      String? capturedBody;
+      final client = MockClient.streaming((request, bodyStream) async {
+        capturedBody = await bodyStream.transform(utf8.decoder).join();
+        return http.StreamedResponse(
+          Stream.value(utf8.encode('data: {"candidates":[]}\n\n')),
+          200,
+          request: request,
+        );
+      });
+      final provider = GoogleProvider(
+        _config(LlmProviderType.google),
+        client: _api(_config(LlmProviderType.google).baseUrl, client),
+        apiKey: 'key',
+      );
+
+      await provider.complete(
+        const LlmChatRequest(
+          model: 'test-model',
+          messages: [
+            LlmMessage(role: LlmRole.user, content: 'Заметку и задачу'),
+            LlmMessage(
+              role: LlmRole.assistant,
+              content: '',
+              toolCalls: [
+                LlmToolCall(
+                  id: 'call_1',
+                  name: 'create_note',
+                  argumentsJson: '{"title":"X"}',
+                ),
+                LlmToolCall(
+                  id: 'call_2',
+                  name: 'create_task',
+                  argumentsJson: '{"title":"Y"}',
+                ),
+              ],
+            ),
+            LlmMessage(
+              role: LlmRole.tool,
+              name: 'create_note',
+              toolCallId: 'call_1',
+              content: '{"ok":true}',
+            ),
+            LlmMessage(
+              role: LlmRole.tool,
+              name: 'create_task',
+              toolCallId: 'call_2',
+              content: '{"ok":true}',
+            ),
+          ],
+        ),
+      );
+
+      final contents =
+          (jsonDecode(capturedBody!) as Map<String, Object?>)['contents']!
+              as List<Object?>;
+      expect(
+        contents,
+        hasLength(3),
+        reason: 'два tool-результата не должны давать два user-content',
+      );
+      expect(contents.map((c) => (c! as Map<String, Object?>)['role']), [
+        'user',
+        'model',
+        'user',
+      ]);
+      final results =
+          (contents[2]! as Map<String, Object?>)['parts']! as List<Object?>;
+      expect(results, hasLength(2));
+      expect(
+        results.map(
+          (part) =>
+              ((part! as Map<String, Object?>)['functionResponse']!
+                  as Map<String, Object?>)['name'],
+        ),
+        ['create_note', 'create_task'],
+      );
+    },
+  );
+
   test('Google: functionCall из ответа становится LlmToolCall', () async {
     final client = MockClient.streaming((request, bodyStream) async {
       await bodyStream.drain<void>();

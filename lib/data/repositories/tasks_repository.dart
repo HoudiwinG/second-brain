@@ -156,6 +156,32 @@ class DriftTasksRepository implements TasksRepository {
   }
 
   @override
+  Future<Result<TaskItem>> setStatusForLlm(int id, TaskStatus status) {
+    return RepositoryGuard.guard('TasksRepository.setStatusForLlm', () async {
+      final changed = await _db.transaction(() async {
+        final rows =
+            await (_db.update(_db.tasks)
+                  ..where((t) => t.id.equals(id))
+                  ..where((t) => t.isPrivateForLlm.equals(false))
+                  ..where((t) => t.deletedAt.isNull()))
+                .write(
+                  db.TasksCompanion(
+                    status: Value(status.dbValue),
+                    updatedAt: Value(DateTime.now().toUtc()),
+                  ),
+                );
+        if (rows > 0) await indexTask(_db, id);
+        return rows;
+      });
+      if (changed == 0) {
+        throw const ValidationException('Задача недоступна');
+      }
+      final row = await _find(id);
+      return _toDomain(row!, await tagsForTask(_db, id));
+    });
+  }
+
+  @override
   Future<Result<List<TaskItem>>> dueReminders(DateTime now) {
     return RepositoryGuard.guard('TasksRepository.dueReminders', () async {
       final query = _db.select(_db.tasks)
@@ -178,10 +204,7 @@ class DriftTasksRepository implements TasksRepository {
   }
 
   @override
-  Future<Result<void>> markReminderSent(
-    int id, {
-    required DateTime remindAt,
-  }) {
+  Future<Result<void>> markReminderSent(int id, {required DateTime remindAt}) {
     return RepositoryGuard.guard('TasksRepository.markReminderSent', () async {
       final now = DateTime.now().toUtc();
       await (_db.update(_db.tasks)..where(

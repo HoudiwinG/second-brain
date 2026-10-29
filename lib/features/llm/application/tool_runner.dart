@@ -24,28 +24,32 @@ final class ToolRunner {
   final ToolAuditRepository audit;
   final DateTime Function() _clock;
 
+  /// Имя неизвестного инструмента в журнале: произвольную строку от модели
+  /// туда не пишем.
+  static const unknownToolName = 'unknown';
+
   static const _maxToolNameLength = 100;
 
   Future<LlmMessage> run(LlmToolCall call) async {
     final tool = registry.find(call.name);
     if (tool == null) {
-      await _record(call, ToolAuditStatus.unknownTool, const []);
+      await _record(unknownToolName, ToolAuditStatus.unknownTool, const []);
       return _toolMessage(call, error: 'unknown_tool');
     }
 
     final args = _parseArguments(call.argumentsJson);
     if (args == null) {
-      await _record(call, ToolAuditStatus.invalidArgs, const []);
+      await _record(tool.name, ToolAuditStatus.invalidArgs, const []);
       return _toolMessage(call, error: 'invalid_arguments');
     }
-    final argumentNames = args.keys.toList()..sort();
+    final argumentNames = _argumentNames(tool, args);
 
     final Result<Map<String, Object?>> result;
     try {
       result = await tool.execute(args);
     } on Object catch (error) {
-      AppLogger.w('ToolRunner: инструмент ${call.name} упал', error);
-      await _record(call, ToolAuditStatus.error, argumentNames);
+      AppLogger.w('ToolRunner: инструмент ${tool.name} упал', error);
+      await _record(tool.name, ToolAuditStatus.error, argumentNames);
       return _toolMessage(call, error: 'tool_failed');
     }
 
@@ -53,16 +57,31 @@ final class ToolRunner {
       case Success<Map<String, Object?>>(:final value):
         final id = value['id'];
         await _record(
-          call,
+          tool.name,
           ToolAuditStatus.ok,
           argumentNames,
           entityId: id is int ? id : null,
         );
         return _toolMessage(call, data: value);
       case Failure<Map<String, Object?>>(:final error):
-        await _record(call, ToolAuditStatus.error, argumentNames);
+        await _record(tool.name, ToolAuditStatus.error, argumentNames);
         return _toolMessage(call, error: _safeMessage(error));
     }
+  }
+
+  /// Оставляет только аргументы, объявленные в схеме инструмента.
+  ///
+  /// Ключи приходят от модели и могут содержать произвольный (в том числе
+  /// приватный) текст; в журнал попадают только имена из нашей схемы.
+  static List<String> _argumentNames(LlmTool tool, Map<String, Object?> args) {
+    final properties = tool.parameters['properties'];
+    if (properties is! Map) return const [];
+    final declared = properties.keys.whereType<String>().toSet();
+    final names = [
+      for (final key in args.keys)
+        if (declared.contains(key)) key,
+    ]..sort();
+    return names;
   }
 
   /// null — аргументы не являются JSON-объектом.
@@ -81,14 +100,14 @@ final class ToolRunner {
   };
 
   Future<void> _record(
-    LlmToolCall call,
+    String toolName,
     ToolAuditStatus status,
     List<String> argumentNames, {
     int? entityId,
   }) async {
-    final name = call.name.length > _maxToolNameLength
-        ? call.name.substring(0, _maxToolNameLength)
-        : call.name;
+    final name = toolName.length > _maxToolNameLength
+        ? toolName.substring(0, _maxToolNameLength)
+        : toolName;
     final result = await audit.record(
       ToolAuditDraft(
         toolName: name,

@@ -112,6 +112,14 @@ abstract interface class TasksRepository {
 
   Future<Result<TaskItem>> setStatus(int id, TaskStatus status);
 
+  /// Атомарно меняет статус только у неудалённой и не приватной задачи.
+  ///
+  /// Проверка приватности выполняется в том же `UPDATE`, поэтому её нельзя
+  /// обойти гонкой между чтением и записью. Для приватной или отсутствующей
+  /// задачи возвращается одна и та же ошибка, чтобы не раскрывать факт её
+  /// существования.
+  Future<Result<TaskItem>> setStatusForLlm(int id, TaskStatus status);
+
   /// Задачи, у которых наступило время напоминания и оно ещё не показано.
   Future<Result<List<TaskItem>>> dueReminders(DateTime now);
 
