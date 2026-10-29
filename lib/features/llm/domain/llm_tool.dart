@@ -1,7 +1,20 @@
+import 'dart:convert';
+
+/// Декодирует аргументы вызова инструмента. Некорректный JSON даёт пустой
+/// объект: инструмент тогда получит пустые аргументы и вернёт ошибку.
+Map<String, Object?> decodeToolArguments(String json) {
+  try {
+    final decoded = jsonDecode(json);
+    return decoded is Map<String, Object?> ? decoded : const {};
+  } on FormatException {
+    return const {};
+  }
+}
+
 /// Описание инструмента, который можно передать LLM.
 ///
-/// На stage-03 это только контракт и сериализация: исполнение инструментов
-/// и аудит появятся на stage-04.
+/// Контракт и сериализация для всех провайдеров; исполнение инструментов —
+/// в `ToolRunner` (stage-04).
 final class LlmToolDefinition {
   const LlmToolDefinition({
     required this.name,

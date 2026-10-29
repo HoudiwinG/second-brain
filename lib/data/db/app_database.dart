@@ -294,11 +294,34 @@ class ChatMessages extends Table {
   DateTimeColumn get createdAt => dateTime()();
 }
 
+/// Аудит вызовов инструментов ассистента (stage-04).
+///
+/// Хранит только имена аргументов и id сущности: значения (заголовки, тексты)
+/// не пишутся, чтобы аудит не стал копией приватного содержимого.
+class ToolAuditEntries extends Table {
+  @override
+  String get tableName => 'tool_audit_log';
+
+  IntColumn get id => integer().autoIncrement()();
+
+  TextColumn get toolName => text().withLength(min: 1, max: 100)();
+
+  /// ok | error | unknown_tool | invalid_args.
+  TextColumn get status => text().withLength(min: 1, max: 40)();
+
+  /// Имена аргументов через запятую, без значений.
+  TextColumn get argumentNames => text().withDefault(const Constant(''))();
+
+  IntColumn get entityId => integer().nullable()();
+
+  DateTimeColumn get createdAt => dateTime()();
+}
+
 /// Локальная БД SQLite (Drift).
 ///
-/// Схема v5 — ядро данных stage-01 + напоминания stage-02 + LLM-слой stage-03
+/// Схема v6 — ядро данных stage-01 + напоминания stage-02 + LLM-слой stage-03
 /// с исправлениями ревью (embedding-модель, приватность сообщений,
-/// единственный default-провайдер).
+/// единственный default-провайдер) + аудит инструментов stage-04.
 /// Полнотекстовый индекс `search_index`
 /// создаётся отдельными SQL-командами: FTS5 — виртуальная таблица, которую
 /// Drift не описывает декларативно (ADR-013).
@@ -317,6 +340,7 @@ class ChatMessages extends Table {
     LlmProviderConfigs,
     ChatThreads,
     ChatMessages,
+    ToolAuditEntries,
   ],
 )
 class AppDatabase extends _$AppDatabase {
@@ -338,7 +362,7 @@ class AppDatabase extends _$AppDatabase {
   static AppDatabase inMemory() => AppDatabase(NativeDatabase.memory());
 
   @override
-  int get schemaVersion => 5;
+  int get schemaVersion => 6;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -347,6 +371,7 @@ class AppDatabase extends _$AppDatabase {
       await m.createAll();
       await _createSearchSchema();
       await _createIndexes();
+      await _createAuditIndexes();
     },
     // ВАЖНО: createAll() в onUpgrade не используется. Он создаёт только
     // отсутствующие таблицы и молча пропускает ALTER/перенос данных,
@@ -358,7 +383,7 @@ class AppDatabase extends _$AppDatabase {
       // добавить колонку и индекс, а затем падает, оставляя файл в
       // промежуточном состоянии; downgrade v4 → v3 и вовсе молча
       // перезаписывал user_version (R02-004).
-      if (from > to || from > 5 || to > 5) {
+      if (from > to || from > 6 || to > 6) {
         throw UnsupportedError(
           'AppDatabase: нет миграции схемы $from → $to. '
           'Добавьте явную миграцию в onUpgrade (ADR-012).',
@@ -401,6 +426,11 @@ class AppDatabase extends _$AppDatabase {
         // до создания unique partial index.
         await _normalizeDefaultConfigs();
         await _createIndexes();
+      }
+      if (from < 6) {
+        // v6: аудит вызовов инструментов ассистента.
+        await m.createTable(toolAuditEntries);
+        await _createAuditIndexes();
       }
     },
     beforeOpen: (details) async {
@@ -468,6 +498,14 @@ class AppDatabase extends _$AppDatabase {
     await customStatement(
       'CREATE UNIQUE INDEX IF NOT EXISTS idx_llm_configs_default '
       'ON llm_provider_configs(is_default) WHERE is_default = 1',
+    );
+  }
+
+  /// Индекс аудита создаётся после таблицы `tool_audit_log` (v6).
+  Future<void> _createAuditIndexes() async {
+    await customStatement(
+      'CREATE INDEX IF NOT EXISTS idx_tool_audit_created '
+      'ON tool_audit_log(created_at)',
     );
   }
 

@@ -8,15 +8,21 @@ import '../../../core/logging/app_logger.dart';
 import '../../llm/application/llm_config_controller.dart';
 import '../../llm/application/llm_context_loader.dart';
 import '../../llm/application/privacy_guard.dart';
+import '../../llm/application/tool_runner.dart';
 import '../../llm/domain/llm_chat.dart';
 import '../../llm/domain/llm_endpoint.dart';
 import '../../llm/domain/llm_message.dart';
+import '../../llm/domain/llm_provider.dart';
 import '../../llm/domain/llm_provider_config.dart';
+import '../../llm/domain/llm_tool.dart';
 import '../domain/chat_message.dart';
 import '../domain/chat_thread.dart';
 import 'chat_request_builder.dart';
 
 const Object _unset = Object();
+
+/// Сколько раундов вызовов инструментов допускается на один запрос.
+const int maxToolRounds = 3;
 
 /// Снимок UI-состояния чата.
 final class ChatState {
@@ -393,26 +399,65 @@ final class ChatController extends AsyncNotifier<ChatState> {
       return false;
     }
 
+    final registry = await ref.read(llmToolRegistryProvider.future);
+    final audit = await ref.read(toolAuditRepositoryProvider.future);
+    if (!_isActive(requestId)) return false;
+    final runner = ToolRunner(registry: registry, audit: audit);
     final request = LlmChatRequest(
       model: _effectiveModel(thread, config),
       messages: requestMessages,
       maxTokens: config.maxTokens,
-      tools: ref.read(llmToolRegistryProvider).definitions,
+      tools: registry.definitions,
     );
     final provider = ref
         .read(llmProviderFactoryProvider)
         .create(config: config, apiKey: apiKey);
 
-    final buffer = StringBuffer();
-    LlmUsage? usage;
     final completer = Completer<void>();
     _activeCompleter = completer;
+    await _streamRound(
+      requestId: requestId,
+      thread: thread,
+      provider: provider,
+      request: request,
+      runner: runner,
+      round: 0,
+      completer: completer,
+    );
+    unawaited(_awaitRequest(requestId, completer));
+    return true;
+  }
+
+  /// Один раунд streaming. Если модель запросила инструменты, после конца
+  /// потока они выполняются ([_runTools]) и запускается следующий раунд с
+  /// результатами. Текст раунда с вызовами не сохраняется: в историю попадает
+  /// только финальный ответ.
+  Future<void> _streamRound({
+    required int requestId,
+    required ChatThread thread,
+    required LlmProvider provider,
+    required LlmChatRequest request,
+    required ToolRunner runner,
+    required int round,
+    required Completer<void> completer,
+    LlmUsage? usage,
+  }) async {
+    final buffer = StringBuffer();
+    final toolCalls = LlmToolCallAccumulator();
+    var latestUsage = usage;
+    if (round > 0 && _isActive(requestId)) {
+      final current = state.value;
+      if (current != null && current.activeThreadId == thread.id) {
+        state = AsyncData(current.copyWith(streamingText: ''));
+      }
+    }
     try {
       _subscription = provider
           .streamChat(request)
           .listen(
             (chunk) {
-              if (chunk.usage != null) usage = chunk.usage;
+              if (chunk.usage != null) latestUsage = chunk.usage;
+              toolCalls.addAll(chunk.toolCallDeltas);
               if (chunk.delta.isEmpty) return;
               buffer.write(chunk.delta);
               if (!_isActive(requestId)) return;
@@ -439,13 +484,31 @@ final class ChatController extends AsyncNotifier<ChatState> {
               );
             },
             onDone: () {
+              final calls = toolCalls.build();
+              if (calls.isEmpty) {
+                unawaited(
+                  _complete(
+                    thread.id,
+                    requestId,
+                    buffer.toString(),
+                    latestUsage,
+                    completer,
+                  ),
+                );
+                return;
+              }
               unawaited(
-                _complete(
-                  thread.id,
-                  requestId,
-                  buffer.toString(),
-                  usage,
-                  completer,
+                _runTools(
+                  requestId: requestId,
+                  thread: thread,
+                  provider: provider,
+                  request: request,
+                  runner: runner,
+                  round: round,
+                  completer: completer,
+                  content: buffer.toString(),
+                  calls: calls,
+                  usage: latestUsage,
                 ),
               );
             },
@@ -461,8 +524,68 @@ final class ChatController extends AsyncNotifier<ChatState> {
         buffer.toString(),
       );
     }
-    unawaited(_awaitRequest(requestId, completer));
-    return true;
+  }
+
+  /// Выполняет вызовы инструментов текущего раунда и запускает следующий.
+  /// Лимит раундов защищает от бесконечного цикла модели.
+  Future<void> _runTools({
+    required int requestId,
+    required ChatThread thread,
+    required LlmProvider provider,
+    required LlmChatRequest request,
+    required ToolRunner runner,
+    required int round,
+    required Completer<void> completer,
+    required String content,
+    required List<LlmToolCall> calls,
+    LlmUsage? usage,
+  }) async {
+    if (completer.isCompleted) return;
+    if (!_isActive(requestId)) {
+      completer.complete();
+      return;
+    }
+    if (round >= maxToolRounds) {
+      await _fail(
+        thread.id,
+        requestId,
+        const LlmException('LLM: превышен лимит вызовов инструментов'),
+        StackTrace.current,
+        completer,
+        content,
+      );
+      return;
+    }
+
+    final results = <LlmMessage>[];
+    for (final call in calls) {
+      results.add(await runner.run(call));
+      if (!_isActive(requestId)) {
+        if (!completer.isCompleted) completer.complete();
+        return;
+      }
+    }
+    final next = LlmChatRequest(
+      model: request.model,
+      messages: [
+        ...request.messages,
+        LlmMessage(role: LlmRole.assistant, content: content, toolCalls: calls),
+        ...results,
+      ],
+      maxTokens: request.maxTokens,
+      temperature: request.temperature,
+      tools: request.tools,
+    );
+    await _streamRound(
+      requestId: requestId,
+      thread: thread,
+      provider: provider,
+      request: next,
+      runner: runner,
+      round: round + 1,
+      completer: completer,
+      usage: usage,
+    );
   }
 
   /// Останавливает текущий запрос и сохраняет уже полученный текст.

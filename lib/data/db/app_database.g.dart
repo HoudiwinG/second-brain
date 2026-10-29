@@ -5796,6 +5796,420 @@ class ChatMessagesCompanion extends UpdateCompanion<ChatMessage> {
   }
 }
 
+class $ToolAuditEntriesTable extends ToolAuditEntries
+    with TableInfo<$ToolAuditEntriesTable, ToolAuditEntry> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $ToolAuditEntriesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _toolNameMeta = const VerificationMeta(
+    'toolName',
+  );
+  @override
+  late final GeneratedColumn<String> toolName = GeneratedColumn<String>(
+    'tool_name',
+    aliasedName,
+    false,
+    additionalChecks: GeneratedColumn.checkTextLength(
+      minTextLength: 1,
+      maxTextLength: 100,
+    ),
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _statusMeta = const VerificationMeta('status');
+  @override
+  late final GeneratedColumn<String> status = GeneratedColumn<String>(
+    'status',
+    aliasedName,
+    false,
+    additionalChecks: GeneratedColumn.checkTextLength(
+      minTextLength: 1,
+      maxTextLength: 40,
+    ),
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _argumentNamesMeta = const VerificationMeta(
+    'argumentNames',
+  );
+  @override
+  late final GeneratedColumn<String> argumentNames = GeneratedColumn<String>(
+    'argument_names',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _entityIdMeta = const VerificationMeta(
+    'entityId',
+  );
+  @override
+  late final GeneratedColumn<int> entityId = GeneratedColumn<int>(
+    'entity_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    toolName,
+    status,
+    argumentNames,
+    entityId,
+    createdAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'tool_audit_log';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<ToolAuditEntry> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('tool_name')) {
+      context.handle(
+        _toolNameMeta,
+        toolName.isAcceptableOrUnknown(data['tool_name']!, _toolNameMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_toolNameMeta);
+    }
+    if (data.containsKey('status')) {
+      context.handle(
+        _statusMeta,
+        status.isAcceptableOrUnknown(data['status']!, _statusMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_statusMeta);
+    }
+    if (data.containsKey('argument_names')) {
+      context.handle(
+        _argumentNamesMeta,
+        argumentNames.isAcceptableOrUnknown(
+          data['argument_names']!,
+          _argumentNamesMeta,
+        ),
+      );
+    }
+    if (data.containsKey('entity_id')) {
+      context.handle(
+        _entityIdMeta,
+        entityId.isAcceptableOrUnknown(data['entity_id']!, _entityIdMeta),
+      );
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  ToolAuditEntry map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return ToolAuditEntry(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      toolName: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}tool_name'],
+      )!,
+      status: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}status'],
+      )!,
+      argumentNames: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}argument_names'],
+      )!,
+      entityId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}entity_id'],
+      ),
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+    );
+  }
+
+  @override
+  $ToolAuditEntriesTable createAlias(String alias) {
+    return $ToolAuditEntriesTable(attachedDatabase, alias);
+  }
+}
+
+class ToolAuditEntry extends DataClass implements Insertable<ToolAuditEntry> {
+  final int id;
+  final String toolName;
+
+  /// ok | error | unknown_tool | invalid_args.
+  final String status;
+
+  /// Имена аргументов через запятую, без значений.
+  final String argumentNames;
+  final int? entityId;
+  final DateTime createdAt;
+  const ToolAuditEntry({
+    required this.id,
+    required this.toolName,
+    required this.status,
+    required this.argumentNames,
+    this.entityId,
+    required this.createdAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['tool_name'] = Variable<String>(toolName);
+    map['status'] = Variable<String>(status);
+    map['argument_names'] = Variable<String>(argumentNames);
+    if (!nullToAbsent || entityId != null) {
+      map['entity_id'] = Variable<int>(entityId);
+    }
+    map['created_at'] = Variable<DateTime>(createdAt);
+    return map;
+  }
+
+  ToolAuditEntriesCompanion toCompanion(bool nullToAbsent) {
+    return ToolAuditEntriesCompanion(
+      id: Value(id),
+      toolName: Value(toolName),
+      status: Value(status),
+      argumentNames: Value(argumentNames),
+      entityId: entityId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(entityId),
+      createdAt: Value(createdAt),
+    );
+  }
+
+  factory ToolAuditEntry.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return ToolAuditEntry(
+      id: serializer.fromJson<int>(json['id']),
+      toolName: serializer.fromJson<String>(json['toolName']),
+      status: serializer.fromJson<String>(json['status']),
+      argumentNames: serializer.fromJson<String>(json['argumentNames']),
+      entityId: serializer.fromJson<int?>(json['entityId']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'toolName': serializer.toJson<String>(toolName),
+      'status': serializer.toJson<String>(status),
+      'argumentNames': serializer.toJson<String>(argumentNames),
+      'entityId': serializer.toJson<int?>(entityId),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+    };
+  }
+
+  ToolAuditEntry copyWith({
+    int? id,
+    String? toolName,
+    String? status,
+    String? argumentNames,
+    Value<int?> entityId = const Value.absent(),
+    DateTime? createdAt,
+  }) => ToolAuditEntry(
+    id: id ?? this.id,
+    toolName: toolName ?? this.toolName,
+    status: status ?? this.status,
+    argumentNames: argumentNames ?? this.argumentNames,
+    entityId: entityId.present ? entityId.value : this.entityId,
+    createdAt: createdAt ?? this.createdAt,
+  );
+  ToolAuditEntry copyWithCompanion(ToolAuditEntriesCompanion data) {
+    return ToolAuditEntry(
+      id: data.id.present ? data.id.value : this.id,
+      toolName: data.toolName.present ? data.toolName.value : this.toolName,
+      status: data.status.present ? data.status.value : this.status,
+      argumentNames: data.argumentNames.present
+          ? data.argumentNames.value
+          : this.argumentNames,
+      entityId: data.entityId.present ? data.entityId.value : this.entityId,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ToolAuditEntry(')
+          ..write('id: $id, ')
+          ..write('toolName: $toolName, ')
+          ..write('status: $status, ')
+          ..write('argumentNames: $argumentNames, ')
+          ..write('entityId: $entityId, ')
+          ..write('createdAt: $createdAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode =>
+      Object.hash(id, toolName, status, argumentNames, entityId, createdAt);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is ToolAuditEntry &&
+          other.id == this.id &&
+          other.toolName == this.toolName &&
+          other.status == this.status &&
+          other.argumentNames == this.argumentNames &&
+          other.entityId == this.entityId &&
+          other.createdAt == this.createdAt);
+}
+
+class ToolAuditEntriesCompanion extends UpdateCompanion<ToolAuditEntry> {
+  final Value<int> id;
+  final Value<String> toolName;
+  final Value<String> status;
+  final Value<String> argumentNames;
+  final Value<int?> entityId;
+  final Value<DateTime> createdAt;
+  const ToolAuditEntriesCompanion({
+    this.id = const Value.absent(),
+    this.toolName = const Value.absent(),
+    this.status = const Value.absent(),
+    this.argumentNames = const Value.absent(),
+    this.entityId = const Value.absent(),
+    this.createdAt = const Value.absent(),
+  });
+  ToolAuditEntriesCompanion.insert({
+    this.id = const Value.absent(),
+    required String toolName,
+    required String status,
+    this.argumentNames = const Value.absent(),
+    this.entityId = const Value.absent(),
+    required DateTime createdAt,
+  }) : toolName = Value(toolName),
+       status = Value(status),
+       createdAt = Value(createdAt);
+  static Insertable<ToolAuditEntry> custom({
+    Expression<int>? id,
+    Expression<String>? toolName,
+    Expression<String>? status,
+    Expression<String>? argumentNames,
+    Expression<int>? entityId,
+    Expression<DateTime>? createdAt,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (toolName != null) 'tool_name': toolName,
+      if (status != null) 'status': status,
+      if (argumentNames != null) 'argument_names': argumentNames,
+      if (entityId != null) 'entity_id': entityId,
+      if (createdAt != null) 'created_at': createdAt,
+    });
+  }
+
+  ToolAuditEntriesCompanion copyWith({
+    Value<int>? id,
+    Value<String>? toolName,
+    Value<String>? status,
+    Value<String>? argumentNames,
+    Value<int?>? entityId,
+    Value<DateTime>? createdAt,
+  }) {
+    return ToolAuditEntriesCompanion(
+      id: id ?? this.id,
+      toolName: toolName ?? this.toolName,
+      status: status ?? this.status,
+      argumentNames: argumentNames ?? this.argumentNames,
+      entityId: entityId ?? this.entityId,
+      createdAt: createdAt ?? this.createdAt,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (toolName.present) {
+      map['tool_name'] = Variable<String>(toolName.value);
+    }
+    if (status.present) {
+      map['status'] = Variable<String>(status.value);
+    }
+    if (argumentNames.present) {
+      map['argument_names'] = Variable<String>(argumentNames.value);
+    }
+    if (entityId.present) {
+      map['entity_id'] = Variable<int>(entityId.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ToolAuditEntriesCompanion(')
+          ..write('id: $id, ')
+          ..write('toolName: $toolName, ')
+          ..write('status: $status, ')
+          ..write('argumentNames: $argumentNames, ')
+          ..write('entityId: $entityId, ')
+          ..write('createdAt: $createdAt')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -5814,6 +6228,9 @@ abstract class _$AppDatabase extends GeneratedDatabase {
       $LlmProviderConfigsTable(this);
   late final $ChatThreadsTable chatThreads = $ChatThreadsTable(this);
   late final $ChatMessagesTable chatMessages = $ChatMessagesTable(this);
+  late final $ToolAuditEntriesTable toolAuditEntries = $ToolAuditEntriesTable(
+    this,
+  );
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -5832,6 +6249,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     llmProviderConfigs,
     chatThreads,
     chatMessages,
+    toolAuditEntries,
   ];
   @override
   StreamQueryUpdateRules get streamUpdateRules => const StreamQueryUpdateRules([
@@ -11003,6 +11421,236 @@ typedef $$ChatMessagesTableProcessedTableManager =
       ChatMessage,
       PrefetchHooks Function({bool threadId})
     >;
+typedef $$ToolAuditEntriesTableCreateCompanionBuilder =
+    ToolAuditEntriesCompanion Function({
+      Value<int> id,
+      required String toolName,
+      required String status,
+      Value<String> argumentNames,
+      Value<int?> entityId,
+      required DateTime createdAt,
+    });
+typedef $$ToolAuditEntriesTableUpdateCompanionBuilder =
+    ToolAuditEntriesCompanion Function({
+      Value<int> id,
+      Value<String> toolName,
+      Value<String> status,
+      Value<String> argumentNames,
+      Value<int?> entityId,
+      Value<DateTime> createdAt,
+    });
+
+class $$ToolAuditEntriesTableFilterComposer
+    extends Composer<_$AppDatabase, $ToolAuditEntriesTable> {
+  $$ToolAuditEntriesTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get toolName => $composableBuilder(
+    column: $table.toolName,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get status => $composableBuilder(
+    column: $table.status,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get argumentNames => $composableBuilder(
+    column: $table.argumentNames,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get entityId => $composableBuilder(
+    column: $table.entityId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$ToolAuditEntriesTableOrderingComposer
+    extends Composer<_$AppDatabase, $ToolAuditEntriesTable> {
+  $$ToolAuditEntriesTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get toolName => $composableBuilder(
+    column: $table.toolName,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get status => $composableBuilder(
+    column: $table.status,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get argumentNames => $composableBuilder(
+    column: $table.argumentNames,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get entityId => $composableBuilder(
+    column: $table.entityId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$ToolAuditEntriesTableAnnotationComposer
+    extends Composer<_$AppDatabase, $ToolAuditEntriesTable> {
+  $$ToolAuditEntriesTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get toolName =>
+      $composableBuilder(column: $table.toolName, builder: (column) => column);
+
+  GeneratedColumn<String> get status =>
+      $composableBuilder(column: $table.status, builder: (column) => column);
+
+  GeneratedColumn<String> get argumentNames => $composableBuilder(
+    column: $table.argumentNames,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get entityId =>
+      $composableBuilder(column: $table.entityId, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+}
+
+class $$ToolAuditEntriesTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $ToolAuditEntriesTable,
+          ToolAuditEntry,
+          $$ToolAuditEntriesTableFilterComposer,
+          $$ToolAuditEntriesTableOrderingComposer,
+          $$ToolAuditEntriesTableAnnotationComposer,
+          $$ToolAuditEntriesTableCreateCompanionBuilder,
+          $$ToolAuditEntriesTableUpdateCompanionBuilder,
+          (
+            ToolAuditEntry,
+            BaseReferences<
+              _$AppDatabase,
+              $ToolAuditEntriesTable,
+              ToolAuditEntry
+            >,
+          ),
+          ToolAuditEntry,
+          PrefetchHooks Function()
+        > {
+  $$ToolAuditEntriesTableTableManager(
+    _$AppDatabase db,
+    $ToolAuditEntriesTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$ToolAuditEntriesTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$ToolAuditEntriesTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$ToolAuditEntriesTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<String> toolName = const Value.absent(),
+                Value<String> status = const Value.absent(),
+                Value<String> argumentNames = const Value.absent(),
+                Value<int?> entityId = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+              }) => ToolAuditEntriesCompanion(
+                id: id,
+                toolName: toolName,
+                status: status,
+                argumentNames: argumentNames,
+                entityId: entityId,
+                createdAt: createdAt,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                required String toolName,
+                required String status,
+                Value<String> argumentNames = const Value.absent(),
+                Value<int?> entityId = const Value.absent(),
+                required DateTime createdAt,
+              }) => ToolAuditEntriesCompanion.insert(
+                id: id,
+                toolName: toolName,
+                status: status,
+                argumentNames: argumentNames,
+                entityId: entityId,
+                createdAt: createdAt,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$ToolAuditEntriesTable, ToolAuditEntry>(table),
+                  BaseReferences<
+                    _$AppDatabase,
+                    $ToolAuditEntriesTable,
+                    ToolAuditEntry
+                  >(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$ToolAuditEntriesTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $ToolAuditEntriesTable,
+      ToolAuditEntry,
+      $$ToolAuditEntriesTableFilterComposer,
+      $$ToolAuditEntriesTableOrderingComposer,
+      $$ToolAuditEntriesTableAnnotationComposer,
+      $$ToolAuditEntriesTableCreateCompanionBuilder,
+      $$ToolAuditEntriesTableUpdateCompanionBuilder,
+      (
+        ToolAuditEntry,
+        BaseReferences<_$AppDatabase, $ToolAuditEntriesTable, ToolAuditEntry>,
+      ),
+      ToolAuditEntry,
+      PrefetchHooks Function()
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -11032,4 +11680,6 @@ class $AppDatabaseManager {
       $$ChatThreadsTableTableManager(_db, _db.chatThreads);
   $$ChatMessagesTableTableManager get chatMessages =>
       $$ChatMessagesTableTableManager(_db, _db.chatMessages);
+  $$ToolAuditEntriesTableTableManager get toolAuditEntries =>
+      $$ToolAuditEntriesTableTableManager(_db, _db.toolAuditEntries);
 }

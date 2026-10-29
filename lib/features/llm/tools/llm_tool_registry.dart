@@ -23,6 +23,18 @@ abstract interface class LlmTool {
   );
 }
 
+/// Основа для встроенных инструментов: `definition` собирается из полей.
+abstract base class LlmToolBase implements LlmTool {
+  const LlmToolBase();
+
+  @override
+  LlmToolDefinition get definition => LlmToolDefinition(
+    name: name.trim(),
+    description: description,
+    parameters: parameters,
+  );
+}
+
 /// Реестр инструментов с защитой от дубликатов имён.
 final class LlmToolRegistry {
   final Map<String, LlmTool> _tools = {};

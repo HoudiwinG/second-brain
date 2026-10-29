@@ -21,34 +21,18 @@ abstract class LlmProvider {
   Future<Result<LlmResponse>> complete(LlmChatRequest request) async {
     final buffer = StringBuffer();
     var usage = const LlmUsage();
-    final toolCallBuilders = <int, _ToolCallBuilder>{};
+    final toolCalls = LlmToolCallAccumulator();
     try {
       await for (final chunk in streamChat(request)) {
         buffer.write(chunk.delta);
         if (chunk.usage != null) usage = usage.merge(chunk.usage!);
-        for (final delta in chunk.toolCallDeltas) {
-          final builder = toolCallBuilders.putIfAbsent(
-            delta.index,
-            _ToolCallBuilder.new,
-          );
-          builder.apply(delta);
-        }
+        toolCalls.addAll(chunk.toolCallDeltas);
       }
       return Result.success(
         LlmResponse(
           content: buffer.toString(),
           usage: usage,
-          toolCalls: [
-            for (final entry in toolCallBuilders.entries)
-              if (entry.value.id != null && entry.value.name != null)
-                LlmToolCall(
-                  id: entry.value.id!,
-                  name: entry.value.name!,
-                  argumentsJson: entry.value.arguments.isEmpty
-                      ? '{}'
-                      : entry.value.arguments,
-                ),
-          ],
+          toolCalls: toolCalls.build(),
         ),
       );
     } on AppException catch (e) {
@@ -65,9 +49,32 @@ abstract class LlmProvider {
   }
 
   /// Эмбеддинги текста. Провайдеры без embeddings возвращают ошибку.
-  Future<Result<List<double>>> embed(String input) async => const Result.failure(
-    LlmException('LLM: провайдер не поддерживает embeddings'),
-  );
+  Future<Result<List<double>>> embed(String input) async =>
+      const Result.failure(
+        LlmException('LLM: провайдер не поддерживает embeddings'),
+      );
+}
+
+/// Собирает приращения tool-call'ов из streaming-чанков в завершённые вызовы.
+final class LlmToolCallAccumulator {
+  final Map<int, _ToolCallBuilder> _builders = {};
+
+  void addAll(Iterable<LlmToolCallDelta> deltas) {
+    for (final delta in deltas) {
+      _builders.putIfAbsent(delta.index, _ToolCallBuilder.new).apply(delta);
+    }
+  }
+
+  /// Вызовы без id или имени отбрасываются: их нельзя выполнить.
+  List<LlmToolCall> build() => [
+    for (final builder in _builders.values)
+      if (builder.id != null && builder.name != null)
+        LlmToolCall(
+          id: builder.id!,
+          name: builder.name!,
+          argumentsJson: builder.arguments.isEmpty ? '{}' : builder.arguments,
+        ),
+  ];
 }
 
 final class _ToolCallBuilder {

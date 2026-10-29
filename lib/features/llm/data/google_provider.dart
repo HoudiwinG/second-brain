@@ -8,6 +8,7 @@ import '../../../core/result/result.dart';
 import '../domain/llm_chat.dart';
 import '../domain/llm_message.dart';
 import '../domain/llm_provider.dart';
+import '../domain/llm_tool.dart';
 
 /// Google Gemini API (streamGenerateContent + embedContent).
 final class GoogleProvider extends LlmProvider {
@@ -30,6 +31,37 @@ final class GoogleProvider extends LlmProvider {
     return model.startsWith('models/') ? model.substring(7) : model;
   }
 
+  /// Gemini не выдаёт id вызовов: результат связывается с вызовом по имени.
+  static Map<String, Object?> _googleContent(LlmMessage message) {
+    if (message.role == LlmRole.tool) {
+      return {
+        'role': 'user',
+        'parts': [
+          {
+            'functionResponse': {
+              'name': message.name ?? '',
+              'response': {'result': message.content},
+            },
+          },
+        ],
+      };
+    }
+    final hasCalls = message.toolCalls.isNotEmpty;
+    return {
+      'role': message.role == LlmRole.assistant ? 'model' : 'user',
+      'parts': [
+        if (message.content.isNotEmpty || !hasCalls) {'text': message.content},
+        for (final call in message.toolCalls)
+          {
+            'functionCall': {
+              'name': call.name,
+              'args': decodeToolArguments(call.argumentsJson),
+            },
+          },
+      ],
+    };
+  }
+
   @override
   Stream<LlmChunk> streamChat(LlmChatRequest request) async* {
     _validate(request);
@@ -40,13 +72,7 @@ final class GoogleProvider extends LlmProvider {
         .toList();
     final contents = [
       for (final message in request.messages)
-        if (message.role != LlmRole.system)
-          {
-            'role': message.role == LlmRole.assistant ? 'model' : 'user',
-            'parts': [
-              {'text': message.content},
-            ],
-          },
+        if (message.role != LlmRole.system) _googleContent(message),
     ];
     final modelId = _modelId;
     final response = await _client.streamLines(
@@ -83,6 +109,7 @@ final class GoogleProvider extends LlmProvider {
     );
 
     LlmUsage? lastUsage;
+    var toolIndex = 0;
     try {
       await for (final line in lines) {
         final trimmed = line.trim();
@@ -112,13 +139,32 @@ final class GoogleProvider extends LlmProvider {
           final parts = content['parts'];
           if (parts is List) {
             final buffer = StringBuffer();
+            final toolDeltas = <LlmToolCallDelta>[];
             for (final part in parts) {
-              if (part is Map<String, Object?> && part['text'] is String) {
+              if (part is! Map<String, Object?>) continue;
+              if (part['text'] is String) {
                 buffer.write(part['text'] as String);
               }
+              final call = part['functionCall'];
+              if (call is Map<String, Object?> && call['name'] is String) {
+                // Gemini отдаёт вызов целиком, поэтому один чанк на вызов.
+                toolDeltas.add(
+                  LlmToolCallDelta(
+                    index: toolIndex,
+                    id: 'google_call_$toolIndex',
+                    name: call['name'] as String,
+                    argumentsJson: jsonEncode(call['args'] ?? const {}),
+                  ),
+                );
+                toolIndex++;
+              }
             }
-            if (buffer.isNotEmpty) {
-              yield LlmChunk(delta: buffer.toString(), usage: usage);
+            if (buffer.isNotEmpty || toolDeltas.isNotEmpty) {
+              yield LlmChunk(
+                delta: buffer.toString(),
+                usage: usage,
+                toolCallDeltas: toolDeltas,
+              );
             } else if (usage != null) {
               yield LlmChunk(usage: usage);
             }

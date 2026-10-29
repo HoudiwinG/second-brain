@@ -26,6 +26,43 @@ final class AnthropicProvider extends LlmProvider {
     if (_apiKey != null && _apiKey.isNotEmpty) 'x-api-key': _apiKey,
   };
 
+  /// Результат инструмента уходит пользователем с блоком `tool_result`;
+  /// вызовы ассистента — блоками `tool_use`, как того требует Messages API.
+  static Map<String, Object?> _anthropicMessage(LlmMessage message) {
+    if (message.role == LlmRole.tool) {
+      return {
+        'role': 'user',
+        'content': [
+          {
+            'type': 'tool_result',
+            'tool_use_id': message.toolCallId,
+            'content': message.content,
+          },
+        ],
+      };
+    }
+    if (message.role == LlmRole.assistant && message.toolCalls.isNotEmpty) {
+      return {
+        'role': 'assistant',
+        'content': [
+          if (message.content.isNotEmpty)
+            {'type': 'text', 'text': message.content},
+          for (final call in message.toolCalls)
+            {
+              'type': 'tool_use',
+              'id': call.id,
+              'name': call.name,
+              'input': decodeToolArguments(call.argumentsJson),
+            },
+        ],
+      };
+    }
+    return {
+      'role': message.role == LlmRole.assistant ? 'assistant' : 'user',
+      'content': message.content,
+    };
+  }
+
   @override
   Stream<LlmChunk> streamChat(LlmChatRequest request) async* {
     _validate(request);
@@ -36,11 +73,7 @@ final class AnthropicProvider extends LlmProvider {
         .join('\n\n');
     final messages = [
       for (final message in request.messages)
-        if (message.role != LlmRole.system)
-          {
-            'role': message.role == LlmRole.assistant ? 'assistant' : 'user',
-            'content': message.content,
-          },
+        if (message.role != LlmRole.system) _anthropicMessage(message),
     ];
 
     final response = await _client.streamLines(

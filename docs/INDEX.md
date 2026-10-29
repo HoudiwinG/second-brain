@@ -59,7 +59,8 @@
 - [stage-03](stages/stage-03.md) — LLM-слой (done; исходное ревью **FAIL**
   сохранено, повторное — **PASS** 28/28; 132/132, analyze 0, Windows debug
   build, CI `40636764573` success; stage-04 разблокирован)
-- stage-04 — инструменты ассистента (следующий этап)
+- [stage-04](stages/stage-04.md) — инструменты ассистента (реализация готова,
+  коммит ждёт сборки Windows; ADR-021; схема v6)
 
 ## Шаблоны
 - [decisions.template.md](decisions.template.md) — формат ADR

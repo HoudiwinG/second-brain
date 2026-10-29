@@ -17,10 +17,16 @@ import '../data/repositories/search_repository.dart';
 import '../data/repositories/settings_repository.dart';
 import '../data/repositories/tags_repository.dart';
 import '../data/repositories/tasks_repository.dart';
+import '../data/repositories/tool_audit_repository.dart';
 import '../features/finance/domain/finance_transaction.dart';
 import '../features/ideas/domain/idea_entry.dart';
 import '../features/llm/application/llm_context_loader.dart';
 import '../features/llm/data/llm_provider_factory.dart';
+import '../features/llm/tools/built_in/create_note_tool.dart';
+import '../features/llm/tools/built_in/create_task_tool.dart';
+import '../features/llm/tools/built_in/search_data_tool.dart';
+import '../features/llm/tools/built_in/summarize_mail_mock_tool.dart';
+import '../features/llm/tools/built_in/update_task_status_tool.dart';
 import '../features/llm/tools/llm_tool_registry.dart';
 import '../features/notes/domain/category.dart';
 import '../features/notes/domain/note.dart';
@@ -121,10 +127,27 @@ final llmProviderFactoryProvider = Provider<LlmProviderFactory>((ref) {
   return factory;
 });
 
-/// Реестр инструментов LLM. На stage-03 пуст: инструменты появятся на stage-04.
-final llmToolRegistryProvider = Provider<LlmToolRegistry>(
-  (ref) => LlmToolRegistry(),
-);
+/// Журнал вызовов инструментов ассистента (аудит без значений аргументов).
+final toolAuditRepositoryProvider = FutureProvider<ToolAuditRepository>((
+  ref,
+) async {
+  final db = await ref.watch(appDatabaseProvider.future);
+  return DriftToolAuditRepository(db);
+});
+
+/// Реестр инструментов ассистента (stage-04). Инструменты читают данные через
+/// репозитории, поэтому реестр собирается асинхронно.
+final llmToolRegistryProvider = FutureProvider<LlmToolRegistry>((ref) async {
+  final db = await ref.watch(appDatabaseProvider.future);
+  final registry = LlmToolRegistry();
+  registry
+    ..register(CreateTaskTool(DriftTasksRepository(db)))
+    ..register(CreateNoteTool(DriftNotesRepository(db)))
+    ..register(UpdateTaskStatusTool(DriftTasksRepository(db)))
+    ..register(SearchDataTool(DriftSearchRepository(db)))
+    ..register(const SummarizeMailMockTool());
+  return registry;
+});
 
 /// Хранилище секретов: secure storage (DPAPI/Keychain/Keystore).
 final secretStoreProvider = Provider<SecretStore>((ref) => SecureSecretStore());

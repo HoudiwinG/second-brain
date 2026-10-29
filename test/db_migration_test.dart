@@ -16,11 +16,11 @@ import 'helpers/in_memory_db.dart';
 ///
 /// Нужна, чтобы проверить политику ADR-012: непокрытый переход onUpgrade
 /// обязан падать, а не молча создавать недостающие таблицы.
-final class _AppDatabaseV6 extends AppDatabase {
-  _AppDatabaseV6(super.executor);
+final class _AppDatabaseV7 extends AppDatabase {
+  _AppDatabaseV7(super.executor);
 
   @override
-  int get schemaVersion => 6;
+  int get schemaVersion => 7;
 }
 
 /// База, которая «не понимает» файл v5: нужна для проверки downgrade.
@@ -33,11 +33,11 @@ final class _AppDatabaseV3 extends AppDatabase {
 
 /// Интеграционные тесты миграций drift.
 void main() {
-  group('AppDatabase схема v5', () {
-    test('schemaVersion = 5 (ядро, напоминания и LLM-слой)', () {
+  group('AppDatabase схема v6', () {
+    test('schemaVersion = 6 (ядро, напоминания, LLM-слой и аудит)', () {
       final db = InMemoryDbFactory.open();
       addTearDown(db.close);
-      expect(db.schemaVersion, 5);
+      expect(db.schemaVersion, 6);
     });
 
     test('onCreate создаёт app_settings и таблицы ядра', () async {
@@ -123,7 +123,7 @@ void main() {
             );
         await v5.close();
 
-        final v6 = _AppDatabaseV6(NativeDatabase(file));
+        final v6 = _AppDatabaseV7(NativeDatabase(file));
         addTearDown(() async {
           try {
             await v6.close();
@@ -186,7 +186,7 @@ void main() {
       final hits = (await search.search('миграции')).unwrap();
       expect(hits, hasLength(1));
       expect(hits.single.entityId, note.id);
-      expect(db.schemaVersion, 5);
+      expect(db.schemaVersion, 6);
       expect(await db.select(db.llmProviderConfigs).get(), isEmpty);
       expect(await db.select(db.chatThreads).get(), isEmpty);
       expect(await db.select(db.chatMessages).get(), isEmpty);
@@ -195,16 +195,16 @@ void main() {
 
   group('Защита миграций (R02-004)', () {
     test(
-      'v2 → v6 падает до DDL и не оставляет файл в промежуточном виде',
+      'v2 → v7 падает до DDL и не оставляет файл в промежуточном виде',
       () async {
         final dir = await Directory.systemTemp.createTemp('second_brain_db_');
         addTearDown(() async {
           if (dir.existsSync()) await dir.delete(recursive: true);
         });
-        final file = File('${dir.path}/v2_to_v6.sqlite');
+        final file = File('${dir.path}/v2_to_v7.sqlite');
         await _seedV2(file);
 
-        final v6 = _AppDatabaseV6(NativeDatabase(file));
+        final v6 = _AppDatabaseV7(NativeDatabase(file));
         await expectLater(
           () => v6.select(v6.appSettings).get(),
           throwsA(isA<UnsupportedError>()),
@@ -226,7 +226,7 @@ void main() {
         expect(columns, isNot(contains('reminder_sent_at')));
         expect(version, 2);
 
-        // Файл должен остаться пригодным для штатной миграции v2 → v5.
+        // Файл должен остаться пригодным для штатной миграции v2 → v6.
         final recovered = AppDatabase(NativeDatabase(file));
         addTearDown(recovered.close);
         final task = await recovered.select(recovered.tasks).getSingle();
@@ -314,7 +314,7 @@ void main() {
 
         final db = AppDatabase(NativeDatabase(file));
         addTearDown(db.close);
-        expect(db.schemaVersion, 5);
+        expect(db.schemaVersion, 6);
 
         final task = await db.select(db.tasks).getSingle();
         expect(task.title, 'Напоминание после миграции');
@@ -418,7 +418,7 @@ void main() {
 
       final db = AppDatabase(NativeDatabase(file));
       addTearDown(db.close);
-      expect(db.schemaVersion, 5);
+      expect(db.schemaVersion, 6);
 
       final configColumns = await db
           .customSelect('PRAGMA table_info(llm_provider_configs)')
@@ -462,6 +462,51 @@ void main() {
     });
   });
 
+  group('Миграция v5 → v6', () {
+    test('создаёт tool_audit_log и сохраняет существующие данные', () async {
+      final dir = await Directory.systemTemp.createTemp('second_brain_db_');
+      addTearDown(() async {
+        if (dir.existsSync()) await dir.delete(recursive: true);
+      });
+      final file = File('${dir.path}/v5.sqlite');
+
+      final seed = AppDatabase(NativeDatabase(file));
+      await seed
+          .into(seed.appSettings)
+          .insert(
+            AppSettingsCompanion.insert(
+              key: 'keep.me',
+              value: 'v5',
+              updatedAt: DateTime.utc(2026, 1, 1),
+            ),
+          );
+      await seed.customStatement('DROP INDEX IF EXISTS idx_tool_audit_created');
+      await seed.customStatement('DROP TABLE tool_audit_log');
+      await seed.customStatement('PRAGMA user_version = 5');
+      await seed.close();
+
+      final db = AppDatabase(NativeDatabase(file));
+      addTearDown(db.close);
+      final setting = await (db.select(
+        db.appSettings,
+      )..where((t) => t.key.equals('keep.me'))).getSingle();
+      expect(setting.value, 'v5');
+
+      await db
+          .into(db.toolAuditEntries)
+          .insert(
+            ToolAuditEntriesCompanion.insert(
+              toolName: 'create_task',
+              status: 'ok',
+              createdAt: DateTime.utc(2026, 10, 29),
+            ),
+          );
+      final rows = await db.select(db.toolAuditEntries).get();
+      expect(rows, hasLength(1));
+      expect(rows.single.argumentNames, '');
+    });
+  });
+
   group('Миграция v3 → v5', () {
     test('создаёт LLM-таблицы и сохраняет задачи', () async {
       final dir = await Directory.systemTemp.createTemp('second_brain_db_');
@@ -497,7 +542,7 @@ void main() {
 
       final db = AppDatabase(NativeDatabase(file));
       addTearDown(db.close);
-      expect(db.schemaVersion, 5);
+      expect(db.schemaVersion, 6);
       expect((await db.select(db.tasks).getSingle()).title, 'До LLM-слоя');
       expect(await db.select(db.llmProviderConfigs).get(), isEmpty);
       expect(await db.select(db.chatThreads).get(), isEmpty);
