@@ -3,15 +3,15 @@
 - **Дата:** 2026-11-16
 - **Агент:** agent-1 (OpenCode)
 - **Ветка:** `master`
-- **Статус:** **fixes ready**, ожидается финальное независимое ревью.
-  Первое и повторное ревью A/B — **FAIL** (см.
+- **Статус:** **PASS WITH COMMENTS (0 MAJOR).** Первое и повторное ревью A/B
+  были FAIL; блокеры обоих кругов исправлены, финальное ревью A/B —
+  PASS WITH COMMENTS (см.
   [reviews/stage-06-review.md](../reviews/stage-06-review.md),
-  [reviews/stage-06-re-review.md](../reviews/stage-06-re-review.md));
-  блокеры обоих кругов исправлены (см.
-  [reviews/stage-06-fix-results.md](../reviews/stage-06-fix-results.md)).
+  [reviews/stage-06-re-review.md](../reviews/stage-06-re-review.md),
+  [reviews/stage-06-final-review.md](../reviews/stage-06-final-review.md)).
   Гейты: `flutter analyze --fatal-infos` — 0 issues, `flutter test` —
   **228/228**, `flutter build windows --debug` — success; CI
-  `43923720070` (`83ece84`) — success, оба job'а.
+  `43927529327` (`1ad2caa`) — success, оба job'а.
 - **Предыдущий этап:** stage-05 — **PASS WITH COMMENTS**, stage-06
   разблокирован.
 - **Схема БД:** **v8** (`mail_accounts`, `mail_messages`).
@@ -171,4 +171,6 @@ email, OAuth client ID (и client secret, если провайдер требу
   — **FAIL**.
 - Повторное ревью A/B: [reviews/stage-06-re-review.md](../reviews/stage-06-re-review.md)
   — **FAIL**.
+- Финальное ревью A/B: [reviews/stage-06-final-review.md](../reviews/stage-06-final-review.md)
+  — **PASS WITH COMMENTS (0 MAJOR)**.
 - Исправления: [reviews/stage-06-fix-results.md](../reviews/stage-06-fix-results.md).

@@ -1,7 +1,7 @@
 # Контекст проекта (снимок состояния)
 
-- **Текущий этап:** stage-06 (почта) — **два ревью A/B: FAIL; блокеры обоих
-  кругов исправлены, ожидается финальное ревью.** OAuth 2.0 + PKCE, secure tokens,
+- **Текущий этап:** stage-06 (почта) — **PASS WITH COMMENTS (0 MAJOR)** после
+  двух FAIL-кругов; финальное ревью A/B — PASS WITH COMMENTS. OAuth 2.0 + PKCE, secure tokens,
   Gmail API, официальный Yandex 360 Mail API, Mail.ru отключён (нет
   официального REST-чтения), кэш/поиск, per-message privacy, суммаризация и
   задача; backup v3. Analyze 0, test **228/228**, Windows debug build success.
@@ -56,8 +56,8 @@
   R02-009…R02-013 — [reviews/stage-02-fix-results.md](reviews/stage-02-fix-results.md).
 - **Текущий отчёт:** [stages/stage-06.md](stages/stage-06.md)
 - **Открытых CRITICAL:** 0
-- **Stage-06:** два ревью FAIL; блокеры обоих кругов исправлены, ожидается
-  финальное ревью. **Stage-05:** PASS WITH COMMENTS (0 MAJOR), S05-001…011 и S05Z fixed.
+- **Stage-06:** PASS WITH COMMENTS (0 MAJOR) после двух FAIL-кругов.
+  **Stage-05:** PASS WITH COMMENTS (0 MAJOR), S05-001…011 и S05Z fixed.
   **Stage-04:** PASS WITH COMMENTS, все S04R/S04F/S04Z fixed. **Открытых
   исходных S03-находок:** 0 (28/28 подтверждены повторным ревью).
   **Не блокирующие комментарии:** S03R-001/S03R-002 (MINOR),
@@ -192,8 +192,8 @@
   JSON-бэкап v3 включает почту (без токенов).
 - UI интеграций: подключение/синхронизация/privacy ящика и письма/поиск/
   просмотр; Windows OAuth-launcher без `cmd`.
-- Тесты: 228/228, analyze 0, Windows debug build success. Первое ревью A/B —
-  FAIL, блокеры исправлены, ожидается повторное ревью.
+- Тесты: 228/228, analyze 0, Windows debug build success. Два ревью A/B —
+  FAIL, блокеры исправлены; финальное ревью — **PASS WITH COMMENTS (0 MAJOR)**.
 
 ## Что сделано на stage-05
 
@@ -393,7 +393,7 @@
   `dashboard_period_test.dart` проверяет календарную семантику границ.
 
 ## Ближайшие задачи (stage-07)
-- Провести повторное независимое ревью stage-06; после PASS — stage-07.
+- Stage-06 закрыт **PASS WITH COMMENTS**; начинать stage-07.
 - **Stage-07 — поиск идей**: статьи через LLM web-search, изображения,
   сохранение результатов в идеи/заметки.
 - Закрыть ограничения stage-06: live OAuth/API smoke Yandex 360, продуктовое
@@ -455,7 +455,9 @@
 - Отчёт stage-06: [stages/stage-06.md](stages/stage-06.md)
 - Ревью stage-06: [reviews/stage-06-review.md](reviews/stage-06-review.md)
   (**FAIL**), [reviews/stage-06-re-review.md](reviews/stage-06-re-review.md)
-  (**FAIL**) и [reviews/stage-06-fix-results.md](reviews/stage-06-fix-results.md)
+  (**FAIL**), [reviews/stage-06-final-review.md](reviews/stage-06-final-review.md)
+  (**PASS WITH COMMENTS**) и
+  [reviews/stage-06-fix-results.md](reviews/stage-06-fix-results.md)
 - ADR-023: [decisions.md](decisions.md) — почта, OAuth, secure tokens,
   локальный кэш
 - Отчёт stage-05: [stages/stage-05.md](stages/stage-05.md)

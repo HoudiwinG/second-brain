@@ -770,7 +770,8 @@ track/date. Гейты: analyze 0, test **185/185**, Windows debug build success
 Mail API, локальный кэш/поиск, per-message privacy, суммаризация через LLM и
 создание задачи из письма; Mail.ru отключён (нет официального REST-чтения).
 Схема v8. Первое ревью A/B — FAIL; блокеры исправлены. Гейты: analyze 0, test
-**228/228**, Windows debug build success. Ожидается повторное ревью.
+**228/228**, Windows debug build success. Финальное ревью A/B —
+**PASS WITH COMMENTS (0 MAJOR)**.
 
 | Timestamp (UTC) | ID | Действие | Примечание |
 |-----------------|----|----------|------------|
@@ -786,3 +787,5 @@ Mail API, локальный кэш/поиск, per-message privacy, сумма�
 | 2026-11-16 | — | re-review | A/B FAIL: 401 throw, Yandex links, unique beforeOpen, re-auth |
 | 2026-11-16 | — | fixes-2 | provider Failure, contract links, safe beforeOpen, re-auth UI, 228/228 |
 | 2026-11-16 | — | CI | run 43923720070 (`83ece84`): analyze-and-test + build-windows success |
+| 2026-11-16 | — | final-review | A/B PASS WITH COMMENTS (0 MAJOR); 228/228 |
+| 2026-11-16 | — | final-fixes | OAuth через ApiClient, Gmail MIME, re-auth clientId, privacy backup |

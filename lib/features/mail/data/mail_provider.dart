@@ -168,6 +168,18 @@ class GmailMailProvider implements MailProvider {
   }
 
   static String _htmlToText(String html) => html
+      .replaceAll(
+        RegExp(r'<style[^>]*>.*?</style>', dotAll: true, caseSensitive: false),
+        ' ',
+      )
+      .replaceAll(
+        RegExp(
+          r'<script[^>]*>.*?</script>',
+          dotAll: true,
+          caseSensitive: false,
+        ),
+        ' ',
+      )
       .replaceAll(RegExp(r'<br\s*/?>', caseSensitive: false), '\n')
       .replaceAll(RegExp(r'</p\s*>', caseSensitive: false), '\n')
       .replaceAll(RegExp('<[^>]*>'), ' ')

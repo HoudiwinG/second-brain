@@ -3,8 +3,8 @@
 - **Дата:** 2026-11-16
 - **Исходное ревью:** [stage-06-review.md](stage-06-review.md)
 - **Проверяемое состояние до исправлений:** `2c377a6`
-- **Статус:** исправления первого и второго круга готовы, ожидается финальное
-  независимое ревью.
+- **Статус:** финальное ревью A/B — **PASS WITH COMMENTS (0 MAJOR)**;
+  исправления первого, второго и финального круга внесены.
 
 ## Блокеры
 
@@ -105,6 +105,19 @@
 Остаются не блокирующими: mock `summarize_mail` tool, суммаризация только
 одного письма (не треда), ограничение поиска 5000 последних писем, UI
 progress/global sync, revoke endpoint и очистка старых секретов при restore.
+
+## Финальный круг (после PASS WITH COMMENTS)
+
+- OAuth token endpoint переведён на `ApiClient` (ADR-019), form-body строкой,
+  timeout/retry/логирование без секретов.
+- Gmail MIME: `multipart/alternative` выбирает plain, `multipart/mixed` не
+  берёт вложения; тесты.
+- Re-auth/connect сохраняют clientId/displayName/privacy; ошибки обновления
+  показываются.
+- `beforeOpen` не создаёт unique и по сообщениям; backup-импорт не откатывает
+  всё из-за старого Mail.ru; пустая тема — через ARB; privacy-инвариант при
+  импорте; style/script вырезаются из HTML.
+- Итог: **228/228**, analyze 0, Windows build success.
 
 ## Гейты после исправлений
 

@@ -105,13 +105,15 @@ class _IntegrationsScreenState extends ConsumerState<IntegrationsScreen> {
         showMessageSnackBar(context, lcm.mailAccountAddError);
         return;
       }
-      await repo.updateAccount(
+      final updated = await repo.updateAccount(
         existing.id,
         clientId: draft.clientId,
-        displayName: draft.displayName,
-        isPrivateForLlm: draft.isPrivateForLlm,
       );
       if (!mounted) return;
+      if (updated is Failure<MailAccount>) {
+        showMessageSnackBar(context, lcm.mailAccountAddError);
+        return;
+      }
       _selectedAccountId = existing.id;
       _reload();
       showMessageSnackBar(context, lcm.mailAccountAdded);
@@ -166,13 +168,17 @@ class _IntegrationsScreenState extends ConsumerState<IntegrationsScreen> {
       return;
     }
     final repo = await ref.read(mailRepositoryProvider.future);
-    await repo.updateAccount(
+    final updated = await repo.updateAccount(
       account.id,
       clientId: input.draft.clientId,
       displayName: input.draft.displayName,
       isPrivateForLlm: input.draft.isPrivateForLlm,
     );
     if (!mounted) return;
+    if (updated is Failure<MailAccount>) {
+      showMessageSnackBar(context, lcm.mailAccountAddError);
+      return;
+    }
     _reload();
     showMessageSnackBar(context, lcm.mailAccountAdded);
   }

@@ -683,15 +683,17 @@ class BackupService {
 
     final mailAccounts = data['mail_accounts'];
     final mailAccountIds = <int>{};
+    final skippedMailAccountIds = <int>{};
     if (mailAccounts is List) {
       for (final item in mailAccounts) {
         final account = _map(item, 'mailAccount');
         final id = _requiredInt(account, 'id');
         final providerType = _requiredString(account, 'provider_type');
         if (providerType == 'mailru') {
-          throw const ValidationException(
-            'BackupService: Mail.ru не поддерживает REST-чтение писем',
-          );
+          // Старый dev-бэкап мог содержать Mail.ru; не откатываем из-за него
+          // восстановление остальных данных.
+          skippedMailAccountIds.add(id);
+          continue;
         }
         await _db
             .into(_db.mailAccounts)
@@ -717,6 +719,7 @@ class BackupService {
       for (final item in mailMessages) {
         final message = _map(item, 'mailMessage');
         final accountId = _requiredInt(message, 'account_id');
+        if (skippedMailAccountIds.contains(accountId)) continue;
         if (!mailAccountIds.contains(accountId)) {
           throw ValidationException(
             'BackupService: письмо ссылается на отсутствующий ящик $accountId',
