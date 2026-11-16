@@ -307,6 +307,8 @@ void main() {
     await Future<void>.delayed(const Duration(milliseconds: 100));
 
     final state = container.read(chatControllerProvider).value!;
+    expect(state.isStreaming, isFalse);
+    expect(state.streamingText, isEmpty);
     final messages = (await DriftChatRepository(
       database,
     ).listMessages(state.activeThreadId!)).unwrap();
@@ -317,6 +319,17 @@ void main() {
     );
     expect(messages.last.content, 'partial');
     expect(messages.last.errorCode, isNull);
+
+    // Повторный cancel после terminal-сохранения не должен добавить ответ.
+    await controller.cancel();
+    await Future<void>.delayed(const Duration(milliseconds: 50));
+    final afterSecondCancel = (await DriftChatRepository(
+      database,
+    ).listMessages(state.activeThreadId!)).unwrap();
+    expect(
+      afterSecondCancel.where((message) => message.role == LlmRole.assistant),
+      hasLength(1),
+    );
   });
 
   test('ошибка провайдера сохраняет маркер и не блокирует отправку', () async {

@@ -100,6 +100,29 @@ ADR-021 и отчёт stage-04 исправлены: Gemini может выда�
   (`789a01f`) — **success**, включая Windows debug build.
 - Stage-05 не разблокирован до повторного независимого ревью.
 
+## Комментарии повторного ревью (PASS WITH COMMENTS)
+
+Повторное ревью исправлений дало **PASS WITH COMMENTS** (0 MAJOR):
+reviewer A — 4 MINOR/3 NIT, reviewer B — 3 MINOR/5 NIT. Комментарии закрыты
+дополнительным проходом:
+
+| ID | Статус | Исправление |
+|----|--------|-------------|
+| S04F-A-001 / S04F-B-001 | fixed | `cancel()` в ветке `alreadyTerminal` синхронно завершает streaming-состояние; `_terminalErrorCode` сохраняет ошибку; тест проверяет `isStreaming=false`, пустой `streamingText` и повторный cancel без дубля |
+| S04F-A-002 / S04F-B-002 | fixed | `_pendingPreToolText` выставляется уже при приходе `toolCallDeltas`, а не только в `onDone`; regression-тест с отменой до закрытия потока |
+| S04F-A-003 | fixed | `_mutatedRequestId`/`_preToolRequestId` привязаны к requestId; поздние callbacks старого запроса не меняют флаги нового |
+| S04F-A-004 / S04F-B-003 | fixed | `stage-04.md` больше не утверждает общую фильтрацию tool results; описание соответствует ADR-021 |
+| S04F-A-005 | fixed | `dart run build_runner build` перегенерировал `app_database.g.dart` |
+| S04F-A-006 | fixed | Синтетический `google_call_N` не отправляется на провод; добавлен fallback-тест и тест двух вызовов одной функции с разными id |
+| S04F-A-007 / S04F-B-004 | fixed | Документация лимита раундов синхронизирована (`llm_error`/`tool_side_effect`); тест переименован |
+| S04F-B-005 | fixed | `retryLast()` проверяет `errorCode` последнего сообщения; тест после смены треда |
+| S04F-B-006 | fixed | Тест лимита переименован; тест отмены проверяет состояние; добавлен Google-тест двух вызовов одной функции |
+| S04F-B-007 | fixed | `context.md` обновлён; HEAD указывается как текущий docs-коммит |
+| S04F-B-008 | fixed | Комментарий `chat_messages.error_code` перечисляет `llm_error`/`tool_side_effect`/`cancelled` |
+
+Гейты после дополнительного прохода: analyze 0, **172/172** тестов, Windows
+debug build success. Ожидается финальная независимая проверка.
+
 ## Ограничения
 
 - Живые запросы к OpenAI/Anthropic/Google с реальными ключами не выполнялись;

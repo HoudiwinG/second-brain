@@ -73,10 +73,11 @@
 > stage-04 не выполнен и переносится на stage-05.
 >
 > **Исправления stage-04 после повторного ревью (2026-11-16):** все 11
-> находок S04R-001…S04R-011 fixed; analyze 0, test **168/168**, Windows debug
-> build success. Доказательства —
+> находок S04R-001…S04R-011 fixed; повторная проверка — **PASS WITH
+> COMMENTS** (0 MAJOR), комментарии S04F fixed. Analyze 0, test **172/172**,
+> Windows debug build success. Доказательства —
 > [reviews/stage-04-repeat-fix-results.md](reviews/stage-04-repeat-fix-results.md).
-> Stage-05 остаётся заблокированным до повторного независимого ревью.
+> Stage-05 разблокирован.
 
 Проверка после исправлений R02-009…R02-013 (2026-10-24, Flutter 3.47.7):
 `flutter pub get --enforce-lockfile` → OK; `flutter analyze --fatal-infos` →

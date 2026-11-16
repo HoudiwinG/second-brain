@@ -84,9 +84,11 @@ final class ChatController extends AsyncNotifier<ChatState> {
   int _nextRequestId = 0;
   int? _activeRequestId;
   int? _terminalRequestId;
+  String? _terminalErrorCode;
   Future<void>? _cancelFuture;
   bool _sending = false;
-  bool _activeRequestMutated = false;
+  int? _mutatedRequestId;
+  int? _preToolRequestId;
   String? _pendingPreToolText;
   List<LlmContextRef> _lastContextRefs = const [];
 
@@ -241,7 +243,8 @@ final class ChatController extends AsyncNotifier<ChatState> {
     if (normalized.isEmpty) return false;
 
     _sending = true;
-    _activeRequestMutated = false;
+    _mutatedRequestId = null;
+    _preToolRequestId = null;
     _pendingPreToolText = null;
     final requestId = ++_nextRequestId;
     _activeRequestId = requestId;
@@ -285,8 +288,13 @@ final class ChatController extends AsyncNotifier<ChatState> {
     final thread = current?.activeThread;
     if (current == null || thread == null) return false;
     // После успешного mutating-инструмента слепой retry может создать
-    // дубликат; пользователь должен сначала проверить данные.
-    if (current.errorCode == 'tool_side_effect') return false;
+    // дубликат; пользователь должен сначала проверить данные. Проверяем и
+    // маркер последнего сообщения: смена треда сбрасывает state.errorCode.
+    final lastMessage = current.messages.isEmpty ? null : current.messages.last;
+    if (current.errorCode == 'tool_side_effect' ||
+        lastMessage?.errorCode == 'tool_side_effect') {
+      return false;
+    }
     final hasUserMessage = current.messages.any(
       (message) =>
           message.role == LlmRole.user &&
@@ -296,7 +304,8 @@ final class ChatController extends AsyncNotifier<ChatState> {
     if (!hasUserMessage) return false;
 
     _sending = true;
-    _activeRequestMutated = false;
+    _mutatedRequestId = null;
+    _preToolRequestId = null;
     _pendingPreToolText = null;
     final requestId = ++_nextRequestId;
     _activeRequestId = requestId;
@@ -457,7 +466,10 @@ final class ChatController extends AsyncNotifier<ChatState> {
     final buffer = StringBuffer();
     final toolCalls = LlmToolCallAccumulator();
     var latestUsage = usage;
-    _pendingPreToolText = null;
+    if (_preToolRequestId == requestId) {
+      _preToolRequestId = null;
+      _pendingPreToolText = null;
+    }
     if (round > 0 && _isActive(requestId)) {
       final current = state.value;
       if (current != null && current.activeThreadId == thread.id) {
@@ -471,8 +483,12 @@ final class ChatController extends AsyncNotifier<ChatState> {
             (chunk) {
               if (chunk.usage != null) latestUsage = chunk.usage;
               toolCalls.addAll(chunk.toolCallDeltas);
+              if (chunk.delta.isNotEmpty) buffer.write(chunk.delta);
+              if (chunk.toolCallDeltas.isNotEmpty && _isActive(requestId)) {
+                _preToolRequestId = requestId;
+                _pendingPreToolText = buffer.toString();
+              }
               if (chunk.delta.isEmpty) return;
-              buffer.write(chunk.delta);
               if (!_isActive(requestId)) return;
               final currentState = state.value;
               if (currentState == null ||
@@ -499,7 +515,10 @@ final class ChatController extends AsyncNotifier<ChatState> {
             onDone: () {
               final calls = toolCalls.build();
               if (calls.isEmpty) {
-                _pendingPreToolText = null;
+                if (_preToolRequestId == requestId) {
+                  _preToolRequestId = null;
+                  _pendingPreToolText = null;
+                }
                 unawaited(
                   _complete(
                     thread.id,
@@ -513,7 +532,10 @@ final class ChatController extends AsyncNotifier<ChatState> {
               }
               // Текст этого раунда — только прелюдия к tool calls. При
               // отмене он не должен выглядеть успешным финальным ответом.
-              _pendingPreToolText = buffer.toString();
+              if (_isActive(requestId)) {
+                _preToolRequestId = requestId;
+                _pendingPreToolText = buffer.toString();
+              }
               unawaited(
                 _runTools(
                   requestId: requestId,
@@ -578,8 +600,10 @@ final class ChatController extends AsyncNotifier<ChatState> {
     for (final call in calls) {
       final tool = runner.registry.find(call.name);
       final result = await runner.run(call);
-      if (tool is MutatingLlmTool && result.content.startsWith('{"ok":true')) {
-        _activeRequestMutated = true;
+      if (_isActive(requestId) &&
+          tool is MutatingLlmTool &&
+          result.content.startsWith('{"ok":true')) {
+        _mutatedRequestId = requestId;
       }
       results.add(result);
       if (!_isActive(requestId)) {
@@ -642,6 +666,19 @@ final class ChatController extends AsyncNotifier<ChatState> {
       _terminalRequestId = requestId;
     }
     if (alreadyTerminal) {
+      // terminal-запись уже идёт; UI всё равно должен выйти из streaming,
+      // иначе Stop останется активным, а повторный cancel попробует
+      // сохранить partial второй раз.
+      if (current != null) {
+        state = AsyncData(
+          current.copyWith(
+            isStreaming: false,
+            streamingText: '',
+            errorCode: _terminalErrorCode,
+          ),
+        );
+      }
+      _clearRequestFlags(requestId);
       _sending = false;
       if (completer != null && !completer.isCompleted) completer.complete();
       return;
@@ -653,7 +690,9 @@ final class ChatController extends AsyncNotifier<ChatState> {
     }
 
     final partial = current.streamingText;
-    final preToolText = _pendingPreToolText;
+    final preToolText = _preToolRequestId == requestId
+        ? _pendingPreToolText
+        : null;
     final cancelled = partial.isEmpty || preToolText != null;
     final threadId = current.activeThreadId;
     if (threadId != null) {
@@ -675,8 +714,7 @@ final class ChatController extends AsyncNotifier<ChatState> {
         await _refreshMessages(threadId, force: true);
       }
     }
-    _pendingPreToolText = null;
-    _activeRequestMutated = false;
+    if (requestId != null) _clearRequestFlags(requestId);
     _sending = false;
     if (completer != null && !completer.isCompleted) completer.complete();
   }
@@ -694,19 +732,22 @@ final class ChatController extends AsyncNotifier<ChatState> {
       return;
     }
     _terminalRequestId = requestId;
-    final errorCode = _activeRequestMutated ? 'tool_side_effect' : 'llm_error';
     if (content.trim().isEmpty) {
+      final errorCode = _mutatedRequestId == requestId
+          ? 'tool_side_effect'
+          : 'llm_error';
+      _terminalErrorCode = errorCode;
       await _saveAssistant(threadId, '', null, errorCode: errorCode);
       if (_isActive(requestId)) {
         await _refreshMessages(threadId, requestId: requestId);
         _setError(errorCode);
       }
-      _pendingPreToolText = null;
-      _activeRequestMutated = false;
+      _clearRequestFlags(requestId);
       if (!completer.isCompleted) completer.complete();
       return;
     }
 
+    _terminalErrorCode = null;
     await _saveAssistant(threadId, content, usage);
     if (_isActive(requestId)) {
       await _refreshMessages(threadId, requestId: requestId);
@@ -721,8 +762,7 @@ final class ChatController extends AsyncNotifier<ChatState> {
         );
       }
     }
-    _pendingPreToolText = null;
-    _activeRequestMutated = false;
+    _clearRequestFlags(requestId);
     if (!completer.isCompleted) completer.complete();
   }
 
@@ -740,7 +780,10 @@ final class ChatController extends AsyncNotifier<ChatState> {
       return;
     }
     _terminalRequestId = requestId;
-    final errorCode = _activeRequestMutated ? 'tool_side_effect' : 'llm_error';
+    final errorCode = _mutatedRequestId == requestId
+        ? 'tool_side_effect'
+        : 'llm_error';
+    _terminalErrorCode = errorCode;
     _logError('ChatController: ошибка streaming-ответа', error, stack);
     // Partial-ответ с ошибкой тоже сохраняется, но с маркером: иначе
     // следующий запрос отправит неполный ответ как успешную историю.
@@ -749,9 +792,16 @@ final class ChatController extends AsyncNotifier<ChatState> {
       await _refreshMessages(threadId, requestId: requestId);
       _setError(errorCode);
     }
-    _pendingPreToolText = null;
-    _activeRequestMutated = false;
+    _clearRequestFlags(requestId);
     if (!completer.isCompleted) completer.complete();
+  }
+
+  void _clearRequestFlags(int requestId) {
+    if (_mutatedRequestId == requestId) _mutatedRequestId = null;
+    if (_preToolRequestId == requestId) {
+      _preToolRequestId = null;
+      _pendingPreToolText = null;
+    }
   }
 
   Future<void> _saveAssistant(

@@ -5989,7 +5989,8 @@ class ToolAuditEntry extends DataClass implements Insertable<ToolAuditEntry> {
   /// ok | error | unknown_tool | invalid_args.
   final String status;
 
-  /// Имена аргументов через запятую, без значений.
+  /// JSON-массив имён аргументов, без значений. Чтение старого CSV-формата
+  /// поддерживает репозиторий аудита.
   final String argumentNames;
   final int? entityId;
   final DateTime createdAt;

@@ -1,24 +1,22 @@
 # INDEX — карта документации
 
 ## Состояние
-- Текущий этап: stage-04 (инструменты ассистента) — **исправления после
-  повторного ревью внесены, гейты зелёные; ожидается повторное независимое
-  ревью.** Повторное ревью 2026-11-16 дало **FAIL** (3 MAJOR:
-  `S04R-001` Anthropic parallel tool_result, `S04R-002` Google
-  `functionCall.id`, `S04R-003` retry после mutating tool); все 11 находок
-  `S04R-001…S04R-011` исправлены, analyze 0, test **168/168**, Windows debug
-  build success. Stage-05 **заблокирован** до PASS.
+- Текущий этап: stage-04 (инструменты ассистента) — **PASS WITH COMMENTS
+  (0 MAJOR).** Исходное ревью — FAIL; повторное ревью 2026-11-16 — FAIL
+  (3 MAJOR), все 11 `S04R` исправлены; повторная проверка — **PASS WITH
+  COMMENTS**. Комментарии `S04F` (4 MINOR/3 NIT у A, 3 MINOR/5 NIT у B)
+  исправлены дополнительным проходом. Analyze 0, test **172/172**, Windows
+  debug build success; ожидается финальная проверка. Stage-05 разблокирован.
 - Предыдущий этап: stage-03 (LLM-слой) **закрыт повторным независимым ревью:
   PASS** (2026-10-28). Исходное ревью остаётся **FAIL** (2026-10-25), вердикт
   сохранён. Все 28 находок S03-001…S03-028 исправлены коммитом `14e63a7` и
   подтверждены (28/28 verified). Stage-02 закрыт с вердиктом **PASS WITH
   COMMENTS** (ревью №3); R02-001…R02-013 закрыты, R02-014/R02-015 остаются
   не блокирующими комментариями.
-- Гейты stage-04 после исправлений S04R (2026-11-16): `flutter analyze
-  --fatal-infos` — **No issues found**, `flutter test` — **168/168**,
-  `flutter build windows --debug` — **success**; CI-run
-  [43829840626](https://github.com/HoudiwinG/second-brain/actions/runs/43829840626)
-  для `789a01f` — **success**.
+- Гейты stage-04 после исправлений S04R/S04F (2026-11-16): `flutter analyze
+  --fatal-infos` — **No issues found**, `flutter test` — **172/172**,
+  `flutter build windows --debug` — **success**. CI-run `43829840626`
+  (`789a01f`) — success; CI для коммита с S04F — после push.
 - Локальные гейты stage-03 (2026-10-28): analyze 0, test 132/132, Windows debug
   build; CI `40636764573` (`49bc00f`, включая `14e63a7`) — success.
 - Снимок состояния: [context.md](context.md)
@@ -58,8 +56,8 @@
   Блокеры: `S04R-001`, `S04R-002`, `S04R-003`. Исходные S04-001…S04-009
   закрыты (S04-006 — код исправлен, не хватает regression-теста смены треда).
 - [stage-04-repeat-fix-results](reviews/stage-04-repeat-fix-results.md) —
-  self-check исправлений S04R-001…S04R-011: все fixed, тесты 168/168,
-  analyze 0, Windows debug build success; не вердикт ревью.
+  self-check исправлений S04R-001…S04R-011 и комментариев S04F: fixed,
+  тесты 172/172, analyze 0, Windows debug build success; не вердикт ревью.
 - Исправления stage-04:
   [reviews/stage-04-fix-results.md](reviews/stage-04-fix-results.md) — все 9
   исходных находок закрыты коммитом `821b4f8` (+ docs-коммит).
@@ -90,9 +88,9 @@
   build, CI `40636764573` success; stage-04 разблокирован)
 - [stage-04](stages/stage-04.md) — инструменты ассистента (реализация `f2d9f08`,
   исправления по ревью `821b4f8`; исходное ревью **FAIL**, 9/9 fixed;
-  повторное ревью **FAIL**, 11/11 S04R fixed; analyze 0, test 168/168,
-  Windows debug build success; ADR-021; схема v6; ожидается повторное ревью;
-  stage-05 заблокирован)
+  повторное ревью **FAIL** → **PASS WITH COMMENTS** после S04R, 11/11 fixed;
+  комментарии S04F fixed; analyze 0, test 172/172, Windows debug build
+  success; ADR-021; схема v6; stage-05 разблокирован)
 
 ## Шаблоны
 - [decisions.template.md](decisions.template.md) — формат ADR

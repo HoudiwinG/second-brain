@@ -236,10 +236,19 @@ void main() {
       hasLength(1),
       reason: 'retry не должен создавать вторую заметку',
     );
+
+    final failedThreadId = state.activeThreadId!;
+    expect(await controller.createThread('Другой'), isTrue);
+    await controller.selectThread(failedThreadId);
+    expect(
+      await controller.retryLast(),
+      isFalse,
+      reason: 'маркер tool_side_effect должен переживать смену треда',
+    );
   });
 
-  test('модель, которая зовёт инструменты бесконечно, получает llm_error '
-      'после лимита раундов', () async {
+  test('модель, которая зовёт инструменты бесконечно, получает '
+      'tool_side_effect после лимита раундов', () async {
     final bodies = <String>[];
     final c = container(
       _scripted([
@@ -321,6 +330,52 @@ void main() {
       'call_1',
       'call_2',
     ]);
+  });
+
+  test('отмена до onDone после tool_calls сохраняет текст с cancelled', () async {
+    final bodyController = StreamController<List<int>>();
+    addTearDown(() async {
+      if (!bodyController.isClosed) await bodyController.close();
+    });
+    final client = MockClient.streaming((request, bodyStream) async {
+      await bodyStream.drain<void>();
+      return http.StreamedResponse(
+        bodyController.stream,
+        200,
+        request: request,
+      );
+    });
+    final c = container(client);
+    await c.read(chatControllerProvider.future);
+    final controller = c.read(chatControllerProvider.notifier);
+
+    await controller.sendMessage('Запусти инструмент');
+    bodyController.add(
+      utf8.encode(
+        'data: {"choices":[{"delta":{"content":"Сейчас создам заметку"}}]}\n\n',
+      ),
+    );
+    bodyController.add(
+      utf8.encode(
+        'data: {"choices":[{"delta":{"tool_calls":[{"index":0,'
+        '"id":"call_1","type":"function","function":{'
+        '"name":"create_note","arguments":"{\\"title\\":\\"X\\"}"}}]}}]}\n\n',
+      ),
+    );
+    for (var i = 0; i < 200; i++) {
+      if (c.read(chatControllerProvider).value?.streamingText ==
+          'Сейчас создам заметку') {
+        break;
+      }
+      await Future<void>.delayed(const Duration(milliseconds: 5));
+    }
+    await controller.cancel();
+    await controller.waitForIdle();
+
+    final state = c.read(chatControllerProvider).value!;
+    expect(state.messages.last.content, 'Сейчас создам заметку');
+    expect(state.messages.last.errorCode, 'cancelled');
+    expect(state.errorCode, 'cancelled');
   });
 
   test('создание нового треда во время выполнения инструмента не запускает '

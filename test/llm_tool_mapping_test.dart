@@ -319,6 +319,147 @@ void main() {
     },
   );
 
+  test('Google: synthetic fallback id не уходит на провод', () async {
+    String? capturedBody;
+    final client = MockClient.streaming((request, bodyStream) async {
+      capturedBody = await bodyStream.transform(utf8.decoder).join();
+      return http.StreamedResponse(
+        Stream.value(utf8.encode('data: {"candidates":[]}\n\n')),
+        200,
+        request: request,
+      );
+    });
+    final provider = GoogleProvider(
+      _config(LlmProviderType.google),
+      client: _api(_config(LlmProviderType.google).baseUrl, client),
+      apiKey: 'key',
+    );
+
+    await provider.complete(
+      const LlmChatRequest(
+        model: 'test-model',
+        messages: [
+          LlmMessage(role: LlmRole.user, content: 'X'),
+          LlmMessage(
+            role: LlmRole.assistant,
+            content: '',
+            toolCalls: [
+              LlmToolCall(
+                id: 'google_call_0',
+                name: 'create_note',
+                argumentsJson: '{"title":"X"}',
+              ),
+            ],
+          ),
+          LlmMessage(
+            role: LlmRole.tool,
+            name: 'create_note',
+            toolCallId: 'google_call_0',
+            content: '{"ok":true}',
+          ),
+        ],
+      ),
+    );
+
+    final contents =
+        (jsonDecode(capturedBody!) as Map<String, Object?>)['contents']!
+            as List<Object?>;
+    final call =
+        ((contents[1]! as Map<String, Object?>)['parts']! as List<Object?>)
+                .single
+            as Map<String, Object?>;
+    expect(
+      (call['functionCall']! as Map<String, Object?>).containsKey('id'),
+      isFalse,
+    );
+    final response =
+        ((contents[2]! as Map<String, Object?>)['parts']! as List<Object?>)
+                .single
+            as Map<String, Object?>;
+    expect(
+      (response['functionResponse']! as Map<String, Object?>).containsKey('id'),
+      isFalse,
+    );
+  });
+
+  test('Google: два вызова одной функции различаются по id', () async {
+    String? capturedBody;
+    final client = MockClient.streaming((request, bodyStream) async {
+      capturedBody = await bodyStream.transform(utf8.decoder).join();
+      return http.StreamedResponse(
+        Stream.value(utf8.encode('data: {"candidates":[]}\n\n')),
+        200,
+        request: request,
+      );
+    });
+    final provider = GoogleProvider(
+      _config(LlmProviderType.google),
+      client: _api(_config(LlmProviderType.google).baseUrl, client),
+      apiKey: 'key',
+    );
+
+    await provider.complete(
+      const LlmChatRequest(
+        model: 'test-model',
+        messages: [
+          LlmMessage(role: LlmRole.user, content: 'Две заметки'),
+          LlmMessage(
+            role: LlmRole.assistant,
+            content: '',
+            toolCalls: [
+              LlmToolCall(
+                id: 'call_1',
+                name: 'create_note',
+                argumentsJson: '{"title":"X"}',
+              ),
+              LlmToolCall(
+                id: 'call_2',
+                name: 'create_note',
+                argumentsJson: '{"title":"Y"}',
+              ),
+            ],
+          ),
+          LlmMessage(
+            role: LlmRole.tool,
+            name: 'create_note',
+            toolCallId: 'call_1',
+            content: '{"ok":true}',
+          ),
+          LlmMessage(
+            role: LlmRole.tool,
+            name: 'create_note',
+            toolCallId: 'call_2',
+            content: '{"ok":true}',
+          ),
+        ],
+      ),
+    );
+
+    final contents =
+        (jsonDecode(capturedBody!) as Map<String, Object?>)['contents']!
+            as List<Object?>;
+    final modelParts =
+        (contents[1]! as Map<String, Object?>)['parts']! as List<Object?>;
+    final responseParts =
+        (contents[2]! as Map<String, Object?>)['parts']! as List<Object?>;
+    expect(
+      modelParts.map(
+        (part) =>
+            ((part! as Map<String, Object?>)['functionCall']!
+                as Map<String, Object?>)['id'],
+      ),
+      ['call_1', 'call_2'],
+    );
+    expect(
+      responseParts.map(
+        (part) =>
+            ((part! as Map<String, Object?>)['functionResponse']!
+                as Map<String, Object?>)['id'],
+      ),
+      ['call_1', 'call_2'],
+    );
+  });
+
   test('Google: functionCall из ответа сохраняет реальный id', () async {
     final client = MockClient.streaming((request, bodyStream) async {
       await bodyStream.drain<void>();
@@ -347,5 +488,32 @@ void main() {
     expect(response.toolCalls.single.id, 'fc-42');
     expect(response.toolCalls.single.name, 'create_note');
     expect(jsonDecode(response.toolCalls.single.argumentsJson), {'title': 'Y'});
+  });
+
+  test('Google: без id использует google_call_N', () async {
+    final client = MockClient.streaming((request, bodyStream) async {
+      await bodyStream.drain<void>();
+      const body =
+          'data: {"candidates":[{"content":{"parts":[{"functionCall":'
+          '{"name":"create_note","args":{"title":"Y"}}}]},'
+          '"finishReason":"STOP"}]}\n\n';
+      return http.StreamedResponse(
+        Stream.value(utf8.encode(body)),
+        200,
+        request: request,
+      );
+    });
+    final provider = GoogleProvider(
+      _config(LlmProviderType.google),
+      client: _api(_config(LlmProviderType.google).baseUrl, client),
+      apiKey: 'key',
+    );
+
+    final result = await provider.complete(
+      const LlmChatRequest(model: 'test-model', messages: _history),
+    );
+
+    final response = (result as Success<LlmResponse>).value;
+    expect(response.toolCalls.single.id, 'google_call_0');
   });
 }

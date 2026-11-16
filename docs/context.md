@@ -1,14 +1,14 @@
 # Контекст проекта (снимок состояния)
 
-- **Текущий этап:** stage-04 (инструменты ассистента) — **исправления после
-  повторного ревью внесены, гейты зелёные; ожидается повторное независимое
-  ревью.** Повторное ревью 2026-11-16 дало **FAIL** (3 MAJOR:
-  `S04R-001` Anthropic parallel tool_result, `S04R-002` Google
-  `functionCall.id`, `S04R-003` retry после mutating tool); все 11 находок
-  `S04R-001…S04R-011` исправлены. Analyze 0, test **168/168**, Windows debug
-  build success. **Stage-05 заблокирован до PASS.** Отчёт:
-  [stages/stage-04.md](stages/stage-04.md), повторное ревью:
-  [reviews/stage-04-repeat-review.md](reviews/stage-04-repeat-review.md),
+- **Текущий этап:** stage-04 (инструменты ассистента) — **PASS WITH COMMENTS
+  (0 MAJOR).** Исходное ревью — FAIL; повторное ревью 2026-11-16 — FAIL
+  (3 MAJOR: `S04R-001` Anthropic parallel tool_result, `S04R-002` Google
+  `functionCall.id`, `S04R-003` retry после mutating tool); все 11 `S04R`
+  исправлены, повторная проверка — PASS WITH COMMENTS. Комментарии `S04F`
+  исправлены дополнительным проходом. Analyze 0, test **172/172**, Windows
+  debug build success. **Stage-05 разблокирован; ожидается финальная
+  проверка.** Отчёт: [stages/stage-04.md](stages/stage-04.md), повторное
+  ревью: [reviews/stage-04-repeat-review.md](reviews/stage-04-repeat-review.md),
   исправления:
   [reviews/stage-04-repeat-fix-results.md](reviews/stage-04-repeat-fix-results.md).
   Схема БД — **v6** (`tool_audit_log`). ADR-021.
@@ -45,7 +45,8 @@
   3 nit после объединения дублей. Блокеры: `S04R-001`, `S04R-002`,
   `S04R-003`. Исходные S04-001…S04-009 закрыты.
 - **Исправления после повторного ревью stage-04:** все 11 находок
-  `S04R-001…S04R-011` fixed, тесты 168/168; ожидается повторное ревью —
+  `S04R-001…S04R-011` fixed, повторная проверка — **PASS WITH COMMENTS**;
+  комментарии `S04F` fixed, тесты 172/172 —
   [stage-04-repeat-fix-results.md](reviews/stage-04-repeat-fix-results.md).
 - **Последний PASS-ревью:** stage-03 —
   [reviews/stage-03-repeat-review.md](reviews/stage-03-repeat-review.md),
@@ -57,27 +58,25 @@
   R02-009…R02-013 — [reviews/stage-02-fix-results.md](reviews/stage-02-fix-results.md).
 - **Текущий отчёт:** [stages/stage-04.md](stages/stage-04.md)
 - **Открытых CRITICAL:** 0
-- **Открытых MAJOR stage-04:** 0 (S04R-001…003 исправлены, ожидают
-  подтверждения); **MINOR/NIT S04R:** 0 (S04R-004…011 fixed). Исходные
-  S04-001…S04-009 закрыты. **Открытых исходных S03-находок:** 0 (28/28
-  подтверждены повторным ревью). **Не блокирующие комментарии:**
-  S03R-001/S03R-002 (MINOR), S03R-003/S03R-004 (NIT), R02-014 (MINOR),
-  R02-015 (NIT). **Принятый TD:** TD-28 (нет UI выбора контекста; триггер
-  перенесён на stage-05). TD-21 — отдельное принятое ограничение `REAL` для
-  финансов.
+- **Открытых MAJOR stage-04:** 0; **S04R/S04F:** 0 (все исправлены,
+  повторная проверка — PASS WITH COMMENTS). Исходные S04-001…S04-009
+  закрыты. **Открытых исходных S03-находок:** 0 (28/28 подтверждены повторным
+  ревью). **Не блокирующие комментарии:** S03R-001/S03R-002 (MINOR),
+  S03R-003/S03R-004 (NIT), R02-014 (MINOR), R02-015 (NIT). **Принятый TD:**
+  TD-28 (нет UI выбора контекста; триггер перенесён на stage-05). TD-21 —
+  отдельное принятое ограничение `REAL` для финансов.
 - **Сборка:** `flutter analyze --fatal-infos` — **No issues found**;
-  `flutter test` — **168/168**; `flutter build windows --debug` — **success**
+  `flutter test` — **172/172**; `flutter build windows --debug` — **success**
   (2026-11-16, `build\windows\x64\runner\Debug\second_brain.exe`); CI-run
-  [43829840626](https://github.com/HoudiwinG/second-brain/actions/runs/43829840626)
-  (`789a01f`) — **success**.
+  `43829840626` (`789a01f`) — success, CI для `S04F` — после push.
 - **Flutter SDK:** 3.47.7 stable, `C:\src\flutter` (Dart 3.13.5)
 - **Windows-тулчейн:** Visual Studio Build Tools 2022 17.14 (MSVC v143 +
   Windows SDK + ATL/ATLMFC), установлен 2026-10-24; `flutter doctor` — без
   замечаний. Android: cmdline-tools 23.0 + `JAVA_HOME` → Android Studio JBR.
   До 2026-10-24 VS на этой машине отсутствовал: записи о «локальной сборке»
   от 2026-10-22 относились к другому ПК (см. `docs/debug/log.md`).
-- **Ветка:** `master`; текущий HEAD — `789a01f` (код и документация
-  исправлений S04R); отчёт повторного ревью — `af023a1`. Базовая
+- **Ветка:** `master`; код и тесты исправлений S04R — `789a01f`, документация
+  исправлений — `d8b0889`; отчёт повторного ревью — `af023a1`. Базовая
   реализация stage-03 — `0ae0c85`, отчёт stage-03 — `0defdb0`, уточнение
   отчёта — `9fedec7`, независимое ревью — `6906c2d`, исправления S03 —
   `14e63a7`, документация исправлений — `49bc00f` и `3089b79`, повторное
@@ -197,7 +196,7 @@
   инструмента, статус, имена аргументов без значений, `entity_id`, время.
 - После успешного mutating-инструмента обычный Retry запрещён
   (`tool_side_effect`); полностью идемпотентный повтор не реализован.
-- Тесты stage-04: **168/168**; analyze 0; Windows debug build success.
+- Тесты stage-04: **172/172**; analyze 0; Windows debug build success.
 
 ## Что сделано на stage-02
 
@@ -305,12 +304,12 @@
   после освобождения хоткей зарегистрировался и работает.
 
 ## Известные ограничения / принятый техдолг
-- **Stage-04 — исправления после повторного ревью (2026-11-16).** Все
-  `S04R-001…S04R-011` fixed: Anthropic parallel results, Google
-  `functionCall.id`, retry safety, приватные create-результаты, тесты смены
-  треда, гонка cancel/terminal, pre-tool текст, документация и NIT. Гейты:
-  analyze 0, test 168/168, Windows debug build success. Ожидается повторное
-  независимое ревью; stage-05 пока заблокирован.
+- **Stage-04 — PASS WITH COMMENTS (2026-11-16).** Все `S04R-001…S04R-011`
+  fixed; повторная проверка — PASS WITH COMMENTS, комментарии `S04F` fixed:
+  Anthropic parallel results, Google `functionCall.id`, retry safety,
+  приватные create-результаты, тесты смены треда, гонка cancel/terminal,
+  pre-tool текст, документация и NIT. Гейты: analyze 0, test **172/172**,
+  Windows debug build success. Stage-05 разблокирован.
 - **Stage-03 — исходное ревью FAIL (2026-10-25) сохранено, повторное — PASS
   (2026-10-28).** Все 28 находок S03-001…S03-028 исправлены в `14e63a7` и
   подтверждены. S03R-001/S03R-002 (MINOR) и S03R-003/S03R-004 (NIT) —
@@ -356,12 +355,16 @@
 - DST-переход (23/25-часовые сутки) локально не воспроизводился; тест
   `dashboard_period_test.dart` проверяет календарную семантику границ.
 
-## Ближайшие задачи (сначала stage-04, затем stage-05)
-- **Повторное независимое ревью stage-04** после исправлений S04R-001…011;
-  после PASS — stage-05.
-- Если повторное ревью найдёт остатки — закрыть их; S04R-001…003 были
-  блокерами, S04R-004…011 — неблокирующими.
-- Учесть неблокирующие S03R-001…S03R-004.
+## Ближайшие задачи (stage-05)
+- **Stage-05** — следующий этап по `PROMPT.md`; stage-04 закрыт с
+  **PASS WITH COMMENTS**, блокеров нет.
+- Учесть неблокирующие S03R-001…S03R-004 и оставшиеся комментарии S04F, если
+  они будут подтверждены финальной проверкой.
+- TD-28 (UI выбора контекста) — триггер stage-05; добавить выбор контекста,
+  показывать отфильтрованные сущности без содержимого.
+- RAG: реализация `EmbeddingService`/`VectorStore` и индексация заметок.
+- Решить TD-21 перед финансовой аналитикой/бюджетами.
+- По UX-долгу: file-picker (TD-23), корзина (TD-24), golden-тесты (TD-18).
 - Добавить UI выбора контекста в чат (TD-28), чтобы privacy guard был
   достижим в пользовательском сценарии.
 - RAG: реализация `EmbeddingService`/`VectorStore` и индексация заметок.
@@ -409,8 +412,8 @@
 - reviewer A (agent-2, 2026-11-07): повторное ревью stage-04 — **FAIL**
   (2 MAJOR, 3 MINOR, 2 NIT); reviewer B (agent-3, 2026-11-07): **FAIL**
   (3 MAJOR, 3 MINOR, 1 NIT); после объединения — 3 MAJOR, 5 MINOR, 3 NIT.
-  agent-1 (2026-11-16): исправления S04R-001…011, гейты 168/168; ожидается
-  повторное ревью. Stage-05 заблокирован.
+  agent-1 (2026-11-16): исправления S04R-001…011 и комментариев S04F; гейты
+  172/172; повторная проверка — **PASS WITH COMMENTS**, stage-05 разблокирован.
 
 ## Ссылки
 - Отчёт stage-04: [stages/stage-04.md](stages/stage-04.md)

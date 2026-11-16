@@ -31,14 +31,21 @@ final class GoogleProvider extends LlmProvider {
     return model.startsWith('models/') ? model.substring(7) : model;
   }
 
-  static Map<String, Object?> _functionResponsePart(LlmMessage message) => {
-    'functionResponse': {
-      'name': message.name ?? '',
-      if (message.toolCallId != null && message.toolCallId!.isNotEmpty)
-        'id': message.toolCallId,
-      'response': {'result': message.content},
-    },
-  };
+  /// Синтетический `google_call_N` — внутренний fallback; на провод его не
+  /// отправляем, иначе разные раунды получат одинаковые id.
+  static String? _wireToolId(String? id) =>
+      id != null && id.isNotEmpty && !id.startsWith('google_call_') ? id : null;
+
+  static Map<String, Object?> _functionResponsePart(LlmMessage message) {
+    final wireId = _wireToolId(message.toolCallId);
+    return {
+      'functionResponse': {
+        'name': message.name ?? '',
+        'id': ?wireId,
+        'response': {'result': message.content},
+      },
+    };
+  }
 
   /// true, если content — `user`-реплика только с результатами инструментов.
   static bool _isToolResponseContent(Map<String, Object?> content) {
@@ -71,7 +78,7 @@ final class GoogleProvider extends LlmProvider {
           {
             'functionCall': {
               'name': call.name,
-              if (call.id.isNotEmpty) 'id': call.id,
+              'id': ?_wireToolId(call.id),
               'args': decodeToolArguments(call.argumentsJson),
             },
           },

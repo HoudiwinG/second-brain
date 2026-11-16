@@ -267,8 +267,9 @@ class ChatThreads extends Table {
 /// Сообщение чата.
 ///
 /// Завершённый ответ сохраняется целиком; при отмене — уже полученный
-/// фрагмент. Ошибка после partial-ответа сохраняет текст вместе с
-/// `error_code = 'llm_error'`, чтобы он не попал в следующий контекст.
+/// фрагмент. Partial-ответ с ошибкой сохраняет текст вместе с ненулевым
+/// `error_code` (`llm_error`/`tool_side_effect`/`cancelled`), чтобы он не
+/// попал в следующий контекст.
 class ChatMessages extends Table {
   IntColumn get id => integer().autoIncrement()();
 
