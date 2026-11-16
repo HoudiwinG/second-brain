@@ -67,15 +67,17 @@
   финансов.
 - **Сборка:** `flutter analyze --fatal-infos` — **No issues found**;
   `flutter test` — **168/168**; `flutter build windows --debug` — **success**
-  (2026-11-16, `build\windows\x64\runner\Debug\second_brain.exe`)
+  (2026-11-16, `build\windows\x64\runner\Debug\second_brain.exe`); CI-run
+  [43829840626](https://github.com/HoudiwinG/second-brain/actions/runs/43829840626)
+  (`789a01f`) — **success**.
 - **Flutter SDK:** 3.47.7 stable, `C:\src\flutter` (Dart 3.13.5)
 - **Windows-тулчейн:** Visual Studio Build Tools 2022 17.14 (MSVC v143 +
   Windows SDK + ATL/ATLMFC), установлен 2026-10-24; `flutter doctor` — без
   замечаний. Android: cmdline-tools 23.0 + `JAVA_HOME` → Android Studio JBR.
   До 2026-10-24 VS на этой машине отсутствовал: записи о «локальной сборке»
   от 2026-10-22 относились к другому ПК (см. `docs/debug/log.md`).
-- **Ветка:** `master`; текущий HEAD — `af023a1` (отчёт повторного ревью
-  stage-04); код исправлений S04R — коммит после `af023a1`. Базовая
+- **Ветка:** `master`; текущий HEAD — `789a01f` (код и документация
+  исправлений S04R); отчёт повторного ревью — `af023a1`. Базовая
   реализация stage-03 — `0ae0c85`, отчёт stage-03 — `0defdb0`, уточнение
   отчёта — `9fedec7`, независимое ревью — `6906c2d`, исправления S03 —
   `14e63a7`, документация исправлений — `49bc00f` и `3089b79`, повторное

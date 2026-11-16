@@ -16,8 +16,9 @@
   не блокирующими комментариями.
 - Гейты stage-04 после исправлений S04R (2026-11-16): `flutter analyze
   --fatal-infos` — **No issues found**, `flutter test` — **168/168**,
-  `flutter build windows --debug` — **success**. CI будет проверен после push;
-  предыдущий CI `40834088339` для `0aa69de` — success.
+  `flutter build windows --debug` — **success**; CI-run
+  [43829840626](https://github.com/HoudiwinG/second-brain/actions/runs/43829840626)
+  для `789a01f` — **success**.
 - Локальные гейты stage-03 (2026-10-28): analyze 0, test 132/132, Windows debug
   build; CI `40636764573` (`49bc00f`, включая `14e63a7`) — success.
 - Снимок состояния: [context.md](context.md)

@@ -9,8 +9,8 @@
   остаётся заблокированным до подтверждения. Предыдущий этап: stage-03 —
   повторное ревью PASS (`docs/reviews/stage-03-repeat-review.md`).
 - **Коммиты:** `f2d9f08` — реализация; `821b4f8` — исправления по исходному
-  ревью; `0aa69de` — документация; `af023a1` — отчёт повторного ревью; код
-  исправлений S04R — текущий коммит.
+  ревью; `0aa69de` — документация; `af023a1` — отчёт повторного ревью;
+  `789a01f` — исправления S04R и документация.
 - **Отчёты:** [повторное ревью](../reviews/stage-04-repeat-review.md),
   [исправления S04R](../reviews/stage-04-repeat-fix-results.md).
 
@@ -105,6 +105,8 @@
 - `flutter analyze --fatal-infos` — **No issues found**.
 - `flutter test` — **168/168 passed** (после исправлений S04R; до них — 160/160).
 - `flutter build windows --debug` — **success** (2026-11-16).
+- CI-run [43829840626](https://github.com/HoudiwinG/second-brain/actions/runs/43829840626)
+  (`789a01f`) — **success**, включая Windows debug build.
 - `dart run build_runner build` выполнен; `app_database.g.dart` перегенерирован.
 
 ## Ограничения

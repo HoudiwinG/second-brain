@@ -723,4 +723,5 @@ regression-теста смены треда.
 | 2026-11-16 | S04R-010 | fixed | `llm_tools_test`/`tool_runner_test` закрывают in-memory БД |
 | 2026-11-16 | S04R-011 | fixed | удалён дубль `hintGlobalHotkey`; `gen-l10n` выполнен |
 | 2026-11-16 | — | гейты | analyze 0; test **168/168**; Windows debug build success |
+| 2026-11-16 | — | CI | `43829840626` (`789a01f`) — success, оба job'а |
 | 2026-11-16 | — | статус | S04R-001…011 fixed; ожидается повторное независимое ревью |
