@@ -125,7 +125,7 @@ progress/global sync, revoke endpoint и очистка старых секре�
 flutter analyze --fatal-infos       No issues found
 flutter test                        228/228 passed
 flutter build windows --debug       success
-CI 43923720070 (83ece84)            success (analyze-and-test, build-windows)
+CI 43929611715 (952a1e9)            success (analyze-and-test, build-windows)
 ```
 
 ## Остаточные ограничения

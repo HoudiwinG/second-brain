@@ -67,7 +67,7 @@
 - **Сборка:** `flutter analyze --fatal-infos` — **No issues found**;
   `flutter test` — **228/228**; `flutter build windows --debug` — **success**
   (2026-11-16, `build\windows\x64\runner\Debug\second_brain.exe`); CI
-  `43923720070` (`83ece84`) — success, оба job'а.
+  `43929611715` (`952a1e9`) — success, оба job'а.
 - **Flutter SDK:** 3.47.7 stable, `C:\src\flutter` (Dart 3.13.5)
 - **Windows-тулчейн:** Visual Studio Build Tools 2022 17.14 (MSVC v143 +
   Windows SDK + ATL/ATLMFC), установлен 2026-10-24; `flutter doctor` — без

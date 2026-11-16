@@ -2,9 +2,9 @@
 
 - **Дата:** 2026-11-16
 - **Ревьюеры:** independent reviewer A, independent reviewer B
-- **Проверяемое состояние:** `master` @ `1ad2caa` (после финальных правок —
-  `228/228`), история: `2c377a6` FAIL, `f568f17` FAIL, `a9cb44b`/`1ad2caa`
-  PASS WITH COMMENTS.
+- **Проверяемое состояние:** ревью — `master` @ `1ad2caa`; финальные
+  комментарии внесены в `952a1e9` (228/228, CI success). История: `2c377a6`
+  FAIL, `f568f17` FAIL, `a9cb44b`/`1ad2caa` PASS WITH COMMENTS.
 - **Отчёт:** [stages/stage-06.md](../stages/stage-06.md); ADR-023.
 
 ## Итог
@@ -14,7 +14,7 @@
 - **Reviewer B: PASS WITH COMMENTS.** 0 critical, **0 major**, 3 minor, 1 nit
   после проверки исправлений.
 - **Объединённый вердикт: PASS WITH COMMENTS.** Блокеров нет.
-- **Гейты:** analyze 0; test **228/228**; CI `43927529327` (`1ad2caa`) —
+- **Гейты:** analyze 0; test **228/228**; CI `43929611715` (`952a1e9`) —
   success, оба job'а (`analyze-and-test`, `build-windows`).
 
 ## Блокеры предыдущих ревью

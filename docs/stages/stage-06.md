@@ -11,7 +11,7 @@
   [reviews/stage-06-final-review.md](../reviews/stage-06-final-review.md)).
   Гейты: `flutter analyze --fatal-infos` — 0 issues, `flutter test` —
   **228/228**, `flutter build windows --debug` — success; CI
-  `43927529327` (`1ad2caa`) — success, оба job'а.
+  `43929611715` (`952a1e9`) — success, оба job'а.
 - **Предыдущий этап:** stage-05 — **PASS WITH COMMENTS**, stage-06
   разблокирован.
 - **Схема БД:** **v8** (`mail_accounts`, `mail_messages`).

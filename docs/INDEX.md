@@ -14,8 +14,8 @@
 - Гейты stage-06 (2026-11-16): `flutter analyze --fatal-infos` — **No issues
   found**, `flutter test` — **228/228**, `flutter build windows --debug` —
   **success**; CI
-  [43923720070](https://github.com/HoudiwinG/second-brain/actions/runs/43923720070)
-  (`83ece84`) — success, оба job'а.
+  [43929611715](https://github.com/HoudiwinG/second-brain/actions/runs/43929611715)
+  (`952a1e9`) — success, оба job'а.
 - Локальные гейты stage-03 (2026-10-28): analyze 0, test 132/132, Windows debug
   build; CI `40636764573` (`49bc00f`, включая `14e63a7`) — success.
 - Снимок состояния: [context.md](context.md)
@@ -77,7 +77,8 @@
 - [stage-06-re-review](reviews/stage-06-re-review.md) — повторное ревью A/B
   (2026-11-16, `f568f17`): **FAIL**, A — 3 major, B — 3 major.
 - [stage-06-final-review](reviews/stage-06-final-review.md) — финальное
-  ревью A/B (2026-11-16, `1ad2caa`): **PASS WITH COMMENTS (0 MAJOR)**.
+  ревью A/B (2026-11-16, `1ad2caa`; финал `952a1e9`):
+  **PASS WITH COMMENTS (0 MAJOR)**.
 - [stage-06-fix-results](reviews/stage-06-fix-results.md) — исправления
   первого/второго/финального круга; analyze 0, test 228/228.
 - Исправления stage-04:
