@@ -315,6 +315,7 @@
   "mailNoMessages": "No messages yet",
   "mailSearchHint": "Search mail",
   "mailPrivate": "Do not send mail to LLM",
+  "mailReconnect": "Re-authorize",
   "mailDeleteAccount": "Delete mailbox",
   "mailAccountDeleted": "Mailbox deleted",
   "mailSummary": "Summarize",

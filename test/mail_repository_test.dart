@@ -129,6 +129,7 @@ void main() {
   test('повторный upsert не создаёт дубликаты', () async {
     final account = await createAccount();
     await repo.upsertMessages(account.id, [message('1')]);
+    final first = (await repo.listMessages()).unwrap().single;
     await repo.upsertMessages(account.id, [
       message('1', subject: 'Новая тема'),
     ]);
@@ -136,6 +137,15 @@ void main() {
     final messages = (await repo.listMessages()).unwrap();
     expect(messages, hasLength(1));
     expect(messages.single.subject, 'Новая тема');
+    expect(messages.single.id, first.id);
+    expect(messages.single.createdAt, first.createdAt);
+  });
+
+  test('поиск по кириллице не зависит от регистра', () async {
+    final account = await createAccount();
+    await repo.upsertMessages(account.id, [message('1', subject: 'Счёт')]);
+    final found = (await repo.listMessages(query: 'счёт')).unwrap();
+    expect(found.single.remoteId, '1');
   });
 
   test('удаление аккаунта каскадно удаляет письма и секрет', () async {

@@ -810,6 +810,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get mailPrivate => 'Do not send mail to LLM';
 
   @override
+  String get mailReconnect => 'Re-authorize';
+
+  @override
   String get mailDeleteAccount => 'Delete mailbox';
 
   @override

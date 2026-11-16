@@ -3,11 +3,14 @@
 - **Дата:** 2026-11-16
 - **Агент:** agent-1 (OpenCode)
 - **Ветка:** `master`
-- **Статус:** **fixes ready**, ожидается повторное независимое ревью.
-  Первое ревью A/B — **FAIL** (см. [reviews/stage-06-review.md](../reviews/stage-06-review.md));
-  все блокеры исправлены (см. [reviews/stage-06-fix-results.md](../reviews/stage-06-fix-results.md)).
+- **Статус:** **fixes ready**, ожидается финальное независимое ревью.
+  Первое и повторное ревью A/B — **FAIL** (см.
+  [reviews/stage-06-review.md](../reviews/stage-06-review.md),
+  [reviews/stage-06-re-review.md](../reviews/stage-06-re-review.md));
+  блокеры обоих кругов исправлены (см.
+  [reviews/stage-06-fix-results.md](../reviews/stage-06-fix-results.md)).
   Гейты: `flutter analyze --fatal-infos` — 0 issues, `flutter test` —
-  **218/218**, `flutter build windows --debug` — success.
+  **225/225**, `flutter build windows --debug` — success.
 - **Предыдущий этап:** stage-05 — **PASS WITH COMMENTS**, stage-06
   разблокирован.
 - **Схема БД:** **v8** (`mail_accounts`, `mail_messages`).
@@ -54,7 +57,10 @@
 - Запуск браузера на Windows через `rundll32` (без `cmd`), чтобы URL с `&`
   не обрезался.
 - `lib/features/mail/data/mail_provider.dart` — Gmail API adapter,
-  Yandex 360 Mail API (`folders/1/envelopes` + `messages/{id}/text-parts`),
+  Yandex 360 Mail API (`folders/1/envelopes` + `messages/{id}/text-parts`;
+  контракт:
+  [envelopes](https://yandex.ru/dev/yandex-360/mail/ru/api/folders/get-envelopes.md),
+  [text-parts](https://yandex.ru/dev/yandex-360/mail/ru/api/messages/get-text-parts.md)),
   Mail.ru отключён.
 - `mail_sync_service.dart` — ensure token → fetch → upsert; 401 → refresh →
   один повтор.
@@ -98,23 +104,23 @@
 
 ## Тесты
 
-- `test/mail_repository_test.dart` — аккаунты, secretRef, upsert/поиск,
-  privacy, каскад, валидация.
+- `test/mail_repository_test.dart` — аккаунты, secretRef, stable upsert,
+  Unicode-поиск, per-message privacy, дубликаты, каскад, валидация.
 - `test/mail_oauth_test.dart` — PKCE URL, connect/state/PKCE, Windows
-  command, обмен code, client secret, refresh, token store, отсутствие тела
-  ошибки в результате, disabled Mail.ru.
+  command, обмен code, client secret, refresh, token store, token retry,
+  invalid refresh, state mismatch, disabled Mail.ru.
 - `test/mail_provider_test.dart` — Gmail list/get, MIME-декодирование,
   Yandex envelopes/text-parts, private propagation.
-- `test/mail_sync_service_test.dart` — 401 → refresh → retry.
+- `test/mail_sync_service_test.dart` — fake и реальный Gmail provider:
+  401 → refresh → retry.
 - `test/mail_summary_test.dart` — LLM-суммаризация и private fail-closed.
 - `test/integrations_screen_widget_test.dart` — пустое состояние, аккаунт,
-  поиск с сохранением ввода и фильтрацией.
-- `test/mail_repository_test.dart` — per-message privacy, дубликаты ящика,
-  privacy ящика и кэша.
-- `test/backup_service_test.dart` — почта в v3, отсутствие токенов.
-- `test/db_migration_test.dart` — v7→v8, индексы, guard v2→v9.
+  поиск с сохранением ввода, task-from-mail private без тела.
+- `test/backup_service_test.dart` — почта в v3, реальные токены не попадают.
+- `test/db_migration_test.dart` — v7→v8, индексы, безопасное открытие v8 с
+  дублями, guard v2→v9.
 
-Итог: **218/218** тестов, analyze 0, Windows debug build success.
+Итог: **225/225** тестов, analyze 0, Windows debug build success.
 
 ## Известные ограничения и техдолг
 
@@ -130,8 +136,9 @@
   не входят.
 - Тело письма хранится в локальной БД открыто, как остальные данные;
   шифрование полей — отдельный этап.
-- Поиск по почте локальный (Unicode-фильтрация по кэшу), без FTS/глобального
-  поиска; Yandex API не имеет серверного поиска, query фильтрует страницу.
+- Поиск по почте локальный (Unicode-фильтрация по последним 5000 письмам),
+  без FTS/глобального поиска; Yandex API не имеет серверного поиска, query
+  фильтрует страницу.
 - `summarize_mail_mock` из stage-04 остаётся для tool-сценария; UI
   использует реальный `MailSummaryService`.
 - Создание задачи из письма использует локальные данные; вложения не
@@ -158,5 +165,7 @@ email, OAuth client ID (и client secret, если провайдер требу
 
 - ADR-023.
 - Первое ревью A/B: [reviews/stage-06-review.md](../reviews/stage-06-review.md)
+  — **FAIL**.
+- Повторное ревью A/B: [reviews/stage-06-re-review.md](../reviews/stage-06-re-review.md)
   — **FAIL**.
 - Исправления: [reviews/stage-06-fix-results.md](../reviews/stage-06-fix-results.md).

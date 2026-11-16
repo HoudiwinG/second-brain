@@ -5,6 +5,7 @@ import 'package:second_brain/app/di.dart';
 import 'package:second_brain/core/secrets/in_memory_secret_store.dart';
 import 'package:second_brain/data/db/app_database.dart' show AppDatabase;
 import 'package:second_brain/data/repositories/mail_repository.dart';
+import 'package:second_brain/data/repositories/tasks_repository.dart';
 import 'package:second_brain/features/integrations/presentation/integrations_screen.dart';
 import 'package:second_brain/features/mail/domain/mail_account.dart';
 import 'package:second_brain/features/mail/domain/mail_message.dart';
@@ -121,5 +122,47 @@ void main() {
     expect(field.controller?.text, 'счёт');
     expect(find.text('Счёт за октябрь'), findsOneWidget);
     expect(find.text('Встреча'), findsNothing);
+  });
+
+  testWidgets('задача из письма приватная и без тела', (tester) async {
+    final repo = DriftMailRepository(db, secrets);
+    final account = (await repo.createAccount(
+      const MailAccountDraft(
+        provider: MailProviderType.gmail,
+        email: 'user@example.com',
+        clientId: 'client',
+      ),
+    )).unwrap();
+    await repo.upsertMessages(account.id, [
+      MailMessageDraft(
+        remoteId: '1',
+        fromAddress: 'sender@example.com',
+        subject: 'Тема',
+        snippet: 'Секретный сниппет',
+        body: 'Секретное тело',
+        receivedAt: DateTime.utc(2026, 11, 2),
+      ),
+    ]);
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          appDatabaseProvider.overrideWith((ref) async => db),
+          secretStoreProvider.overrideWithValue(secrets),
+        ],
+        child: _app(const IntegrationsScreen()),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Тема'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Create task'));
+    await tester.pumpAndSettle();
+
+    final tasks = (await DriftTasksRepository(db).list()).unwrap();
+    expect(tasks, hasLength(1));
+    expect(tasks.single.isPrivateForLlm, isTrue);
+    expect(tasks.single.description, isNot(contains('Секретное тело')));
+    expect(tasks.single.description, isNot(contains('Секретный сниппет')));
   });
 }

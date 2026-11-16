@@ -3,7 +3,8 @@
 - **Дата:** 2026-11-16
 - **Исходное ревью:** [stage-06-review.md](stage-06-review.md)
 - **Проверяемое состояние до исправлений:** `2c377a6`
-- **Статус:** исправления готовы, ожидается повторное независимое ревью.
+- **Статус:** исправления первого и второго круга готовы, ожидается финальное
+  независимое ревью.
 
 ## Блокеры
 
@@ -76,11 +77,40 @@
 - **Тесты:** дубликаты, повторный upsert, backup без токенов, миграция с
   новым индексом.
 
+## Второй круг (после повторного ревью `f568f17`)
+
+Повторное ревью A/B снова дало **FAIL** (см.
+[stage-06-re-review.md](stage-06-re-review.md)). Исправлено:
+
+- **401-retry:** провайдеры больше не выбрасывают `Result.failure` через
+  `throw`; Gmail/Yandex возвращают `Failure`, поэтому `MailSyncService`
+  действительно делает refresh + retry. Добавлен тест с реальным
+  `GmailMailProvider` и `MockClient` (401 → refresh → 200).
+- **Yandex:** добавлены прямые ссылки на официальный контракт Yandex 360
+  Mail API в коде, ADR и отчёте.
+- **Unique index:** `beforeOpen` больше не создаёт unique-индекс по
+  аккаунтам; он создаётся только в `onCreate`/`onUpgrade`. Добавлен тест
+  открытия v8-базы с дублями.
+- **Re-auth:** добавлена кнопка «Авторизоваться заново» и повторное
+  использование существующего аккаунта при connect; восстановленный backup
+  можно переавторизовать без удаления кэша.
+- **Token endpoint:** retry после 5xx, timeout; `invalid_grant`/401/403
+  удаляют битые токены. Добавлены тесты retry, invalid refresh и state
+  mismatch loopback.
+- **Privacy/task:** task-from-mail больше не копирует snippet (только
+  from/date), всегда private; summary перечитывает письмо из БД.
+- **Тесты:** stable id/created_at, Unicode-регистр, task privacy, backup с
+  реально записанными токенами, v8-дубли. Итог **225/225**.
+
+Остаются не блокирующими: mock `summarize_mail` tool, суммаризация только
+одного письма (не треда), ограничение поиска 5000 последних писем, UI
+progress/global sync, revoke endpoint и очистка старых секретов при restore.
+
 ## Гейты после исправлений
 
 ```text
 flutter analyze --fatal-infos       No issues found
-flutter test                        218/218 passed
+flutter test                        225/225 passed
 flutter build windows --debug       success
 ```
 

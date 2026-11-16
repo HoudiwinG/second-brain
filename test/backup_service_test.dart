@@ -14,6 +14,7 @@ import 'package:second_brain/data/repositories/mail_repository.dart';
 import 'package:second_brain/data/repositories/notes_repository.dart';
 import 'package:second_brain/data/repositories/search_repository.dart';
 import 'package:second_brain/data/repositories/tasks_repository.dart';
+import 'package:second_brain/features/mail/application/mail_oauth.dart';
 import 'package:second_brain/features/finance/domain/finance_transaction.dart';
 import 'package:second_brain/features/ideas/domain/idea_entry.dart';
 import 'package:second_brain/features/learning/domain/learning_session.dart';
@@ -115,13 +116,23 @@ void main() {
           date: DateTime.utc(2026, 10, 5),
         ),
       )).unwrap();
-      final mail = DriftMailRepository(db, InMemorySecretStore());
+      final mailSecrets = InMemorySecretStore();
+      final mail = DriftMailRepository(db, mailSecrets);
       final mailAccount = (await mail.createAccount(
         const MailAccountDraft(
           provider: MailProviderType.gmail,
           email: 'mail@example.com',
           clientId: 'client',
           isPrivateForLlm: true,
+        ),
+      )).unwrap();
+      (await MailTokenStore(mailSecrets).write(
+        mailAccount.secretRef,
+        MailTokens(
+          accessToken: 'secret-access',
+          refreshToken: 'secret-refresh',
+          expiresAt: DateTime.utc(2030, 1, 1),
+          clientSecret: 'secret-client',
         ),
       )).unwrap();
       final mailMessage = (await mail.upsertMessages(mailAccount.id, [
@@ -150,6 +161,9 @@ void main() {
       expect(decoded['mail_messages'], hasLength(1));
       expect(decoded.toString(), isNot(contains('refresh_token')));
       expect(decoded.toString(), isNot(contains('access_token')));
+      expect(decoded.toString(), isNot(contains('secret-access')));
+      expect(decoded.toString(), isNot(contains('secret-refresh')));
+      expect(decoded.toString(), isNot(contains('secret-client')));
 
       // Импорт заменяет содержимое: лишняя запись должна исчезнуть.
       await notes.create(const NoteDraft(title: 'Лишняя'));

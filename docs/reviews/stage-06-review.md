@@ -97,7 +97,7 @@
 
 Добавлены: `connect` с fake callback/launcher (state/PKCE), Windows command,
 Yandex REST, sync с 401+refresh, per-message privacy, поиск в widget-тесте,
-отсутствие токенов в backup. Итог: **218/218**.
+отсутствие токенов в backup. Итог на `2c377a6`: **210/210**.
 
 ## Соответствие критериям stage-06
 
@@ -109,7 +109,7 @@ Yandex REST, sync с 401+refresh, per-message privacy, поиск в widget-те
 - [x] Просмотр, локальный поиск, суммаризация, задача из письма.
 - [x] Privacy на уровне ящика и письма.
 - [x] Backup v3 без токенов.
-- [x] Analyze 0, tests 218/218, Windows build.
+- [x] Analyze 0, tests 210/210, Windows build.
 
 ## Расхождения документации с кодом (на момент ревью)
 

@@ -1,18 +1,18 @@
 # INDEX — карта документации
 
 ## Состояние
-- Текущий этап: stage-06 (почта) — **первое ревью A/B: FAIL; блокеры
-  исправлены, ожидается повторное ревью.** OAuth 2.0 + PKCE, токены в secure
+- Текущий этап: stage-06 (почта) — **два ревью A/B: FAIL; блокеры обоих
+  кругов исправлены, ожидается финальное ревью.** OAuth 2.0 + PKCE, токены в secure
   storage, Gmail API, официальный Yandex 360 Mail API, Mail.ru отключён
   (нет официального REST-чтения), локальный кэш/поиск, per-message privacy,
   суммаризация и задача; схема **v8**, backup v3. Analyze 0, test
-  **218/218**, Windows debug build success.
+  **225/225**, Windows debug build success.
 - Предыдущий этап: stage-05 (обучение) — **PASS WITH COMMENTS (0 MAJOR)**;
   S05-001…011 и S05Z fixed; analyze 0, test 193/193, CI
   `43901179307` (`82f49d5`) — success. Stage-04 — **PASS WITH COMMENTS**;
   stage-03 — **PASS**; stage-02 — **PASS WITH COMMENTS**.
 - Гейты stage-06 (2026-11-16): `flutter analyze --fatal-infos` — **No issues
-  found**, `flutter test` — **218/218**, `flutter build windows --debug` —
+  found**, `flutter test` — **225/225**, `flutter build windows --debug` —
   **success**; CI — после push исправлений.
 - Локальные гейты stage-03 (2026-10-28): analyze 0, test 132/132, Windows debug
   build; CI `40636764573` (`49bc00f`, включая `14e63a7`) — success.
@@ -72,8 +72,11 @@
 - [stage-06-review](reviews/stage-06-review.md) — первое ревью A/B
   (2026-11-16, `2c377a6`): **FAIL**, A — 1 critical/8 major/8 minor/1 nit,
   B — 0 critical/3 major/12 minor/2 nit.
+- [stage-06-re-review](reviews/stage-06-re-review.md) — повторное ревью A/B
+  (2026-11-16, `f568f17`): **FAIL**, A — 3 major, B — 3 major.
 - [stage-06-fix-results](reviews/stage-06-fix-results.md) — исправления
-  блокеров S06-001…; analyze 0, test 218/218; ожидается повторное ревью.
+  первого и второго круга; analyze 0, test 225/225; ожидается финальное
+  ревью.
 - Исправления stage-04:
   [reviews/stage-04-fix-results.md](reviews/stage-04-fix-results.md) — все 9
   исходных находок закрыты коммитом `821b4f8` (+ docs-коммит).
@@ -114,7 +117,7 @@
 - [stage-06](stages/stage-06.md) — почта (OAuth 2.0 + PKCE, secure tokens,
   Gmail API, Yandex 360 Mail API, Mail.ru disabled, кэш/поиск,
   per-message privacy, суммаризация, задача; ADR-023; схема v8, backup v3;
-  analyze 0, test 218/218, Windows debug build success; первое ревью FAIL,
+  analyze 0, test 225/225, Windows debug build success; первое ревью FAIL,
   исправления готовы, ожидается re-review)
 
 ## Шаблоны

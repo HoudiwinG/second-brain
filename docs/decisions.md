@@ -1215,7 +1215,9 @@ ADR-021 (tools и аудит)
 - `MailProvider`: Gmail API (`users.messages.list/get`, MIME-разбор) и
   официальный Yandex 360 Mail API (`cloud-api.yandex.net/v1/mail`,
   `folders/1/envelopes` + `messages/{id}/text-parts`, scope
-  `mail:messages.read`, заголовок `Authorization: OAuth`).
+  `mail:messages.read`, заголовок `Authorization: OAuth`). Контракт:
+  [envelopes](https://yandex.ru/dev/yandex-360/mail/ru/api/folders/get-envelopes.md),
+  [text-parts](https://yandex.ru/dev/yandex-360/mail/ru/api/messages/get-text-parts.md).
 - Mail.ru отключён: официальный Mail.ru API не предоставляет REST-чтение
   писем, а IMAP запрещён PROMPT. В UI провайдер помечен как недоступный.
 - `MailSyncService`: ensure token → fetch → upsert; после 401 один

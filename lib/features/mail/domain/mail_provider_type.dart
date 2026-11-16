@@ -20,6 +20,8 @@ enum MailProviderType {
     apiBaseUrl: 'https://cloud-api.yandex.net/v1/mail',
     scopes: ['mail:messages.read'],
     authScheme: 'OAuth',
+    docsUrl:
+        'https://yandex.ru/dev/yandex-360/mail/ru/api/folders/get-envelopes.md',
   ),
   mailru(
     dbValue: 'mailru',
@@ -40,6 +42,7 @@ enum MailProviderType {
     required this.scopes,
     this.authScheme = 'Bearer',
     this.available = true,
+    this.docsUrl,
   });
 
   final String dbValue;
@@ -57,6 +60,9 @@ enum MailProviderType {
   /// Mail.ru официально не предоставляет REST API чтения писем, поэтому
   /// подключение отключено, пока не появится официальный контракт.
   final bool available;
+
+  /// Ссылка на официальный контракт API (если есть).
+  final String? docsUrl;
 
   /// Локальный loopback callback; должен быть зарегистрирован в OAuth-приложении.
   static const String redirectUri = 'http://127.0.0.1:53682/oauth/callback';

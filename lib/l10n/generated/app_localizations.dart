@@ -1622,6 +1622,12 @@ abstract class AppLocalizations {
   /// **'Do not send mail to LLM'**
   String get mailPrivate;
 
+  /// No description provided for @mailReconnect.
+  ///
+  /// In en, this message translates to:
+  /// **'Re-authorize'**
+  String get mailReconnect;
+
   /// No description provided for @mailDeleteAccount.
   ///
   /// In en, this message translates to:

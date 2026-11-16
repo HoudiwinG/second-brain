@@ -1,10 +1,10 @@
 # Контекст проекта (снимок состояния)
 
-- **Текущий этап:** stage-06 (почта) — **первое ревью A/B: FAIL; блокеры
-  исправлены, ожидается повторное ревью.** OAuth 2.0 + PKCE, secure tokens,
+- **Текущий этап:** stage-06 (почта) — **два ревью A/B: FAIL; блокеры обоих
+  кругов исправлены, ожидается финальное ревью.** OAuth 2.0 + PKCE, secure tokens,
   Gmail API, официальный Yandex 360 Mail API, Mail.ru отключён (нет
   официального REST-чтения), кэш/поиск, per-message privacy, суммаризация и
-  задача; backup v3. Analyze 0, test **218/218**, Windows debug build success.
+  задача; backup v3. Analyze 0, test **225/225**, Windows debug build success.
   Отчёт: [stages/stage-06.md](stages/stage-06.md); ревью:
   [reviews/stage-06-review.md](reviews/stage-06-review.md); исправления:
   [reviews/stage-06-fix-results.md](reviews/stage-06-fix-results.md); ADR-023;
@@ -56,8 +56,8 @@
   R02-009…R02-013 — [reviews/stage-02-fix-results.md](reviews/stage-02-fix-results.md).
 - **Текущий отчёт:** [stages/stage-06.md](stages/stage-06.md)
 - **Открытых CRITICAL:** 0
-- **Stage-06:** первое ревью FAIL; блокеры исправлены, ожидается повторное
-  ревью. **Stage-05:** PASS WITH COMMENTS (0 MAJOR), S05-001…011 и S05Z fixed.
+- **Stage-06:** два ревью FAIL; блокеры обоих кругов исправлены, ожидается
+  финальное ревью. **Stage-05:** PASS WITH COMMENTS (0 MAJOR), S05-001…011 и S05Z fixed.
   **Stage-04:** PASS WITH COMMENTS, все S04R/S04F/S04Z fixed. **Открытых
   исходных S03-находок:** 0 (28/28 подтверждены повторным ревью).
   **Не блокирующие комментарии:** S03R-001/S03R-002 (MINOR),
@@ -65,7 +65,7 @@
   TD-28 (нет UI выбора контекста; триггер перенесён на позднюю доработку
   чата). TD-21 — отдельное принятое ограничение `REAL` для финансов.
 - **Сборка:** `flutter analyze --fatal-infos` — **No issues found**;
-  `flutter test` — **218/218**; `flutter build windows --debug` — **success**
+  `flutter test` — **225/225**; `flutter build windows --debug` — **success**
   (2026-11-16, `build\windows\x64\runner\Debug\second_brain.exe`); CI —
   после push исправлений stage-06.
 - **Flutter SDK:** 3.47.7 stable, `C:\src\flutter` (Dart 3.13.5)
@@ -192,7 +192,7 @@
   JSON-бэкап v3 включает почту (без токенов).
 - UI интеграций: подключение/синхронизация/privacy ящика и письма/поиск/
   просмотр; Windows OAuth-launcher без `cmd`.
-- Тесты: 218/218, analyze 0, Windows debug build success. Первое ревью A/B —
+- Тесты: 225/225, analyze 0, Windows debug build success. Первое ревью A/B —
   FAIL, блокеры исправлены, ожидается повторное ревью.
 
 ## Что сделано на stage-05
@@ -449,11 +449,12 @@
   (3 MAJOR, 3 MINOR, 1 NIT); после объединения — 3 MAJOR, 5 MINOR, 3 NIT.
   agent-1 (2026-11-16): stage-04 — PASS WITH COMMENTS; stage-05 — PASS WITH
   COMMENTS, 193/193; stage-06 (почта) — ревью FAIL, блокеры исправлены,
-  218/218, ожидается re-review.
+  225/225, ожидается re-review.
 
 ## Ссылки
 - Отчёт stage-06: [stages/stage-06.md](stages/stage-06.md)
 - Ревью stage-06: [reviews/stage-06-review.md](reviews/stage-06-review.md)
+  (**FAIL**), [reviews/stage-06-re-review.md](reviews/stage-06-re-review.md)
   (**FAIL**) и [reviews/stage-06-fix-results.md](reviews/stage-06-fix-results.md)
 - ADR-023: [decisions.md](decisions.md) — почта, OAuth, secure tokens,
   локальный кэш

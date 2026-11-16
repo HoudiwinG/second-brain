@@ -169,8 +169,8 @@ class DriftMailRepository implements MailRepository {
         (m) => OrderingTerm.desc(m.id),
       ]);
       // SQLite LIKE не делает Unicode case-folding для кириллицы. Для
-      // корректного поиска берём страницу и фильтруем в Dart.
-      q.limit(text == null || text.isEmpty ? limit.clamp(1, 200) : 500);
+      // корректного поиска берём последние 5000 писем и фильтруем в Dart.
+      q.limit(text == null || text.isEmpty ? limit.clamp(1, 200) : 5000);
       final rows = await q.get();
       final filtered = text == null || text.isEmpty
           ? rows

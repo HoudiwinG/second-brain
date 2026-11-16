@@ -126,12 +126,11 @@ class LoopbackOAuthCallbackReceiver implements OAuthCallbackReceiver {
 
   HttpServer? _server;
   Completer<String>? _code;
-  String? _state;
 
   @override
   Future<void> start({required String state}) async {
-    _state = state;
-    _code = Completer<String>();
+    final completer = Completer<String>();
+    _code = completer;
     _server = await HttpServer.bind(
       InternetAddress.loopbackIPv4,
       redirectUri.port,
@@ -145,10 +144,15 @@ class LoopbackOAuthCallbackReceiver implements OAuthCallbackReceiver {
           await response.close();
           return;
         }
-        if (query['state'] != _state) {
+        if (query['state'] != state) {
           response.statusCode = HttpStatus.badRequest;
           response.write('OAuth state mismatch');
           await response.close();
+          if (!completer.isCompleted) {
+            completer.completeError(
+              const ValidationException('MailOAuth: state mismatch'),
+            );
+          }
           return;
         }
         final error = query['error'];
@@ -156,8 +160,8 @@ class LoopbackOAuthCallbackReceiver implements OAuthCallbackReceiver {
           response.statusCode = HttpStatus.badRequest;
           response.write('OAuth error');
           await response.close();
-          if (!_code!.isCompleted) {
-            _code!.completeError(
+          if (!completer.isCompleted) {
+            completer.completeError(
               ValidationException('MailOAuth: провайдер вернул $error'),
             );
           }
@@ -168,8 +172,8 @@ class LoopbackOAuthCallbackReceiver implements OAuthCallbackReceiver {
           response.statusCode = HttpStatus.badRequest;
           response.write('OAuth code missing');
           await response.close();
-          if (!_code!.isCompleted) {
-            _code!.completeError(
+          if (!completer.isCompleted) {
+            completer.completeError(
               const ValidationException('MailOAuth: код не получен'),
             );
           }
@@ -182,11 +186,11 @@ class LoopbackOAuthCallbackReceiver implements OAuthCallbackReceiver {
           'Second Brain.</body></html>',
         );
         await response.close();
-        if (!_code!.isCompleted) {
-          _code!.complete(code);
+        if (!completer.isCompleted) {
+          completer.complete(code);
         }
       } on Object catch (error, stack) {
-        if (!_code!.isCompleted) _code!.completeError(error, stack);
+        if (!completer.isCompleted) completer.completeError(error, stack);
         await response.close();
       }
     });
@@ -315,21 +319,15 @@ class MailOAuthService {
     required String codeVerifier,
   }) async {
     try {
-      final response = await _client
-          .post(
-            Uri.parse(provider.tokenEndpoint),
-            headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-            body: {
-              'grant_type': 'authorization_code',
-              'client_id': clientId,
-              if (clientSecret != null && clientSecret.isNotEmpty)
-                'client_secret': clientSecret,
-              'code': code,
-              'code_verifier': codeVerifier,
-              'redirect_uri': MailProviderType.redirectUri,
-            },
-          )
-          .timeout(const Duration(seconds: 20));
+      final response = await _postToken(Uri.parse(provider.tokenEndpoint), {
+        'grant_type': 'authorization_code',
+        'client_id': clientId,
+        if (clientSecret != null && clientSecret.isNotEmpty)
+          'client_secret': clientSecret,
+        'code': code,
+        'code_verifier': codeVerifier,
+        'redirect_uri': MailProviderType.redirectUri,
+      });
       return _parseTokenResponse(
         response,
         allowRefresh: true,
@@ -353,19 +351,13 @@ class MailOAuthService {
     required String refreshToken,
   }) async {
     try {
-      final response = await _client
-          .post(
-            Uri.parse(provider.tokenEndpoint),
-            headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-            body: {
-              'grant_type': 'refresh_token',
-              'client_id': clientId,
-              if (clientSecret != null && clientSecret.isNotEmpty)
-                'client_secret': clientSecret,
-              'refresh_token': refreshToken,
-            },
-          )
-          .timeout(const Duration(seconds: 20));
+      final response = await _postToken(Uri.parse(provider.tokenEndpoint), {
+        'grant_type': 'refresh_token',
+        'client_id': clientId,
+        if (clientSecret != null && clientSecret.isNotEmpty)
+          'client_secret': clientSecret,
+        'refresh_token': refreshToken,
+      });
       return _parseTokenResponse(
         response,
         allowRefresh: true,
@@ -399,6 +391,7 @@ class MailOAuthService {
       refreshToken: current.refreshToken!,
     );
     if (refreshed is Failure<MailTokens>) {
+      await _dropIfReauthRequired(account.secretRef, refreshed.error);
       return Result.failure(refreshed.error);
     }
     final tokens = (refreshed as Success<MailTokens>).value;
@@ -408,6 +401,18 @@ class MailOAuthService {
     final saved = await tokenStore.write(account.secretRef, merged);
     if (saved is Failure<void>) return Result.failure(saved.error);
     return Result.success(merged);
+  }
+
+  Future<void> _dropIfReauthRequired(
+    String secretRef,
+    AppException error,
+  ) async {
+    if (error is NetworkException &&
+        (error.statusCode == 400 ||
+            error.statusCode == 401 ||
+            error.statusCode == 403)) {
+      await tokenStore.delete(secretRef);
+    }
   }
 
   Future<Result<MailTokens>> ensureToken(MailAccount account) async {
@@ -433,6 +438,7 @@ class MailOAuthService {
       refreshToken: refreshToken,
     );
     if (refreshed is Failure<MailTokens>) {
+      await _dropIfReauthRequired(account.secretRef, refreshed.error);
       return Result.failure(refreshed.error);
     }
     final tokens = (refreshed as Success<MailTokens>).value;
@@ -449,6 +455,35 @@ class MailOAuthService {
 
   Future<Result<void>> deleteTokens(String secretRef) =>
       tokenStore.delete(secretRef);
+
+  Future<http.Response> _postToken(
+    Uri endpoint,
+    Map<String, String> body,
+  ) async {
+    Object? lastError;
+    StackTrace? lastStack;
+    for (var attempt = 0; attempt < 2; attempt++) {
+      try {
+        final response = await _client
+            .post(
+              endpoint,
+              headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+              body: body,
+            )
+            .timeout(const Duration(seconds: 20));
+        if (response.statusCode >= 500 && attempt == 0) continue;
+        return response;
+      } on Object catch (error, stack) {
+        lastError = error;
+        lastStack = stack;
+        if (attempt == 0) continue;
+      }
+    }
+    Error.throwWithStackTrace(
+      lastError ?? Exception('MailOAuth: token endpoint unavailable'),
+      lastStack ?? StackTrace.empty,
+    );
+  }
 
   Result<MailTokens> _parseTokenResponse(
     http.Response response, {

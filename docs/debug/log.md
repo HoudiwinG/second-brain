@@ -770,7 +770,7 @@ track/date. Гейты: analyze 0, test **185/185**, Windows debug build success
 Mail API, локальный кэш/поиск, per-message privacy, суммаризация через LLM и
 создание задачи из письма; Mail.ru отключён (нет официального REST-чтения).
 Схема v8. Первое ревью A/B — FAIL; блокеры исправлены. Гейты: analyze 0, test
-**218/218**, Windows debug build success. Ожидается повторное ревью.
+**225/225**, Windows debug build success. Ожидается повторное ревью.
 
 | Timestamp (UTC) | ID | Действие | Примечание |
 |-----------------|----|----------|------------|
@@ -782,4 +782,6 @@ Mail API, локальный кэш/поиск, per-message privacy, сумма�
 | 2026-11-16 | — | тесты | repository, OAuth connect/PKCE, Yandex, sync 401, widget, v7→v8 |
 | 2026-11-16 | — | backup | JSON v3: mail_accounts/mail_messages, без OAuth-токенов |
 | 2026-11-16 | — | review | A/B FAIL: Windows URL, поиск, провайдеры, privacy, OAuth, тесты |
-| 2026-11-16 | — | fixes | rundll32, debounce, Yandex API, per-message privacy, 401-retry, 218/218 |
+| 2026-11-16 | — | fixes | rundll32, debounce, Yandex API, per-message privacy, 401-retry, 225/225 |
+| 2026-11-16 | — | re-review | A/B FAIL: 401 throw, Yandex links, unique beforeOpen, re-auth |
+| 2026-11-16 | — | fixes-2 | provider Failure, contract links, safe beforeOpen, re-auth UI, 225/225 |

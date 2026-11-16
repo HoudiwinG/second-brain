@@ -811,6 +811,9 @@ class AppLocalizationsRu extends AppLocalizations {
   String get mailPrivate => 'Не отправлять письма в LLM';
 
   @override
+  String get mailReconnect => 'Авторизоваться заново';
+
+  @override
   String get mailDeleteAccount => 'Удалить ящик';
 
   @override

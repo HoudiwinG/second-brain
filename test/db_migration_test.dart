@@ -284,6 +284,41 @@ void main() {
     });
   });
 
+  group('Открытие v8-базы с дублями аккаунтов', () {
+    test('beforeOpen не падает без unique-индекса', () async {
+      final dir = await Directory.systemTemp.createTemp('second_brain_db_');
+      addTearDown(() async {
+        if (dir.existsSync()) await dir.delete(recursive: true);
+      });
+      final file = File('${dir.path}/v8_duplicates.sqlite');
+      final seed = AppDatabase(NativeDatabase(file));
+      await seed.customStatement(
+        'DROP INDEX IF EXISTS idx_mail_accounts_provider_email',
+      );
+      final now = DateTime.utc(2026, 11, 1);
+      for (var i = 0; i < 2; i++) {
+        await seed
+            .into(seed.mailAccounts)
+            .insert(
+              MailAccountsCompanion.insert(
+                providerType: 'gmail',
+                email: 'dup@example.com',
+                clientId: const Value('client'),
+                secretRef: 'secret-$i',
+                createdAt: now,
+                updatedAt: now,
+              ),
+            );
+      }
+      await seed.close();
+
+      final db = AppDatabase(NativeDatabase(file));
+      addTearDown(db.close);
+      expect(await db.select(db.mailAccounts).get(), hasLength(2));
+      // Уникальность для новых записей обеспечивает репозиторий.
+    });
+  });
+
   group('Защита миграций (R02-004)', () {
     test(
       'v2 → v9 падает до DDL и не оставляет файл в промежуточном виде',

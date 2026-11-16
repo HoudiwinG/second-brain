@@ -65,10 +65,10 @@ class GmailMailProvider implements MailProvider {
           ];
         },
       );
-      final ids = list.when(
-        success: (value) => value,
-        failure: (error) => throw error,
-      );
+      if (list is Failure<List<String>>) {
+        return Result.failure(list.error);
+      }
+      final ids = (list as Success<List<String>>).value;
       final messages = <MailMessageDraft>[];
       for (final id in ids) {
         final message = await api.requestJson<MailMessageDraft>(
@@ -76,7 +76,10 @@ class GmailMailProvider implements MailProvider {
           path: '/users/me/messages/${Uri.encodeComponent(id)}?format=full',
           parse: (json) => _parseMessage(account, json),
         );
-        message.when(success: messages.add, failure: (error) => throw error);
+        if (message is Failure<MailMessageDraft>) {
+          return Result.failure(message.error);
+        }
+        messages.add((message as Success<MailMessageDraft>).value);
       }
       return Result.success(messages);
     } finally {
@@ -156,10 +159,12 @@ class GmailMailProvider implements MailProvider {
 
 /// Yandex 360 Mail API: папка Inbox (`1`) + текстовые части письма.
 ///
-/// Официальный контракт: `GET /folders/1/envelopes` и
-/// `GET /messages/{id}/text-parts` на `https://cloud-api.yandex.net/v1/mail`.
+/// Контракт:
+/// - https://yandex.ru/dev/yandex-360/mail/ru/api/folders/get-envelopes.md
+/// - https://yandex.ru/dev/yandex-360/mail/ru/api/messages/get-text-parts.md
+/// Базовый URL: `https://cloud-api.yandex.net/v1/mail`.
 /// Серверного поиска в API нет, поэтому query фильтрует уже полученную
-/// страницу; локальный кэш ищет по всей сохранённой переписке.
+/// страницу; локальный кэш ищет по сохранённым письмам.
 class YandexMailProvider implements MailProvider {
   YandexMailProvider({this.client, this.delay});
 
@@ -201,10 +206,10 @@ class YandexMailProvider implements MailProvider {
           ];
         },
       );
-      final items = envelopes.when(
-        success: (value) => value,
-        failure: (error) => throw error,
-      );
+      if (envelopes is Failure<List<Map<String, Object?>>>) {
+        return Result.failure(envelopes.error);
+      }
+      final items = (envelopes as Success<List<Map<String, Object?>>>).value;
       final q = query?.trim().toLowerCase();
       final messages = <MailMessageDraft>[];
       for (final item in items) {
@@ -243,9 +248,10 @@ class YandexMailProvider implements MailProvider {
             ].join('\n');
           },
         );
-        final body = _plainText(
-          text.when(success: (value) => value, failure: (error) => throw error),
-        );
+        if (text is Failure<String>) {
+          return Result.failure(text.error);
+        }
+        final body = _plainText((text as Success<String>).value);
         messages.add(
           MailMessageDraft(
             remoteId: id,

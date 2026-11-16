@@ -1,8 +1,10 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
+import 'package:second_brain/core/error/app_exception.dart';
 import 'package:second_brain/core/result/result.dart';
 import 'package:second_brain/core/secrets/in_memory_secret_store.dart';
 import 'package:second_brain/features/mail/application/mail_oauth.dart';
@@ -211,5 +213,78 @@ void main() {
       clientId: 'client',
     );
     expect(result, isA<Failure<MailTokens>>());
+  });
+
+  test('token endpoint повторяется после 5xx', () async {
+    var calls = 0;
+    final client = MockClient((request) async {
+      calls++;
+      if (calls == 1) return http.Response('temporary', 503);
+      return http.Response(
+        jsonEncode({'access_token': 'access', 'expires_in': 3600}),
+        200,
+      );
+    });
+    final service = MailOAuthService(tokenStore: tokenStore, client: client);
+    final result = await service.exchangeCode(
+      MailProviderType.gmail,
+      clientId: 'client',
+      code: 'code',
+      codeVerifier: 'verifier',
+    );
+    expect((result as Success<MailTokens>).value.accessToken, 'access');
+    expect(calls, 2);
+  });
+
+  test('invalid refresh удаляет битые токены', () async {
+    final account = MailAccount(
+      id: 1,
+      provider: MailProviderType.gmail,
+      email: 'user@example.com',
+      displayName: '',
+      clientId: 'client',
+      secretRef: 'secret-ref',
+      isPrivateForLlm: false,
+      createdAt: DateTime.utc(2026, 1, 1),
+      updatedAt: DateTime.utc(2026, 1, 1),
+    );
+    (await tokenStore.write(
+      account.secretRef,
+      MailTokens(
+        accessToken: 'old',
+        refreshToken: 'revoked',
+        expiresAt: DateTime.utc(2020, 1, 1),
+      ),
+    )).unwrap();
+    final client = MockClient(
+      (request) async =>
+          http.Response(jsonEncode({'error': 'invalid_grant'}), 400),
+    );
+    final service = MailOAuthService(tokenStore: tokenStore, client: client);
+
+    final result = await service.ensureToken(account);
+
+    expect(result, isA<Failure<MailTokens>>());
+    expect((await tokenStore.read(account.secretRef)).unwrap(), isNull);
+  });
+
+  test('loopback отклоняет callback с чужим state', () async {
+    final receiver = LoopbackOAuthCallbackReceiver();
+    addTearDown(receiver.close);
+    await receiver.start(state: 'expected');
+    final client = HttpClient();
+    addTearDown(client.close);
+    final request = await client.getUrl(
+      LoopbackOAuthCallbackReceiver.redirectUri.replace(
+        queryParameters: {'state': 'wrong', 'code': 'x'},
+      ),
+    );
+    final response = await request.close();
+    await response.drain<void>();
+
+    await expectLater(
+      receiver.waitForCode(),
+      throwsA(isA<ValidationException>()),
+    );
   });
 }

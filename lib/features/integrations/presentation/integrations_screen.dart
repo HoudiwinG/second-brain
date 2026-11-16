@@ -89,6 +89,27 @@ class _IntegrationsScreenState extends ConsumerState<IntegrationsScreen> {
     }
     final tokens = (result as Success<MailTokens>).value;
     final repo = await ref.read(mailRepositoryProvider.future);
+    final accounts = (await repo.listAccounts()).unwrap();
+    MailAccount? existing;
+    for (final account in accounts) {
+      if (account.provider == draft.provider &&
+          account.email.toLowerCase() == draft.email.trim().toLowerCase()) {
+        existing = account;
+        break;
+      }
+    }
+    if (existing != null) {
+      final stored = await oauth.storeTokens(existing.secretRef, tokens);
+      if (!mounted) return;
+      if (stored is Failure<void>) {
+        showMessageSnackBar(context, lcm.mailAccountAddError);
+        return;
+      }
+      _selectedAccountId = existing.id;
+      _reload();
+      showMessageSnackBar(context, lcm.mailAccountAdded);
+      return;
+    }
     final created = await repo.createAccount(draft);
     if (!mounted) return;
     if (created is Failure<MailAccount>) {
@@ -107,6 +128,39 @@ class _IntegrationsScreenState extends ConsumerState<IntegrationsScreen> {
     _selectedAccountId = account.id;
     _reload();
     showMessageSnackBar(context, lcm.mailAccountAdded);
+  }
+
+  Future<void> _reconnect(MailAccount account) async {
+    final lcm = AppLocalizations.of(context)!;
+    final input = await showDialog<_MailConnectInput>(
+      context: context,
+      builder: (_) => _MailAccountDialog(initialAccount: account),
+    );
+    if (input == null || !mounted) return;
+    final oauth = ref.read(mailOAuthServiceProvider);
+    final result = await oauth.connect(
+      account.provider,
+      clientId: input.draft.clientId,
+      clientSecret: input.clientSecret,
+      loginHint: account.email,
+    );
+    if (!mounted) return;
+    if (result is Failure<MailTokens>) {
+      showMessageSnackBar(context, lcm.mailOAuthError);
+      return;
+    }
+    final stored = await oauth.storeTokens(
+      account.secretRef,
+      (result as Success<MailTokens>).value,
+    );
+    if (!mounted) return;
+    stored.when(
+      success: (_) {
+        _reload();
+        showMessageSnackBar(context, lcm.mailAccountAdded);
+      },
+      failure: (_) => showMessageSnackBar(context, lcm.mailAccountAddError),
+    );
   }
 
   Future<void> _sync(MailAccount account) async {
@@ -170,8 +224,20 @@ class _IntegrationsScreenState extends ConsumerState<IntegrationsScreen> {
 
   Future<void> _summarize(MailMessage message) async {
     final lcm = AppLocalizations.of(context)!;
+    final repo = await ref.read(mailRepositoryProvider.future);
+    final fresh = await repo.getMessage(message.id);
+    if (!mounted) return;
+    if (fresh is Failure<MailMessage?>) {
+      showErrorSnackBar(context, lcm, fresh.error);
+      return;
+    }
+    final actual = (fresh as Success<MailMessage?>).value;
+    if (actual == null) {
+      showMessageSnackBar(context, lcm.mailSummarizeError);
+      return;
+    }
     final service = await ref.read(mailSummaryServiceProvider.future);
-    final result = await service.summarizeMessage(message);
+    final result = await service.summarizeMessage(actual);
     if (!mounted) return;
     result.when(
       success: (text) => _showText(lcm.mailSummary, text),
@@ -190,8 +256,7 @@ class _IntegrationsScreenState extends ConsumerState<IntegrationsScreen> {
         // приватности ящика и утечь в LLM вместе с текстом переписки.
         description:
             '${lcm.mailFrom}: ${message.fromAddress}\n'
-            '${lcm.mailReceived}: ${formatDateTime(context, message.receivedAt)}\n'
-            '${message.snippet}',
+            '${lcm.mailReceived}: ${formatDateTime(context, message.receivedAt)}',
         // Задача из почты всегда private: даже если ящик станет приватным
         // позже, задача не должна уйти в LLM с фрагментом переписки.
         isPrivateForLlm: true,
@@ -367,6 +432,7 @@ class _IntegrationsScreenState extends ConsumerState<IntegrationsScreen> {
                             _reload();
                           },
                           onSync: () => _sync(account),
+                          onReconnect: () => _reconnect(account),
                           onDelete: () => _deleteAccount(account),
                           onPrivate: (value) => _togglePrivate(account, value),
                         ),
@@ -471,6 +537,7 @@ class _AccountCard extends StatelessWidget {
     required this.selected,
     required this.onSelect,
     required this.onSync,
+    required this.onReconnect,
     required this.onDelete,
     required this.onPrivate,
   });
@@ -480,6 +547,7 @@ class _AccountCard extends StatelessWidget {
   final bool selected;
   final VoidCallback onSelect;
   final VoidCallback onSync;
+  final VoidCallback onReconnect;
   final VoidCallback onDelete;
   final ValueChanged<bool> onPrivate;
 
@@ -508,6 +576,11 @@ class _AccountCard extends StatelessWidget {
               ),
             ),
             IconButton(
+              tooltip: lcm.mailReconnect,
+              onPressed: onReconnect,
+              icon: const Icon(Icons.login),
+            ),
+            IconButton(
               tooltip: lcm.mailSync,
               onPressed: syncing ? null : onSync,
               icon: syncing
@@ -531,7 +604,9 @@ class _AccountCard extends StatelessWidget {
 }
 
 class _MailAccountDialog extends StatefulWidget {
-  const _MailAccountDialog();
+  const _MailAccountDialog({this.initialAccount});
+
+  final MailAccount? initialAccount;
 
   @override
   State<_MailAccountDialog> createState() => _MailAccountDialogState();
@@ -552,6 +627,19 @@ class _MailAccountDialogState extends State<_MailAccountDialog> {
   MailProviderType _provider = MailProviderType.gmail;
   bool _private = false;
   String? _error;
+
+  @override
+  void initState() {
+    super.initState();
+    final account = widget.initialAccount;
+    if (account != null) {
+      _provider = account.provider;
+      _private = account.isPrivateForLlm;
+      _email.text = account.email;
+      _displayName.text = account.displayName;
+      _clientId.text = account.clientId;
+    }
+  }
 
   @override
   void dispose() {
@@ -610,9 +698,11 @@ class _MailAccountDialogState extends State<_MailAccountDialog> {
                       ),
                     ),
                 ],
-                onChanged: (value) {
-                  if (value != null) setState(() => _provider = value);
-                },
+                onChanged: widget.initialAccount == null
+                    ? (value) {
+                        if (value != null) setState(() => _provider = value);
+                      }
+                    : null,
               ),
               const SizedBox(height: 12),
               TextField(

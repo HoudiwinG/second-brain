@@ -107,4 +107,65 @@ void main() {
     final messages = (await repo.listMessages()).unwrap();
     expect(messages.single.remoteId, 'm1');
   });
+
+  test('реальный Gmail provider: 401 → refresh → retry', () async {
+    final account = (await repo.createAccount(
+      const MailAccountDraft(
+        provider: MailProviderType.gmail,
+        email: 'user@example.com',
+        clientId: 'client',
+      ),
+    )).unwrap();
+    (await tokenStore.write(
+      account.secretRef,
+      MailTokens(
+        accessToken: 'old-access',
+        refreshToken: 'refresh',
+        expiresAt: DateTime.utc(2030, 1, 1),
+      ),
+    )).unwrap();
+    var listCalls = 0;
+    final client = MockClient((request) async {
+      if (request.url.host == 'oauth2.googleapis.com') {
+        return http.Response(
+          jsonEncode({'access_token': 'new-access', 'expires_in': 3600}),
+          200,
+        );
+      }
+      if (request.url.path.endsWith('/messages')) {
+        listCalls++;
+        if (listCalls == 1) {
+          return http.Response(jsonEncode({'error': 'unauthorized'}), 401);
+        }
+        return http.Response('{"messages":[{"id":"m1"}]}', 200);
+      }
+      return http.Response.bytes(
+        utf8.encode(
+          jsonEncode({
+            'id': 'm1',
+            'snippet': 'Кратко',
+            'payload': {
+              'headers': [
+                {'name': 'Subject', 'value': 'Тема'},
+              ],
+            },
+          }),
+        ),
+        200,
+      );
+    });
+    final oauth = MailOAuthService(tokenStore: tokenStore, client: client);
+    final service = MailSyncService(
+      repository: repo,
+      oauth: oauth,
+      providerFactory: (_) =>
+          GmailMailProvider(client: client, delay: (_) async {}),
+    );
+
+    final count = (await service.sync(account)).unwrap();
+
+    expect(count, 1);
+    expect(listCalls, 2);
+    expect((await repo.listMessages()).unwrap().single.remoteId, 'm1');
+  });
 }

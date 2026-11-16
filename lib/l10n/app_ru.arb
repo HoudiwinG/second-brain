@@ -309,6 +309,7 @@
   "mailNoMessages": "Писем пока нет",
   "mailSearchHint": "Поиск по почте",
   "mailPrivate": "Не отправлять письма в LLM",
+  "mailReconnect": "Авторизоваться заново",
   "mailDeleteAccount": "Удалить ящик",
   "mailAccountDeleted": "Ящик удалён",
   "mailSummary": "Суммаризировать",
