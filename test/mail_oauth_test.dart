@@ -272,7 +272,10 @@ void main() {
     final receiver = LoopbackOAuthCallbackReceiver();
     addTearDown(receiver.close);
     await receiver.start(state: 'expected');
-    final codeFuture = receiver.waitForCode();
+    final expectation = expectLater(
+      receiver.waitForCode(),
+      throwsA(isA<ValidationException>()),
+    );
     final client = HttpClient();
     addTearDown(client.close);
     final request = await client.getUrl(
@@ -283,6 +286,6 @@ void main() {
     final response = await request.close();
     await response.drain<void>();
 
-    await expectLater(codeFuture, throwsA(isA<ValidationException>()));
+    await expectation;
   });
 }
