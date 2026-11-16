@@ -728,4 +728,4 @@ regression-теста смены треда.
 | 2026-11-16 | S04F | fixed | терминальное состояние cancel, pre-tool до onDone, request-scoped флаги, docs, g.dart, fallback Google, retry после смены треда, тесты |
 | 2026-11-16 | — | гейты | analyze 0; test **172/172**; Windows debug build success |
 | 2026-11-16 | S04Z | fixed | terminal refresh `state.messages`, CI/HEAD docs, дубли задач, комментарии реестра/схемы, `sendMessage` после сохранения user |
-| 2026-11-16 | — | финал | финальное ревью — **PASS WITH COMMENTS** (0 MAJOR); CI `43833493988` — success; stage-05 разблокирован |
+| 2026-11-16 | — | финал | финальное ревью — **PASS WITH COMMENTS** (0 MAJOR); CI `43835793997` (`9f54bcc`) — success; stage-05 разблокирован |

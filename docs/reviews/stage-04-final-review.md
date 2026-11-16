@@ -6,7 +6,8 @@
   (S04R — `789a01f`, docs — `d8b0889`, S04F — `f99b1eb`)
 - **Предыдущие вердикты:** исходное ревью — **FAIL**; повторное S04R —
   **FAIL**; проверка S04R — **PASS WITH COMMENTS**.
-- **Исправления:** [stage-04-repeat-fix-results.md](stage-04-repeat-fix-results.md)
+- **Исправления:** [stage-04-repeat-fix-results.md](stage-04-repeat-fix-results.md);
+  финальные S04Z — `9f54bcc`.
 
 ## Итог
 

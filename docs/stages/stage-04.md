@@ -11,7 +11,7 @@
 - **Коммиты:** `f2d9f08` — реализация; `821b4f8` — исправления по исходному
   ревью; `0aa69de` — документация; `af023a1` — отчёт повторного ревью;
   `789a01f` — исправления S04R и документация; `f99b1eb` — комментарии
-  S04F/S04Z; финальный docs-коммит — текущий HEAD.
+  S04F; `9f54bcc` — финальные S04Z и документация.
 - **Отчёты:** [повторное ревью](../reviews/stage-04-repeat-review.md),
   [исправления S04R/S04F](../reviews/stage-04-repeat-fix-results.md),
   [финальное ревью](../reviews/stage-04-final-review.md).
@@ -107,8 +107,8 @@
 - `flutter analyze --fatal-infos` — **No issues found**.
 - `flutter test` — **172/172 passed** (после S04R/S04F/S04Z).
 - `flutter build windows --debug` — **success** (2026-11-16).
-- CI-run [43833493988](https://github.com/HoudiwinG/second-brain/actions/runs/43833493988)
-  (`f99b1eb`) — **success**, включая Windows debug build.
+- CI-run [43835793997](https://github.com/HoudiwinG/second-brain/actions/runs/43835793997)
+  (`9f54bcc`) — **success**, включая Windows debug build.
 - `dart run build_runner build` выполнен; `app_database.g.dart` перегенерирован.
 
 ## Ограничения

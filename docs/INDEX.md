@@ -7,7 +7,7 @@
   COMMENTS**. Комментарии `S04F` (4 MINOR/3 NIT у A, 3 MINOR/5 NIT у B)
   исправлены; финальная проверка — **PASS WITH COMMENTS** (0 MAJOR),
   комментарии S04Z fixed. Analyze 0, test **172/172**, Windows debug build
-  success; CI `43833493988` (`f99b1eb`) — success. Stage-05 разблокирован.
+  success; CI `43835793997` (`9f54bcc`) — success. Stage-05 разблокирован.
 - Предыдущий этап: stage-03 (LLM-слой) **закрыт повторным независимым ревью:
   PASS** (2026-10-28). Исходное ревью остаётся **FAIL** (2026-10-25), вердикт
   сохранён. Все 28 находок S03-001…S03-028 исправлены коммитом `14e63a7` и
@@ -17,8 +17,8 @@
 - Гейты stage-04 после исправлений S04R/S04F/S04Z (2026-11-16): `flutter
   analyze --fatal-infos` — **No issues found**, `flutter test` — **172/172**,
   `flutter build windows --debug` — **success**; CI-run
-  [43833493988](https://github.com/HoudiwinG/second-brain/actions/runs/43833493988)
-  (`f99b1eb`) — **success**, включая Windows debug build.
+  [43835793997](https://github.com/HoudiwinG/second-brain/actions/runs/43835793997)
+  (`9f54bcc`) — **success**, включая Windows debug build.
 - Локальные гейты stage-03 (2026-10-28): analyze 0, test 132/132, Windows debug
   build; CI `40636764573` (`49bc00f`, включая `14e63a7`) — success.
 - Снимок состояния: [context.md](context.md)
