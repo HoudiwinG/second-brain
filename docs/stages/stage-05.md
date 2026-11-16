@@ -3,19 +3,20 @@
 - **Дата:** 2026-11-16
 - **Агент:** agent-1 (OpenCode)
 - **Ветка:** `master`
-- **Статус:** **self-check + исправления после первого ревью; ожидается
-  повторное независимое ревью.** Первое ревью: reviewer A — **FAIL**
-  (1 major: JSON-бэкап), reviewer B — **PASS WITH COMMENTS**; все находки
-  S05-001…S05-011 исправлены. Гейты: `flutter analyze --fatal-infos` — 0
-  issues, `flutter test` — **191/191**, `flutter build windows --debug` —
-  success.
-- **Предыдущий этап:** stage-04 — **PASS WITH COMMENTS** (0 MAJOR), stage-05
+- **Статус:** **PASS WITH COMMENTS (0 MAJOR).** Первое ревью: reviewer A —
+  **FAIL** (1 major: JSON-бэкап), reviewer B — **PASS WITH COMMENTS**; все
+  S05-001…S05-011 и финальные комментарии S05Z исправлены. Финальное ревью —
+  **PASS WITH COMMENTS** (0 major). Гейты: analyze 0, test **193/193**,
+  Windows debug build success.
+- **Предыдущий этап:** stage-04 — **PASS WITH COMMENTS** (0 MAJOR), stage-06
   разблокирован.
 - **Схема БД:** **v7** (`learning_tracks`, `learning_sessions`).
 - **ADR:** ADR-022.
 - **Ревью:** [stage-05-review.md](../reviews/stage-05-review.md) — FAIL
   (S05-001); исправления —
-  [stage-05-fix-results.md](../reviews/stage-05-fix-results.md).
+  [stage-05-fix-results.md](../reviews/stage-05-fix-results.md); финальное —
+  [stage-05-final-review.md](../reviews/stage-05-final-review.md) — PASS WITH
+  COMMENTS.
 
 ## Цель и критерии приёмки
 
@@ -108,7 +109,7 @@ secure storage.
 - `test/db_migration_test.dart` — v6→v7, обновлены проверки v1→v7/v2→v7/
   v4→v7/v5→v7, guard v2→v8.
 
-Итог: **191/191** тестов, analyze 0, Windows debug build success. Добавлены
+Итог: **193/193** тестов, analyze 0, Windows debug build success. Добавлены
 тесты на битый JSON, отсутствующий ключ, приватный roadmap, backup v1/v2,
 updateTrack, дубли id, транзакции, даты и усиленные миграции v5→v7/v6→v7.
 
@@ -123,6 +124,11 @@ updateTrack, дубли id, транзакции, даты и усиленные
   импортируются без learning-секций.
 - В UI нельзя переупорядочивать шаги (edit/delete есть); custom fields
   вводятся как `key=value` без многострочных значений.
+- «Полный» JSON-бэкап по-прежнему не включает чат, LLM-конфиги, аудит и
+  настройки (pre-existing ограничение ADR-014, вне stage-05); обучение
+  включено с версии 2.
+- Импорт v1-файла заменяет все локальные данные и удаляет обучение; UI
+  предупреждает о замене, но формат v1 не содержит learning-секций.
 - Нет глобального поиска по трекам (stage-08) и синхронизации.
 - Заметки сессий не отправляются в LLM; в контекст тренера идут только
   заголовки/описания шагов и агрегированный прогресс.

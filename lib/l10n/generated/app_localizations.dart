@@ -1286,6 +1286,12 @@ abstract class AppLocalizations {
   /// **'Add step'**
   String get learningAddStep;
 
+  /// No description provided for @learningEditStep.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit step'**
+  String get learningEditStep;
+
   /// No description provided for @learningStepTitle.
   ///
   /// In en, this message translates to:

@@ -68,7 +68,7 @@ Import: треки восстанавливаются до сессий, сес�
 ## Гейты
 
 - `flutter analyze --fatal-infos` — **No issues found**.
-- `flutter test` — **191/191**.
+- `flutter test` — **193/193** (после финальных S05Z).
 - `flutter build windows --debug` — **success**.
 - CI — после push.
 

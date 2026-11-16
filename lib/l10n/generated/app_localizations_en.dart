@@ -627,6 +627,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get learningAddStep => 'Add step';
 
   @override
+  String get learningEditStep => 'Edit step';
+
+  @override
   String get learningStepTitle => 'Step';
 
   @override

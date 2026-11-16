@@ -759,4 +759,6 @@ track/date. Гейты: analyze 0, test **185/185**, Windows debug build success
 | 2026-11-16 | S05-003…005 | fixed | await save, транзакции, идемпотентный soft-delete, календарная дата, stable id |
 | 2026-11-16 | S05-006…011 | fixed | edit/delete шагов, тесты, локализация минут/ошибок, balanced JSON, индексы, TD-22/ADR-022 |
 | 2026-11-16 | — | гейты | analyze 0; test **191/191**; Windows debug build success |
-| 2026-11-16 | — | статус | исправления внесены; ожидается повторное ревью stage-05 |
+| 2026-11-16 | S05Z | fixed | доступность/комментарий схемы, docs, busy для шагов/сессий, edit-step, календарный check-in, v1/версия backup, индекс beforeOpen |
+| 2026-11-16 | — | гейты | analyze 0; test **193/193**; Windows debug build success |
+| 2026-11-16 | — | финал | финальное ревью — **PASS WITH COMMENTS** (0 MAJOR); stage-06 разблокирован |

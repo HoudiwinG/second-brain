@@ -83,11 +83,12 @@
 >
 > **Stage-05 (2026-11-16):** реализованы треки, roadmap, сессии и
 > AI-тренер; схема v7; JSON-бэкап v2 включает обучение. Первое ревью —
-> FAIL (S05-001, JSON-бэкап), все S05-001…011 fixed; analyze 0, test
-> **191/191**, Windows debug build success. Ожидается повторное ревью.
-> Отчёт — [stages/stage-05.md](stages/stage-05.md), ревью —
-> [reviews/stage-05-review.md](reviews/stage-05-review.md), исправления —
-> [reviews/stage-05-fix-results.md](reviews/stage-05-fix-results.md),
+> FAIL (S05-001), все S05-001…011 и S05Z fixed; финальное ревью — **PASS
+> WITH COMMENTS** (0 MAJOR). Analyze 0, test **193/193**, Windows debug build
+> success. Отчёт — [stages/stage-05.md](stages/stage-05.md), ревью —
+> [reviews/stage-05-review.md](reviews/stage-05-review.md), финальное —
+> [reviews/stage-05-final-review.md](reviews/stage-05-final-review.md),
+> исправления — [reviews/stage-05-fix-results.md](reviews/stage-05-fix-results.md),
 > ADR-022.
 
 Проверка после исправлений R02-009…R02-013 (2026-10-24, Flutter 3.47.7):

@@ -215,6 +215,7 @@
   "learningRoadmap": "Roadmap",
   "learningNoSteps": "Шагов пока нет",
   "learningAddStep": "Добавить шаг",
+  "learningEditStep": "Редактировать шаг",
   "learningStepTitle": "Шаг",
   "learningStepDescription": "Описание шага",
   "learningProgress": "Прогресс: {done}/{total}",

@@ -1,11 +1,11 @@
 # INDEX — карта документации
 
 ## Состояние
-- Текущий этап: stage-05 (обучение) — **первое ревью FAIL (1 MAJOR:
-  JSON-бэкап), исправления S05-001…S05-011 внесены, ожидается повторное
-  ревью.** Треки, roadmap, сессии, AI-тренер, приватный трек, backup v2,
-  схема **v7**. Analyze 0, test **191/191**, Windows debug build success;
-  CI `43892374452` (`9b96f58`) — success.
+- Текущий этап: stage-05 (обучение) — **PASS WITH COMMENTS (0 MAJOR).**
+  Первое ревью — FAIL (S05-001, JSON-бэкап), все S05-001…011 и финальные
+  S05Z исправлены; финальное ревью — PASS WITH COMMENTS. Треки, roadmap,
+  сессии, AI-тренер, приватный трек, backup v2, схема **v7**. Analyze 0,
+  test **193/193**, Windows debug build success.
 - Предыдущий этап: stage-04 (инструменты ассистента) — **PASS WITH COMMENTS
   (0 MAJOR)**. Исходное ревью — FAIL; повторное ревью — FAIL (3 MAJOR), все
   11 `S04R` исправлены; повторная проверка — **PASS WITH COMMENTS**;
@@ -15,9 +15,8 @@
   verified. Stage-02 — **PASS WITH COMMENTS** (ревью №3); R02-014/R02-015
   остаются неблокирующими комментариями.
 - Гейты stage-05 (2026-11-16): `flutter analyze --fatal-infos` — **No issues
-  found**, `flutter test` — **191/191** (после исправлений ревью),
-  `flutter build windows --debug` — **success**; CI-run
-  `43892374452` (`9b96f58`) — success.
+  found**, `flutter test` — **193/193**, `flutter build windows --debug` —
+  **success**; CI для `63d780e` — success, CI финальных S05Z — после push.
 - Локальные гейты stage-03 (2026-10-28): analyze 0, test 132/132, Windows debug
   build; CI `40636764573` (`49bc00f`, включая `14e63a7`) — success.
 - Снимок состояния: [context.md](context.md)
@@ -67,8 +66,11 @@
   два прохода): reviewer A **FAIL** (1 MAJOR — JSON-бэкап), reviewer B
   **PASS WITH COMMENTS**; объединённый **FAIL**.
 - [stage-05-fix-results](reviews/stage-05-fix-results.md) — self-check
-  исправлений S05-001…S05-011: fixed, test 191/191, analyze 0, Windows debug
-  build success; ожидается повторное ревью.
+  исправлений S05-001…S05-011 и S05Z: fixed, test 193/193, analyze 0,
+  Windows debug build success.
+- [stage-05-final-review](reviews/stage-05-final-review.md) — финальное ревью
+  (2026-11-16, два прохода): **PASS WITH COMMENTS**, 0 MAJOR; S05Z fixed;
+  stage-06 разблокирован.
 - Исправления stage-04:
   [reviews/stage-04-fix-results.md](reviews/stage-04-fix-results.md) — все 9
   исходных находок закрыты коммитом `821b4f8` (+ docs-коммит).
@@ -104,8 +106,8 @@
   build success; ADR-021; схема v6; stage-05 разблокирован)
 - [stage-05](stages/stage-05.md) — обучение (треки, roadmap, сессии,
   AI-тренер, backup v2; ADR-022; схема v7; первое ревью **FAIL** по
-  S05-001, исправления S05-001…011 внесены; analyze 0, test 191/191,
-  Windows debug build success; ожидается повторное ревью)
+  S05-001 → **PASS WITH COMMENTS** после S05/S05Z; analyze 0, test 193/193,
+  Windows debug build success; stage-06 разблокирован)
 
 ## Шаблоны
 - [decisions.template.md](decisions.template.md) — формат ADR

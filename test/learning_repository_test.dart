@@ -96,6 +96,21 @@ void main() {
     expect(changed.completedSteps, 1);
   });
 
+  test('повреждённый JSON не ломает чтение трека', () async {
+    final track = (await repo.createTrack(
+      const LearningTrackDraft(title: 'Corrupt'),
+    )).unwrap();
+    await db.customStatement(
+      "UPDATE learning_tracks SET roadmap_json = '{bad', "
+      "custom_fields_json = 'not json' WHERE id = ${track.id}",
+    );
+
+    final loaded = (await repo.getTrack(track.id)).unwrap()!;
+    expect(loaded.steps, isEmpty);
+    expect(loaded.customFields, isEmpty);
+    expect((await repo.listTracks()).unwrap(), hasLength(1));
+  });
+
   test('обновляет шаг и считает прогресс', () async {
     final track = (await repo.createTrack(
       const LearningTrackDraft(

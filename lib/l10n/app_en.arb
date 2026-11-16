@@ -221,6 +221,7 @@
   "learningRoadmap": "Roadmap",
   "learningNoSteps": "No steps yet",
   "learningAddStep": "Add step",
+  "learningEditStep": "Edit step",
   "learningStepTitle": "Step",
   "learningStepDescription": "Step description",
   "learningProgress": "Progress: {done}/{total}",

@@ -176,7 +176,13 @@ class _TrackCard extends StatelessWidget {
                           ),
                         ),
                         if (track.isPrivateForLlm)
-                          const Icon(Icons.visibility_off_outlined, size: 18),
+                          Tooltip(
+                            message: lcm.learningPrivate,
+                            child: const Icon(
+                              Icons.visibility_off_outlined,
+                              size: 18,
+                            ),
+                          ),
                       ],
                     ),
                     if (track.goal.isNotEmpty) ...[
@@ -188,7 +194,13 @@ class _TrackCard extends StatelessWidget {
                       ),
                     ],
                     const SizedBox(height: 8),
-                    LinearProgressIndicator(value: track.progress),
+                    LinearProgressIndicator(
+                      value: track.progress,
+                      semanticsLabel: lcm.learningProgress(
+                        track.completedSteps,
+                        track.steps.length,
+                      ),
+                    ),
                     const SizedBox(height: 4),
                     Text(
                       lcm.learningProgress(
@@ -358,8 +370,11 @@ class _TrackData {
 
   bool get needsCheckIn {
     if (sessions.isEmpty) return true;
-    final last = sessions.first.date;
-    return DateTime.now().difference(last).inDays >= 3;
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final last = sessions.first.date.toUtc();
+    final lastDay = DateTime(last.year, last.month, last.day);
+    return today.difference(lastDay).inDays >= 3;
   }
 }
 
@@ -704,6 +719,7 @@ class _LearningTrackScreenState extends ConsumerState<LearningTrackScreen> {
               const SizedBox(height: 12),
               _RoadmapCard(
                 track: track,
+                busy: _aiBusy,
                 onAddStep: () => _addStep(track),
                 onSetStatus: (step, status) =>
                     _setStepStatus(track, step, status),
@@ -713,6 +729,7 @@ class _LearningTrackScreenState extends ConsumerState<LearningTrackScreen> {
               const SizedBox(height: 12),
               _SessionsCard(
                 data: data,
+                busy: _aiBusy,
                 onAdd: () => _addSession(track),
                 onDelete: _deleteSession,
               ),
@@ -868,6 +885,7 @@ class _AiTrainerCard extends StatelessWidget {
 class _RoadmapCard extends StatelessWidget {
   const _RoadmapCard({
     required this.track,
+    required this.busy,
     required this.onAddStep,
     required this.onSetStatus,
     required this.onEditStep,
@@ -875,6 +893,7 @@ class _RoadmapCard extends StatelessWidget {
   });
 
   final LearningTrack track;
+  final bool busy;
   final VoidCallback onAddStep;
   final void Function(LearningStep, LearningStepStatus) onSetStatus;
   final ValueChanged<LearningStep> onEditStep;
@@ -898,7 +917,7 @@ class _RoadmapCard extends StatelessWidget {
                   ),
                 ),
                 TextButton.icon(
-                  onPressed: onAddStep,
+                  onPressed: busy ? null : onAddStep,
                   icon: const Icon(Icons.add),
                   label: Text(lcm.learningAddStep),
                 ),
@@ -916,6 +935,7 @@ class _RoadmapCard extends StatelessWidget {
                   leading: PopupMenuButton<LearningStepStatus>(
                     tooltip: lcm.learningChangeStepStatus,
                     initialValue: step.status,
+                    enabled: !busy,
                     onSelected: (status) => onSetStatus(step, status),
                     itemBuilder: (context) => [
                       for (final status in LearningStepStatus.values)
@@ -945,12 +965,12 @@ class _RoadmapCard extends StatelessWidget {
                     children: [
                       IconButton(
                         tooltip: lcm.actionEdit,
-                        onPressed: () => onEditStep(step),
+                        onPressed: busy ? null : () => onEditStep(step),
                         icon: const Icon(Icons.edit_outlined, size: 18),
                       ),
                       IconButton(
                         tooltip: lcm.actionDelete,
-                        onPressed: () => onDeleteStep(step),
+                        onPressed: busy ? null : () => onDeleteStep(step),
                         icon: const Icon(Icons.delete_outline, size: 18),
                       ),
                     ],
@@ -966,11 +986,13 @@ class _RoadmapCard extends StatelessWidget {
 class _SessionsCard extends StatelessWidget {
   const _SessionsCard({
     required this.data,
+    required this.busy,
     required this.onAdd,
     required this.onDelete,
   });
 
   final _TrackData data;
+  final bool busy;
   final VoidCallback onAdd;
   final ValueChanged<LearningSession> onDelete;
 
@@ -995,7 +1017,7 @@ class _SessionsCard extends StatelessWidget {
                 const SizedBox(width: 8),
                 IconButton(
                   tooltip: lcm.learningAddSession,
-                  onPressed: onAdd,
+                  onPressed: busy ? null : onAdd,
                   icon: const Icon(Icons.add),
                 ),
               ],
@@ -1017,7 +1039,7 @@ class _SessionsCard extends StatelessWidget {
                   subtitle: session.notes.isEmpty ? null : Text(session.notes),
                   trailing: IconButton(
                     tooltip: lcm.actionDelete,
-                    onPressed: () => onDelete(session),
+                    onPressed: busy ? null : () => onDelete(session),
                     icon: const Icon(Icons.delete_outline),
                   ),
                 ),
@@ -1070,7 +1092,9 @@ class _StepDialogState extends State<_StepDialog> {
   Widget build(BuildContext context) {
     final lcm = AppLocalizations.of(context)!;
     return AlertDialog(
-      title: Text(lcm.learningAddStep),
+      title: Text(
+        widget.step == null ? lcm.learningAddStep : lcm.learningEditStep,
+      ),
       content: SizedBox(
         width: 520,
         child: Column(

@@ -345,7 +345,7 @@ class BackupService {
       throw const ValidationException('BackupService: неизвестный формат');
     }
     final fileVersion = data['version'];
-    if (fileVersion is! int || fileVersion > version) {
+    if (fileVersion is! int || fileVersion < 1 || fileVersion > version) {
       throw ValidationException(
         'BackupService: версия бэкапа $fileVersion не поддерживается',
       );
@@ -614,14 +614,17 @@ class BackupService {
       for (final item in learningSessions) {
         final session = _map(item, 'learningSession');
         final trackId = _requiredInt(session, 'track_id');
-        if (!trackIds.contains(trackId)) continue;
+        if (!trackIds.contains(trackId)) {
+          throw ValidationException(
+            'BackupService: сессия ссылается на отсутствующий трек $trackId',
+          );
+        }
         final duration = _requiredInt(session, 'duration_minutes');
         if (duration < 1 || duration > 1440) {
           throw const ValidationException(
             'BackupService: некорректная длительность сессии',
           );
         }
-        final rawDate = _requiredDate(session, 'date');
         await _db
             .into(_db.learningSessions)
             .insert(
@@ -630,7 +633,7 @@ class BackupService {
                 trackId: trackId,
                 durationMinutes: duration,
                 notes: Value(_string(session['notes'])),
-                date: DateTime.utc(rawDate.year, rawDate.month, rawDate.day),
+                date: _calendarDate(session, 'date'),
                 createdAt: _requiredDate(session, 'created_at'),
               ),
             );
@@ -694,6 +697,20 @@ class BackupService {
       if (parsed != null) return parsed;
     }
     throw ValidationException('BackupService: поле "$key" должно быть числом');
+  }
+
+  /// Календарная дата: берём литеральные y-m-d из ISO-строки, не пересчитывая
+  /// offset в UTC (для внешних бэкапов).
+  DateTime _calendarDate(Map<String, dynamic> map, String key) {
+    final raw = map[key];
+    if (raw is String && raw.length >= 10) {
+      final parsed = DateTime.tryParse(raw.substring(0, 10));
+      if (parsed != null) {
+        return DateTime.utc(parsed.year, parsed.month, parsed.day);
+      }
+    }
+    final fallback = _requiredDate(map, key);
+    return DateTime.utc(fallback.year, fallback.month, fallback.day);
   }
 
   DateTime _requiredDate(Map<String, dynamic> map, String key) {

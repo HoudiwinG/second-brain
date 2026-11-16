@@ -1,13 +1,16 @@
 # Контекст проекта (снимок состояния)
 
-- **Текущий этап:** stage-05 (обучение) — **первое ревью FAIL (1 MAJOR:
-  JSON-бэкап), исправления S05-001…S05-011 внесены, ожидается повторное
-  ревью.** Треки, roadmap, сессии, AI-тренер, приватный трек, backup v2.
-  Analyze 0, test **191/191**, Windows debug build success. Отчёт:
+- **Текущий этап:** stage-05 (обучение) — **PASS WITH COMMENTS (0 MAJOR).**
+  Первое ревью — FAIL (JSON-бэкап), все S05-001…011 и финальные S05Z
+  исправлены; финальное ревью — PASS WITH COMMENTS. Треки, roadmap, сессии,
+  AI-тренер, приватный трек, backup v2. Analyze 0, test **193/193**,
+  Windows debug build success. Отчёт:
   [stages/stage-05.md](stages/stage-05.md), ревью:
-  [reviews/stage-05-review.md](reviews/stage-05-review.md), исправления:
+  [reviews/stage-05-review.md](reviews/stage-05-review.md), финальное:
+  [reviews/stage-05-final-review.md](reviews/stage-05-final-review.md),
+  исправления:
   [reviews/stage-05-fix-results.md](reviews/stage-05-fix-results.md);
-  ADR-022; схема **v7**.
+  ADR-022; схема **v7**. Stage-06 разблокирован.
 - **Предыдущий этап:** stage-04 (инструменты ассистента) — **PASS WITH
   COMMENTS (0 MAJOR)**. Все S04R/S04F/S04Z fixed; analyze 0, test 172/172,
   Windows debug build success. Отчёт: [stages/stage-04.md](stages/stage-04.md),
@@ -58,18 +61,17 @@
   R02-009…R02-013 — [reviews/stage-02-fix-results.md](reviews/stage-02-fix-results.md).
 - **Текущий отчёт:** [stages/stage-05.md](stages/stage-05.md)
 - **Открытых CRITICAL:** 0
-- **Stage-05:** первое ревью FAIL (1 MAJOR — JSON-бэкап), S05-001…011
-  исправлены, ожидается повторное ревью. **Stage-04:** PASS WITH COMMENTS,
-  все S04R/S04F/S04Z fixed. **Открытых исходных S03-находок:** 0 (28/28
-  подтверждены повторным ревью). **Не блокирующие комментарии:**
-  S03R-001/S03R-002 (MINOR), S03R-003/S03R-004 (NIT), R02-014 (MINOR),
-  R02-015 (NIT). **Принятый TD:** TD-28 (нет UI выбора контекста; триггер
-  перенесён на позднюю доработку чата). TD-21 — отдельное принятое
-  ограничение `REAL` для финансов.
+- **Stage-05:** **PASS WITH COMMENTS** (0 MAJOR), S05-001…011 и S05Z fixed.
+  **Stage-04:** PASS WITH COMMENTS, все S04R/S04F/S04Z fixed. **Открытых
+  исходных S03-находок:** 0 (28/28 подтверждены повторным ревью).
+  **Не блокирующие комментарии:** S03R-001/S03R-002 (MINOR),
+  S03R-003/S03R-004 (NIT), R02-014 (MINOR), R02-015 (NIT). **Принятый TD:**
+  TD-28 (нет UI выбора контекста; триггер перенесён на позднюю доработку
+  чата). TD-21 — отдельное принятое ограничение `REAL` для финансов.
 - **Сборка:** `flutter analyze --fatal-infos` — **No issues found**;
-  `flutter test` — **191/191**; `flutter build windows --debug` — **success**
+  `flutter test` — **193/193**; `flutter build windows --debug` — **success**
   (2026-11-16, `build\windows\x64\runner\Debug\second_brain.exe`); CI-run
-  `43892374452` (`9b96f58`) — success, включая Windows debug build.
+  `43898001167` (`63d780e`) — success, включая Windows debug build.
 - **Flutter SDK:** 3.47.7 stable, `C:\src\flutter` (Dart 3.13.5)
 - **Windows-тулчейн:** Visual Studio Build Tools 2022 17.14 (MSVC v143 +
   Windows SDK + ATL/ATLMFC), установлен 2026-10-24; `flutter doctor` — без
@@ -77,7 +79,8 @@
   До 2026-10-24 VS на этой машине отсутствовал: записи о «локальной сборке»
   от 2026-10-22 относились к другому ПК (см. `docs/debug/log.md`).
 - **Ветка:** `master`; stage-04 закрыт на `9f54bcc` (комментарии S04F),
-  документация — `5202cc1`/`326299c`; stage-05 — `9b96f58`. Базовая
+  документация — `5202cc1`/`326299c`; stage-05 — `9b96f58` + исправления
+  S05/S05Z (коммит после `63d780e`). Базовая
   реализация stage-03 — `0ae0c85`, отчёт stage-03 — `0defdb0`, уточнение
   отчёта — `9fedec7`, независимое ревью — `6906c2d`, исправления S03 —
   `14e63a7`, документация исправлений — `49bc00f` и `3089b79`, повторное
@@ -192,9 +195,8 @@
   check-in баннер при отсутствии сессии более 3 дней.
 - JSON-бэкап v2 включает треки/сессии; приватный roadmap fail-closed в
   сервисе; сессия хранится как календарная дата; добавлены edit/delete шага.
-- Тесты: **191/191**, analyze 0, Windows debug build success. Первое ревью
-  stage-05 — FAIL (JSON-бэкап), исправления внесены; ожидается повторное
-  ревью.
+- Тесты: **193/193**, analyze 0, Windows debug build success. Первое ревью
+  stage-05 — FAIL (JSON-бэкап); финальное — PASS WITH COMMENTS (0 MAJOR).
 
 ## Что сделано на stage-04
 
@@ -322,11 +324,11 @@
   после освобождения хоткей зарегистрировался и работает.
 
 ## Известные ограничения / принятый техдолг
-- **Stage-05 — исправления после первого ревью (2026-11-16).** Треки,
-  roadmap, сессии, AI-тренер, backup v2 и схема v7 готовы; все S05-001…011
-  fixed; analyze 0, test **191/191**, Windows debug build success. Ожидается
-  повторное ревью. Живые LLM-вызовы тренера не выполнялись; roadmap-парсер
-  просит 6 шагов и ограничивает 20; AI-промпты на русском.
+- **Stage-05 — PASS WITH COMMENTS (2026-11-16).** Треки, roadmap, сессии,
+  AI-тренер, backup v2 и схема v7 готовы; все S05-001…011 и S05Z fixed;
+  analyze 0, test **193/193**, Windows debug build success. Живые LLM-вызовы
+  тренера не выполнялись; roadmap-парсер просит 6 шагов и ограничивает 20;
+  AI-промпты на русском.
 - **Stage-04 — PASS WITH COMMENTS (2026-11-16).** Все `S04R-001…S04R-011`
   fixed; повторная проверка — PASS WITH COMMENTS, комментарии `S04F`/`S04Z`
   fixed. Гейты: analyze 0, test **172/172**, Windows debug build success; CI
@@ -381,8 +383,8 @@
 - **Stage-06 — почта**: OAuth Gmail/Yandex/Mail.ru, просмотр/поиск,
   суммаризация письма/треда через LLM, создание задачи из письма; флаг
   приватности на уровне ящика/письма; refresh-токены только в secure storage.
-- Провести независимое ревью stage-05; после PASS — stage-06.
-- Учесть неблокирующие S03R-001…S03R-004 и S04Z.
+- Учесть неблокирующие S03R-001…S03R-004, S04Z и оставшиеся S05Z-комментарии
+  (pre-existing «полный» backup без чата/настроек, AI-язык).
 - TD-28 (UI выбора контекста) — отдельная поздняя доработка чата.
 - RAG: реализация `EmbeddingService`/`VectorStore` и индексация заметок.
 - Решить TD-21 перед финансовой аналитикой/бюджетами.
@@ -431,10 +433,15 @@
   (2 MAJOR, 3 MINOR, 2 NIT); reviewer B (agent-3, 2026-11-07): **FAIL**
   (3 MAJOR, 3 MINOR, 1 NIT); после объединения — 3 MAJOR, 5 MINOR, 3 NIT.
   agent-1 (2026-11-16): stage-04 закрыт PASS WITH COMMENTS; stage-05
-  (обучение) реализован, гейты 185/185, ожидается независимое ревью.
+  (обучение) — PASS WITH COMMENTS, гейты 193/193; stage-06 разблокирован.
 
 ## Ссылки
 - Отчёт stage-05: [stages/stage-05.md](stages/stage-05.md)
+- Ревью stage-05: [reviews/stage-05-review.md](reviews/stage-05-review.md)
+- Финальное ревью stage-05:
+  [reviews/stage-05-final-review.md](reviews/stage-05-final-review.md)
+- Исправления stage-05:
+  [reviews/stage-05-fix-results.md](reviews/stage-05-fix-results.md)
 - ADR-022: [decisions.md](decisions.md) — обучение, JSON roadmap, AI-тренер
 - Отчёт stage-04: [stages/stage-04.md](stages/stage-04.md)
 - Исходное ревью stage-04:

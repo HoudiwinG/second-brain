@@ -627,6 +627,9 @@ class AppLocalizationsRu extends AppLocalizations {
   String get learningAddStep => 'Добавить шаг';
 
   @override
+  String get learningEditStep => 'Редактировать шаг';
+
+  @override
   String get learningStepTitle => 'Шаг';
 
   @override

@@ -206,6 +206,25 @@ void main() {
     expect(await db.select(db.learningTracks).get(), isEmpty);
   });
 
+  test('JSON v2 без learning-массивов отклоняется', () async {
+    final file = File('${temp.path}/v2-no-learning.json');
+    await file.writeAsString(
+      jsonEncode({
+        'format': BackupService.format,
+        'version': 2,
+        'exported_at': DateTime.utc(2026, 11, 1).toIso8601String(),
+        'categories': [],
+        'tags': [],
+        'notes': [],
+        'tasks': [],
+        'ideas': [],
+        'finance': [],
+      }),
+    );
+
+    expect(await backup.importJson(file), isA<Failure<void>>());
+  });
+
   test('JSON: неизвестный формат не очищает данные', () async {
     final notes = DriftNotesRepository(db);
     await notes.create(const NoteDraft(title: 'Остаётся'));

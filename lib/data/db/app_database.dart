@@ -296,10 +296,7 @@ class ChatMessages extends Table {
   DateTimeColumn get createdAt => dateTime()();
 }
 
-/// Аудит вызовов инструментов ассистента (stage-04).
-///
-/// Хранит только имена аргументов и id сущности: значения (заголовки, тексты)
-/// не пишутся, чтобы аудит не стал копией приватного содержимого.
+/// Трек обучения: JSON roadmap/custom fields, приватность и soft-delete.
 class LearningTracks extends Table {
   IntColumn get id => integer().autoIncrement()();
 
@@ -339,6 +336,10 @@ class LearningSessions extends Table {
   DateTimeColumn get createdAt => dateTime()();
 }
 
+/// Аудит вызовов инструментов ассистента (stage-04).
+///
+/// Хранит только имена аргументов и id сущности: значения (заголовки, тексты)
+/// не пишутся, чтобы аудит не стал копией приватного содержимого.
 class ToolAuditEntries extends Table {
   @override
   String get tableName => 'tool_audit_log';
@@ -488,6 +489,9 @@ class AppDatabase extends _$AppDatabase {
     beforeOpen: (details) async {
       AppLogger.d('AppDatabase: beforeOpen (upgrade=${details.hadUpgrade})');
       await customStatement('PRAGMA foreign_keys = ON');
+      // Идемпотентно досоздаём индексы для dev-баз, открытых на промежуточной
+      // сборке v7, где индекс ещё не был добавлен.
+      await _createLearningIndexes();
     },
   );
 
