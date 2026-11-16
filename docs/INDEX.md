@@ -4,7 +4,8 @@
 - Текущий этап: stage-05 (обучение) — **реализация и self-check готовы,
   независимое ревью ещё не проводилось.** Треки, roadmap-шаги, сессии,
   AI-тренер (roadmap/материалы/check-in), приватный трек не уходит в LLM,
-  схема **v7**. Analyze 0, test **185/185**, Windows debug build success.
+  схема **v7**. Analyze 0, test **185/185**, Windows debug build success;
+  CI `43892374452` (`9b96f58`) — success.
 - Предыдущий этап: stage-04 (инструменты ассистента) — **PASS WITH COMMENTS
   (0 MAJOR)**. Исходное ревью — FAIL; повторное ревью — FAIL (3 MAJOR), все
   11 `S04R` исправлены; повторная проверка — **PASS WITH COMMENTS**;
@@ -15,7 +16,7 @@
   остаются неблокирующими комментариями.
 - Гейты stage-05 (2026-11-16): `flutter analyze --fatal-infos` — **No issues
   found**, `flutter test` — **185/185**, `flutter build windows --debug` —
-  **success**; CI — после push.
+  **success**; CI-run `43892374452` (`9b96f58`) — **success**.
 - Локальные гейты stage-03 (2026-10-28): analyze 0, test 132/132, Windows debug
   build; CI `40636764573` (`49bc00f`, включая `14e63a7`) — success.
 - Снимок состояния: [context.md](context.md)

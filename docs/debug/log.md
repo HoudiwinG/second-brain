@@ -745,4 +745,5 @@ track/date. Гейты: analyze 0, test **185/185**, Windows debug build success
 | 2026-11-16 | — | AI | `LearningTrainer`: roadmap, материалы, check-in; private не уходит в LLM |
 | 2026-11-16 | — | UI | список/детали трека, редактор, сессии, AI-панель, check-in баннер |
 | 2026-11-16 | — | тесты | repository, trainer, widget, миграция v6→v7; всего 185/185 |
+| 2026-11-16 | — | CI | `43892374452` (`9b96f58`) — success, оба job'а |
 | 2026-11-16 | — | статус | self-check done; ожидается независимое ревью stage-05 |

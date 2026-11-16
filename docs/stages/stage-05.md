@@ -5,7 +5,8 @@
 - **Ветка:** `master`
 - **Статус:** **done (self-check)**. Независимое ревью ещё не проводилось.
   Гейты: `flutter analyze --fatal-infos` — 0 issues, `flutter test` —
-  **185/185**, `flutter build windows --debug` — success.
+  **185/185**, `flutter build windows --debug` — success; CI-run
+  `43892374452` (`9b96f58`) — success.
 - **Предыдущий этап:** stage-04 — **PASS WITH COMMENTS** (0 MAJOR), stage-05
   разблокирован.
 - **Схема БД:** **v7** (`learning_tracks`, `learning_sessions`).

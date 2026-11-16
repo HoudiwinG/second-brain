@@ -66,8 +66,8 @@
   финансов.
 - **Сборка:** `flutter analyze --fatal-infos` — **No issues found**;
   `flutter test` — **185/185**; `flutter build windows --debug` — **success**
-  (2026-11-16, `build\windows\x64\runner\Debug\second_brain.exe`); CI —
-  после push stage-05.
+  (2026-11-16, `build\windows\x64\runner\Debug\second_brain.exe`); CI-run
+  `43892374452` (`9b96f58`) — success, включая Windows debug build.
 - **Flutter SDK:** 3.47.7 stable, `C:\src\flutter` (Dart 3.13.5)
 - **Windows-тулчейн:** Visual Studio Build Tools 2022 17.14 (MSVC v143 +
   Windows SDK + ATL/ATLMFC), установлен 2026-10-24; `flutter doctor` — без
@@ -75,7 +75,7 @@
   До 2026-10-24 VS на этой машине отсутствовал: записи о «локальной сборке»
   от 2026-10-22 относились к другому ПК (см. `docs/debug/log.md`).
 - **Ветка:** `master`; stage-04 закрыт на `9f54bcc` (комментарии S04F),
-  документация — `5202cc1`/`326299c`; stage-05 — коммит после них. Базовая
+  документация — `5202cc1`/`326299c`; stage-05 — `9b96f58`. Базовая
   реализация stage-03 — `0ae0c85`, отчёт stage-03 — `0defdb0`, уточнение
   отчёта — `9fedec7`, независимое ревью — `6906c2d`, исправления S03 —
   `14e63a7`, документация исправлений — `49bc00f` и `3089b79`, повторное
