@@ -844,6 +844,9 @@ class AppLocalizationsRu extends AppLocalizations {
   String get mailSubject => 'Тема';
 
   @override
+  String get mailNoSubject => '(без темы)';
+
+  @override
   String get mailReceived => 'Получено';
 
   @override

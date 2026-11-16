@@ -10,7 +10,7 @@
   блокеры обоих кругов исправлены (см.
   [reviews/stage-06-fix-results.md](../reviews/stage-06-fix-results.md)).
   Гейты: `flutter analyze --fatal-infos` — 0 issues, `flutter test` —
-  **225/225**, `flutter build windows --debug` — success; CI
+  **228/228**, `flutter build windows --debug` — success; CI
   `43923720070` (`83ece84`) — success, оба job'а.
 - **Предыдущий этап:** stage-05 — **PASS WITH COMMENTS**, stage-06
   разблокирован.
@@ -96,6 +96,8 @@
   unique `idx_mail_accounts_provider_email(provider_type, email)`,
   `idx_mail_messages_account_received`,
   unique `idx_mail_messages_account_remote(account_id, remote_id)`.
+  Unique-индексы создаются в `onCreate`/`onUpgrade`; `beforeOpen` для
+  legacy-v8 создаёт только non-unique индексы, чтобы не падать на дублях.
 - Миграция `v7 → v8`: создаёт таблицы/индексы, сохраняет данные. Guard
   `from > to || from > 8 || to > 8`.
 
@@ -121,7 +123,7 @@
 - `test/db_migration_test.dart` — v7→v8, индексы, безопасное открытие v8 с
   дублями, guard v2→v9.
 
-Итог: **225/225** тестов, analyze 0, Windows debug build success.
+Итог: **228/228** тестов, analyze 0, Windows debug build success.
 
 ## Известные ограничения и техдолг
 

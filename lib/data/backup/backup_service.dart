@@ -687,12 +687,18 @@ class BackupService {
       for (final item in mailAccounts) {
         final account = _map(item, 'mailAccount');
         final id = _requiredInt(account, 'id');
+        final providerType = _requiredString(account, 'provider_type');
+        if (providerType == 'mailru') {
+          throw const ValidationException(
+            'BackupService: Mail.ru не поддерживает REST-чтение писем',
+          );
+        }
         await _db
             .into(_db.mailAccounts)
             .insert(
               db.MailAccountsCompanion.insert(
                 id: Value(id),
-                providerType: _requiredString(account, 'provider_type'),
+                providerType: providerType,
                 email: _requiredString(account, 'email').toLowerCase(),
                 displayName: Value(_string(account['display_name'])),
                 clientId: Value(_string(account['client_id'])),

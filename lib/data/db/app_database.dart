@@ -552,9 +552,12 @@ class AppDatabase extends _$AppDatabase {
       // Идемпотентно досоздаём индексы для dev-баз, открытых на промежуточной
       // сборке v7, где индекс ещё не был добавлен.
       await _createLearningIndexes();
-      // Unique-индекс по аккаунтам нельзя создавать в beforeOpen: в dev-базе
-      // v8 могли остаться дубликаты до появления проверки в репозитории.
-      await _createMailIndexes(includeUniqueAccount: false);
+      // Unique-индексы нельзя создавать в beforeOpen: в dev-базе v8 могли
+      // остаться дубликаты до появления проверок в репозитории.
+      await _createMailIndexes(
+        includeUniqueAccount: false,
+        includeUniqueMessages: false,
+      );
     },
   );
 
@@ -645,7 +648,10 @@ class AppDatabase extends _$AppDatabase {
   }
 
   /// Индексы почты (v8).
-  Future<void> _createMailIndexes({bool includeUniqueAccount = true}) async {
+  Future<void> _createMailIndexes({
+    bool includeUniqueAccount = true,
+    bool includeUniqueMessages = true,
+  }) async {
     await customStatement(
       'CREATE INDEX IF NOT EXISTS idx_mail_accounts_provider '
       'ON mail_accounts(provider_type)',
@@ -660,10 +666,12 @@ class AppDatabase extends _$AppDatabase {
       'CREATE INDEX IF NOT EXISTS idx_mail_messages_account_received '
       'ON mail_messages(account_id, received_at)',
     );
-    await customStatement(
-      'CREATE UNIQUE INDEX IF NOT EXISTS idx_mail_messages_account_remote '
-      'ON mail_messages(account_id, remote_id)',
-    );
+    if (includeUniqueMessages) {
+      await customStatement(
+        'CREATE UNIQUE INDEX IF NOT EXISTS idx_mail_messages_account_remote '
+        'ON mail_messages(account_id, remote_id)',
+      );
+    }
   }
 
   /// Оставляет максимум один default и назначает его, если есть конфигурации.

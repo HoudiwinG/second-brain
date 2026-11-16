@@ -13,6 +13,7 @@ abstract interface class MailRepository {
   Future<Result<MailAccount>> updateAccount(
     int id, {
     String? displayName,
+    String? clientId,
     bool? isPrivateForLlm,
   });
 

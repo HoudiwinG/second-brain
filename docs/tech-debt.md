@@ -96,7 +96,7 @@
 > и задача из письма; схема v8; JSON-бэкап v3 включает почту без токенов.
 > Два ревью A/B — **FAIL**; блокеры обоих кругов (Windows URL, поиск,
 > провайдеры, privacy, OAuth robustness, unique index, re-auth, тесты)
-> исправлены. Analyze 0, test **225/225**, Windows debug build success;
+> исправлены. Analyze 0, test **228/228**, Windows debug build success;
 > ожидается финальное ревью. Live OAuth/API не проверялись, Mail.ru отключён.
 > Отчёт — [stages/stage-06.md](stages/stage-06.md), ревью —
 > [reviews/stage-06-review.md](reviews/stage-06-review.md) и

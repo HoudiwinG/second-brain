@@ -326,6 +326,7 @@
   "mailBody": "Message body",
   "mailFrom": "From",
   "mailSubject": "Subject",
+  "mailNoSubject": "(no subject)",
   "mailReceived": "Received",
   "mailOAuthHint": "A browser will open. Complete sign-in and return to the app.",
   "mailOAuthError": "OAuth was not completed",

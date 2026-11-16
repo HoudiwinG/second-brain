@@ -6,13 +6,13 @@
   storage, Gmail API, официальный Yandex 360 Mail API, Mail.ru отключён
   (нет официального REST-чтения), локальный кэш/поиск, per-message privacy,
   суммаризация и задача; схема **v8**, backup v3. Analyze 0, test
-  **225/225**, Windows debug build success.
+  **228/228**, Windows debug build success.
 - Предыдущий этап: stage-05 (обучение) — **PASS WITH COMMENTS (0 MAJOR)**;
   S05-001…011 и S05Z fixed; analyze 0, test 193/193, CI
   `43901179307` (`82f49d5`) — success. Stage-04 — **PASS WITH COMMENTS**;
   stage-03 — **PASS**; stage-02 — **PASS WITH COMMENTS**.
 - Гейты stage-06 (2026-11-16): `flutter analyze --fatal-infos` — **No issues
-  found**, `flutter test` — **225/225**, `flutter build windows --debug` —
+  found**, `flutter test` — **228/228**, `flutter build windows --debug` —
   **success**; CI
   [43923720070](https://github.com/HoudiwinG/second-brain/actions/runs/43923720070)
   (`83ece84`) — success, оба job'а.
@@ -77,7 +77,7 @@
 - [stage-06-re-review](reviews/stage-06-re-review.md) — повторное ревью A/B
   (2026-11-16, `f568f17`): **FAIL**, A — 3 major, B — 3 major.
 - [stage-06-fix-results](reviews/stage-06-fix-results.md) — исправления
-  первого и второго круга; analyze 0, test 225/225; ожидается финальное
+  первого и второго круга; analyze 0, test 228/228; ожидается финальное
   ревью.
 - Исправления stage-04:
   [reviews/stage-04-fix-results.md](reviews/stage-04-fix-results.md) — все 9
@@ -119,7 +119,7 @@
 - [stage-06](stages/stage-06.md) — почта (OAuth 2.0 + PKCE, secure tokens,
   Gmail API, Yandex 360 Mail API, Mail.ru disabled, кэш/поиск,
   per-message privacy, суммаризация, задача; ADR-023; схема v8, backup v3;
-  analyze 0, test 225/225, Windows debug build success; первое ревью FAIL,
+  analyze 0, test 228/228, Windows debug build success; первое ревью FAIL,
   исправления готовы, ожидается re-review)
 
 ## Шаблоны

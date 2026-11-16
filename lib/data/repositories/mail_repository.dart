@@ -45,6 +45,11 @@ class DriftMailRepository implements MailRepository {
   @override
   Future<Result<MailAccount>> createAccount(MailAccountDraft draft) {
     return RepositoryGuard.guard('MailRepository.createAccount', () async {
+      if (!draft.provider.available) {
+        throw ValidationException(
+          'MailRepository: ${draft.provider.label} недоступен',
+        );
+      }
       final email = draft.email.trim().toLowerCase();
       if (!email.contains('@') || email.length > 320) {
         throw const ValidationException('MailRepository: некорректный email');
@@ -94,12 +99,18 @@ class DriftMailRepository implements MailRepository {
   Future<Result<MailAccount>> updateAccount(
     int id, {
     String? displayName,
+    String? clientId,
     bool? isPrivateForLlm,
   }) {
     return RepositoryGuard.guard('MailRepository.updateAccount', () async {
       final current = await _findAccount(id);
       if (current == null) {
         throw ValidationException('MailRepository: аккаунт $id не найден');
+      }
+      if (clientId != null && clientId.trim().isEmpty) {
+        throw const ValidationException(
+          'MailRepository: OAuth client id не может быть пустым',
+        );
       }
       await _db.transaction(() async {
         await (_db.update(
@@ -109,6 +120,9 @@ class DriftMailRepository implements MailRepository {
             displayName: displayName == null
                 ? const Value.absent()
                 : Value(displayName.trim()),
+            clientId: clientId == null
+                ? const Value.absent()
+                : Value(clientId.trim()),
             isPrivateForLlm: isPrivateForLlm == null
                 ? const Value.absent()
                 : Value(isPrivateForLlm),
@@ -172,18 +186,25 @@ class DriftMailRepository implements MailRepository {
       // корректного поиска берём последние 5000 писем и фильтруем в Dart.
       q.limit(text == null || text.isEmpty ? limit.clamp(1, 200) : 5000);
       final rows = await q.get();
-      final filtered = text == null || text.isEmpty
-          ? rows
-          : rows
-                .where((row) {
-                  final haystack =
-                      '${row.subject} ${row.fromAddress} '
-                              '${row.snippet} ${row.body}'
-                          .toLowerCase();
-                  return haystack.contains(text.toLowerCase());
-                })
-                .take(limit.clamp(1, 200))
-                .toList();
+      final privateAccountIds = forLlm
+          ? {
+              for (final account in await _db.select(_db.mailAccounts).get())
+                if (account.isPrivateForLlm) account.id,
+            }
+          : const <int>{};
+      final filtered =
+          (text == null || text.isEmpty
+                  ? rows
+                  : rows.where((row) {
+                      final haystack =
+                          '${row.subject} ${row.fromAddress} '
+                                  '${row.snippet} ${row.body}'
+                              .toLowerCase();
+                      return haystack.contains(text.toLowerCase());
+                    }).toList())
+              .where((row) => !privateAccountIds.contains(row.accountId))
+              .take(limit.clamp(1, 200))
+              .toList();
       return [for (final row in filtered) _toMessage(row)];
     });
   }
@@ -194,7 +215,9 @@ class DriftMailRepository implements MailRepository {
       final row = await (_db.select(
         _db.mailMessages,
       )..where((m) => m.id.equals(id))).getSingleOrNull();
-      return row == null ? null : _toMessage(row);
+      if (row == null) return null;
+      final account = await _findAccount(row.accountId);
+      return _toMessage(row, forcePrivate: account?.isPrivateForLlm ?? false);
     });
   }
 
@@ -313,7 +336,10 @@ class DriftMailRepository implements MailRepository {
     updatedAt: row.updatedAt,
   );
 
-  static MailMessage _toMessage(db.MailMessage row) => MailMessage(
+  static MailMessage _toMessage(
+    db.MailMessage row, {
+    bool forcePrivate = false,
+  }) => MailMessage(
     id: row.id,
     accountId: row.accountId,
     remoteId: row.remoteId,
@@ -323,7 +349,7 @@ class DriftMailRepository implements MailRepository {
     snippet: row.snippet,
     body: row.body,
     receivedAt: row.receivedAt,
-    isPrivateForLlm: row.isPrivateForLlm,
+    isPrivateForLlm: forcePrivate || row.isPrivateForLlm,
     createdAt: row.createdAt,
   );
 }

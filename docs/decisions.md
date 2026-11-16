@@ -1209,7 +1209,9 @@ ADR-021 (tools и аудит)
   пользователем; токены (access/refresh/expiry) хранятся в `SecretStore` по
   `secret_ref`, в БД только ссылка.
 - `MailOAuthService` обменивает code, обновляет access token и не пишет тело
-  ошибок/токены в логи. `MailTokenStore` сериализует токены в secure storage.
+  ошибок/токены в логи. Token endpoint идёт через общий `ApiClient`
+  (timeout/retry/логирование), form-body передаётся строкой; тело и токены не
+  логируются. `MailTokenStore` сериализует токены в secure storage.
 - `MailRepository` — аккаунты, upsert писем по `(account_id, remote_id)`,
   поиск по subject/from/snippet/body, privacy-фильтр, каскадное удаление.
 - `MailProvider`: Gmail API (`users.messages.list/get`, MIME-разбор) и

@@ -105,6 +105,13 @@ class _IntegrationsScreenState extends ConsumerState<IntegrationsScreen> {
         showMessageSnackBar(context, lcm.mailAccountAddError);
         return;
       }
+      await repo.updateAccount(
+        existing.id,
+        clientId: draft.clientId,
+        displayName: draft.displayName,
+        isPrivateForLlm: draft.isPrivateForLlm,
+      );
+      if (!mounted) return;
       _selectedAccountId = existing.id;
       _reload();
       showMessageSnackBar(context, lcm.mailAccountAdded);
@@ -154,13 +161,20 @@ class _IntegrationsScreenState extends ConsumerState<IntegrationsScreen> {
       (result as Success<MailTokens>).value,
     );
     if (!mounted) return;
-    stored.when(
-      success: (_) {
-        _reload();
-        showMessageSnackBar(context, lcm.mailAccountAdded);
-      },
-      failure: (_) => showMessageSnackBar(context, lcm.mailAccountAddError),
+    if (stored is Failure<void>) {
+      showMessageSnackBar(context, lcm.mailAccountAddError);
+      return;
+    }
+    final repo = await ref.read(mailRepositoryProvider.future);
+    await repo.updateAccount(
+      account.id,
+      clientId: input.draft.clientId,
+      displayName: input.draft.displayName,
+      isPrivateForLlm: input.draft.isPrivateForLlm,
     );
+    if (!mounted) return;
+    _reload();
+    showMessageSnackBar(context, lcm.mailAccountAdded);
   }
 
   Future<void> _sync(MailAccount account) async {
@@ -251,7 +265,9 @@ class _IntegrationsScreenState extends ConsumerState<IntegrationsScreen> {
     if (!mounted) return;
     final result = await repo.create(
       TaskDraft(
-        title: message.displayTitle,
+        title: message.displayTitle.isEmpty
+            ? lcm.mailNoSubject
+            : message.displayTitle,
         // Тело письма не копируем: задача не должна «пережить» включение
         // приватности ящика и утечь в LLM вместе с текстом переписки.
         description:
@@ -293,7 +309,11 @@ class _IntegrationsScreenState extends ConsumerState<IntegrationsScreen> {
     await showDialog<void>(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: Text(message.displayTitle),
+        title: Text(
+          message.displayTitle.isEmpty
+              ? lcm.mailNoSubject
+              : message.displayTitle,
+        ),
         content: SizedBox(
           width: 720,
           child: SingleChildScrollView(
@@ -471,7 +491,11 @@ class _IntegrationsScreenState extends ConsumerState<IntegrationsScreen> {
                                     ? Icons.visibility_off_outlined
                                     : Icons.mail_outline,
                               ),
-                              title: Text(message.displayTitle),
+                              title: Text(
+                                message.displayTitle.isEmpty
+                                    ? lcm.mailNoSubject
+                                    : message.displayTitle,
+                              ),
                               subtitle: Text(
                                 '${message.fromAddress}\n${message.snippet}',
                                 maxLines: 2,

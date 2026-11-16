@@ -100,7 +100,7 @@
 - **Privacy/task:** task-from-mail больше не копирует snippet (только
   from/date), всегда private; summary перечитывает письмо из БД.
 - **Тесты:** stable id/created_at, Unicode-регистр, task privacy, backup с
-  реально записанными токенами, v8-дубли. Итог **225/225**.
+  реально записанными токенами, v8-дубли. Итог **228/228**.
 
 Остаются не блокирующими: mock `summarize_mail` tool, суммаризация только
 одного письма (не треда), ограничение поиска 5000 последних писем, UI
@@ -110,7 +110,7 @@ progress/global sync, revoke endpoint и очистка старых секре�
 
 ```text
 flutter analyze --fatal-infos       No issues found
-flutter test                        225/225 passed
+flutter test                        228/228 passed
 flutter build windows --debug       success
 CI 43923720070 (83ece84)            success (analyze-and-test, build-windows)
 ```

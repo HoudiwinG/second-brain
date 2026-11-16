@@ -7,6 +7,7 @@ import 'package:crypto/crypto.dart';
 import 'package:http/http.dart' as http;
 
 import '../../../core/error/app_exception.dart';
+import '../../../core/network/api_client.dart';
 import '../../../core/result/result.dart';
 import '../../../core/secrets/secret_store.dart';
 import '../domain/mail_account.dart';
@@ -319,7 +320,7 @@ class MailOAuthService {
     required String codeVerifier,
   }) async {
     try {
-      final response = await _postToken(Uri.parse(provider.tokenEndpoint), {
+      final posted = await _postToken(Uri.parse(provider.tokenEndpoint), {
         'grant_type': 'authorization_code',
         'client_id': clientId,
         if (clientSecret != null && clientSecret.isNotEmpty)
@@ -328,8 +329,11 @@ class MailOAuthService {
         'code_verifier': codeVerifier,
         'redirect_uri': MailProviderType.redirectUri,
       });
-      return _parseTokenResponse(
-        response,
+      if (posted is Failure<Map<String, Object?>>) {
+        return Result.failure(posted.error);
+      }
+      return _tokensFromJson(
+        (posted as Success<Map<String, Object?>>).value,
         allowRefresh: true,
         clientSecret: clientSecret,
       );
@@ -351,15 +355,18 @@ class MailOAuthService {
     required String refreshToken,
   }) async {
     try {
-      final response = await _postToken(Uri.parse(provider.tokenEndpoint), {
+      final posted = await _postToken(Uri.parse(provider.tokenEndpoint), {
         'grant_type': 'refresh_token',
         'client_id': clientId,
         if (clientSecret != null && clientSecret.isNotEmpty)
           'client_secret': clientSecret,
         'refresh_token': refreshToken,
       });
-      return _parseTokenResponse(
-        response,
+      if (posted is Failure<Map<String, Object?>>) {
+        return Result.failure(posted.error);
+      }
+      return _tokensFromJson(
+        (posted as Success<Map<String, Object?>>).value,
         allowRefresh: true,
         clientSecret: clientSecret,
       );
@@ -456,89 +463,72 @@ class MailOAuthService {
   Future<Result<void>> deleteTokens(String secretRef) =>
       tokenStore.delete(secretRef);
 
-  Future<http.Response> _postToken(
+  /// Token endpoint идёт через [ApiClient]: единые timeout/retry/логирование.
+  Future<Result<Map<String, Object?>>> _postToken(
     Uri endpoint,
     Map<String, String> body,
   ) async {
-    Object? lastError;
-    StackTrace? lastStack;
-    for (var attempt = 0; attempt < 2; attempt++) {
-      try {
-        final response = await _client
-            .post(
-              endpoint,
-              headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-              body: body,
-            )
-            .timeout(const Duration(seconds: 20));
-        if (response.statusCode >= 500 && attempt == 0) continue;
-        return response;
-      } on Object catch (error, stack) {
-        lastError = error;
-        lastStack = stack;
-        if (attempt == 0) continue;
-      }
-    }
-    Error.throwWithStackTrace(
-      lastError ?? Exception('MailOAuth: token endpoint unavailable'),
-      lastStack ?? StackTrace.empty,
+    final api = ApiClient(
+      baseUrl: endpoint.toString(),
+      client: _client,
+      maxRetries: 2,
+      connectTimeout: const Duration(seconds: 20),
+      receiveTimeout: const Duration(seconds: 20),
     );
+    try {
+      final form = body.entries
+          .map(
+            (entry) =>
+                '${Uri.encodeQueryComponent(entry.key)}='
+                '${Uri.encodeQueryComponent(entry.value)}',
+          )
+          .join('&');
+      return await api.requestJson<Map<String, Object?>>(
+        method: 'POST',
+        path: endpoint.toString(),
+        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+        body: form,
+        parse: (json) {
+          if (json is! Map<String, Object?>) {
+            throw const NetworkException(
+              'MailOAuth: некорректный ответ token endpoint',
+            );
+          }
+          return json;
+        },
+      );
+    } finally {
+      api.close();
+    }
   }
 
-  Result<MailTokens> _parseTokenResponse(
-    http.Response response, {
+  Result<MailTokens> _tokensFromJson(
+    Map<String, Object?> decoded, {
     required bool allowRefresh,
     String? clientSecret,
   }) {
-    if (response.statusCode < 200 || response.statusCode >= 300) {
-      final reauth =
-          response.statusCode == 400 ||
-          response.statusCode == 401 ||
-          response.statusCode == 403;
-      return Result.failure(
-        NetworkException(
-          reauth
-              ? 'MailOAuth: требуется повторная авторизация'
-              : 'MailOAuth: HTTP ${response.statusCode}',
-          statusCode: response.statusCode,
-          retryable: response.statusCode >= 500,
-        ),
-      );
-    }
-    try {
-      final decoded = jsonDecode(response.body);
-      if (decoded is! Map<String, Object?>) {
-        return const Result.failure(
-          NetworkException('MailOAuth: некорректный ответ token endpoint'),
-        );
-      }
-      final access = decoded['access_token'];
-      if (access is! String || access.isEmpty) {
-        return const Result.failure(
-          NetworkException('MailOAuth: в ответе нет access_token'),
-        );
-      }
-      final expiresIn = decoded['expires_in'];
-      final seconds = expiresIn is num ? expiresIn.toInt() : 3600;
-      final refresh = decoded['refresh_token'];
-      return Result.success(
-        MailTokens(
-          accessToken: access,
-          refreshToken: allowRefresh && refresh is String && refresh.isNotEmpty
-              ? refresh
-              : null,
-          expiresAt: DateTime.now().toUtc().add(Duration(seconds: seconds)),
-          tokenType: decoded['token_type'] is String
-              ? decoded['token_type']! as String
-              : 'Bearer',
-          clientSecret: clientSecret,
-        ),
-      );
-    } on FormatException {
+    final access = decoded['access_token'];
+    if (access is! String || access.isEmpty) {
       return const Result.failure(
-        NetworkException('MailOAuth: некорректный JSON token endpoint'),
+        NetworkException('MailOAuth: в ответе нет access_token'),
       );
     }
+    final expiresIn = decoded['expires_in'];
+    final seconds = expiresIn is num ? expiresIn.toInt() : 3600;
+    final refresh = decoded['refresh_token'];
+    return Result.success(
+      MailTokens(
+        accessToken: access,
+        refreshToken: allowRefresh && refresh is String && refresh.isNotEmpty
+            ? refresh
+            : null,
+        expiresAt: DateTime.now().toUtc().add(Duration(seconds: seconds)),
+        tokenType: decoded['token_type'] is String
+            ? decoded['token_type']! as String
+            : 'Bearer',
+        clientSecret: clientSecret,
+      ),
+    );
   }
 
   String _randomString(int bytes) => base64Url

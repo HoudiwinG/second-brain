@@ -843,6 +843,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get mailSubject => 'Subject';
 
   @override
+  String get mailNoSubject => '(no subject)';
+
+  @override
   String get mailReceived => 'Received';
 
   @override

@@ -1688,6 +1688,12 @@ abstract class AppLocalizations {
   /// **'Subject'**
   String get mailSubject;
 
+  /// No description provided for @mailNoSubject.
+  ///
+  /// In en, this message translates to:
+  /// **'(no subject)'**
+  String get mailNoSubject;
+
   /// No description provided for @mailReceived.
   ///
   /// In en, this message translates to:

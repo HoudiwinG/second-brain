@@ -26,7 +26,7 @@ class MailMessage {
   final bool isPrivateForLlm;
   final DateTime createdAt;
 
-  String get displayTitle => subject.trim().isEmpty ? '(без темы)' : subject;
+  String get displayTitle => subject.trim();
 }
 
 /// Данные письма для upsert в кэш.

@@ -67,6 +67,10 @@ enum MailProviderType {
   /// Локальный loopback callback; должен быть зарегистрирован в OAuth-приложении.
   static const String redirectUri = 'http://127.0.0.1:53682/oauth/callback';
 
-  static MailProviderType fromDb(String raw) => MailProviderType.values
-      .firstWhere((value) => value.dbValue == raw, orElse: () => gmail);
+  static MailProviderType fromDb(String raw) =>
+      MailProviderType.values.firstWhere(
+        (value) => value.dbValue == raw,
+        orElse: () =>
+            throw ArgumentError.value(raw, 'raw', 'Unknown mail provider'),
+      );
 }

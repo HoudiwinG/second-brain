@@ -228,6 +228,7 @@ void main() {
       final restoredMail = (await mail.listMessages()).unwrap();
       expect(restoredMail, hasLength(1));
       expect(restoredMail.single.subject, 'Письмо');
+      expect(restoredMail.single.body, 'Тело');
       expect(restoredMail.single.isPrivateForLlm, isTrue);
       expect(mailMessage, 1);
 

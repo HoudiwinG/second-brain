@@ -1,7 +1,9 @@
+import 'package:drift/drift.dart' show Value;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:second_brain/core/result/result.dart';
 import 'package:second_brain/core/secrets/in_memory_secret_store.dart';
-import 'package:second_brain/data/db/app_database.dart' show AppDatabase;
+import 'package:second_brain/data/db/app_database.dart'
+    show AppDatabase, MailMessagesCompanion;
 import 'package:second_brain/data/repositories/mail_repository.dart';
 import 'package:second_brain/features/mail/domain/mail_account.dart';
 import 'package:second_brain/features/mail/domain/mail_message.dart';
@@ -139,6 +141,21 @@ void main() {
     expect(messages.single.subject, 'Новая тема');
     expect(messages.single.id, first.id);
     expect(messages.single.createdAt, first.createdAt);
+  });
+
+  test('private ящик защищает письмо даже с false-флагом из backup', () async {
+    final account = await createAccount(private: true);
+    await repo.upsertMessages(account.id, [message('1')]);
+    // Имитация старого/отредактированного backup: флаг письма false.
+    await (db.update(db.mailMessages)
+          ..where((m) => m.accountId.equals(account.id)))
+        .write(const MailMessagesCompanion(isPrivateForLlm: Value(false)));
+
+    expect((await repo.listMessages(forLlm: true)).unwrap(), isEmpty);
+    final stored = (await repo.getMessage(
+      (await repo.listMessages()).unwrap().single.id,
+    )).unwrap()!;
+    expect(stored.isPrivateForLlm, isTrue);
   });
 
   test('поиск по кириллице не зависит от регистра', () async {

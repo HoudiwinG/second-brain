@@ -4,7 +4,7 @@
   кругов исправлены, ожидается финальное ревью.** OAuth 2.0 + PKCE, secure tokens,
   Gmail API, официальный Yandex 360 Mail API, Mail.ru отключён (нет
   официального REST-чтения), кэш/поиск, per-message privacy, суммаризация и
-  задача; backup v3. Analyze 0, test **225/225**, Windows debug build success.
+  задача; backup v3. Analyze 0, test **228/228**, Windows debug build success.
   Отчёт: [stages/stage-06.md](stages/stage-06.md); ревью:
   [reviews/stage-06-review.md](reviews/stage-06-review.md); исправления:
   [reviews/stage-06-fix-results.md](reviews/stage-06-fix-results.md); ADR-023;
@@ -65,7 +65,7 @@
   TD-28 (нет UI выбора контекста; триггер перенесён на позднюю доработку
   чата). TD-21 — отдельное принятое ограничение `REAL` для финансов.
 - **Сборка:** `flutter analyze --fatal-infos` — **No issues found**;
-  `flutter test` — **225/225**; `flutter build windows --debug` — **success**
+  `flutter test` — **228/228**; `flutter build windows --debug` — **success**
   (2026-11-16, `build\windows\x64\runner\Debug\second_brain.exe`); CI
   `43923720070` (`83ece84`) — success, оба job'а.
 - **Flutter SDK:** 3.47.7 stable, `C:\src\flutter` (Dart 3.13.5)
@@ -192,7 +192,7 @@
   JSON-бэкап v3 включает почту (без токенов).
 - UI интеграций: подключение/синхронизация/privacy ящика и письма/поиск/
   просмотр; Windows OAuth-launcher без `cmd`.
-- Тесты: 225/225, analyze 0, Windows debug build success. Первое ревью A/B —
+- Тесты: 228/228, analyze 0, Windows debug build success. Первое ревью A/B —
   FAIL, блокеры исправлены, ожидается повторное ревью.
 
 ## Что сделано на stage-05
@@ -449,7 +449,7 @@
   (3 MAJOR, 3 MINOR, 1 NIT); после объединения — 3 MAJOR, 5 MINOR, 3 NIT.
   agent-1 (2026-11-16): stage-04 — PASS WITH COMMENTS; stage-05 — PASS WITH
   COMMENTS, 193/193; stage-06 (почта) — ревью FAIL, блокеры исправлены,
-  225/225, ожидается re-review.
+  228/228, ожидается re-review.
 
 ## Ссылки
 - Отчёт stage-06: [stages/stage-06.md](stages/stage-06.md)

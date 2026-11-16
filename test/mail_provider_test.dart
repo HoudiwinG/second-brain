@@ -77,6 +77,90 @@ void main() {
     expect(messages.single.isPrivateForLlm, isFalse);
   });
 
+  test('Gmail: multipart/alternative выбирает plain, а не HTML', () async {
+    String part(String mime, String text) =>
+        base64Url.encode(utf8.encode(text));
+    final client = MockClient((request) async {
+      if (request.url.path.endsWith('/messages')) {
+        return http.Response('{"messages":[{"id":"m1"}]}', 200);
+      }
+      return http.Response.bytes(
+        utf8.encode(
+          jsonEncode({
+            'id': 'm1',
+            'snippet': 'Кратко',
+            'payload': {
+              'mimeType': 'multipart/alternative',
+              'headers': [
+                {'name': 'Subject', 'value': 'Тема'},
+              ],
+              'parts': [
+                {
+                  'mimeType': 'text/plain',
+                  'body': {'data': part('text/plain', 'Plain текст')},
+                },
+                {
+                  'mimeType': 'text/html',
+                  'body': {'data': part('text/html', '<p>HTML текст</p>')},
+                },
+              ],
+            },
+          }),
+        ),
+        200,
+      );
+    });
+    final provider = GmailMailProvider(client: client, delay: (_) async {});
+    final result = await provider.fetchMessages(
+      account: _account(),
+      tokens: _tokens(),
+    );
+    final body = (result as Success<List<MailMessageDraft>>).value.single.body;
+    expect(body, 'Plain текст');
+    expect(body, isNot(contains('HTML текст')));
+    expect(body, isNot(contains('<p>')));
+  });
+
+  test('Gmail: multipart/mixed пропускает вложения', () async {
+    String part(String mime, String text) =>
+        base64Url.encode(utf8.encode(text));
+    final client = MockClient((request) async {
+      if (request.url.path.endsWith('/messages')) {
+        return http.Response('{"messages":[{"id":"m1"}]}', 200);
+      }
+      return http.Response.bytes(
+        utf8.encode(
+          jsonEncode({
+            'id': 'm1',
+            'payload': {
+              'mimeType': 'multipart/mixed',
+              'parts': [
+                {
+                  'mimeType': 'text/plain',
+                  'body': {'data': part('text/plain', 'Текст письма')},
+                },
+                {
+                  'mimeType': 'text/plain',
+                  'filename': 'secret.txt',
+                  'body': {'data': part('text/plain', 'Вложение')},
+                },
+              ],
+            },
+          }),
+        ),
+        200,
+      );
+    });
+    final provider = GmailMailProvider(client: client, delay: (_) async {});
+    final result = await provider.fetchMessages(
+      account: _account(),
+      tokens: _tokens(),
+    );
+    final body = (result as Success<List<MailMessageDraft>>).value.single.body;
+    expect(body, 'Текст письма');
+    expect(body, isNot(contains('Вложение')));
+  });
+
   test('Gmail: приватный аккаунт помечает письма приватными', () async {
     final client = MockClient((request) async {
       if (request.url.path.endsWith('/messages')) {

@@ -320,6 +320,7 @@
   "mailBody": "Текст письма",
   "mailFrom": "От",
   "mailSubject": "Тема",
+  "mailNoSubject": "(без темы)",
   "mailReceived": "Получено",
   "mailOAuthHint": "Откроется браузер. Завершите вход и вернитесь в приложение.",
   "mailOAuthError": "OAuth не завершён",

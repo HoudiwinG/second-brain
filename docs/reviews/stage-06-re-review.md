@@ -118,7 +118,7 @@
 - [x] Re-auth existing account.
 - [x] Schema v8, v7→v8, safe beforeOpen.
 - [x] Backup v3 without tokens.
-- [x] Analyze 0, tests 225/225, Windows build.
+- [x] Analyze 0, tests 228/228, Windows build.
 
 ## Метод и ограничения
 

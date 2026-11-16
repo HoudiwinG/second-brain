@@ -122,28 +122,64 @@ class GmailMailProvider implements MailProvider {
 
   static String _payloadText(Object? payload) {
     if (payload is! Map<String, Object?>) return '';
-    final mime = payload['mimeType'];
-    if (mime == 'text/plain') {
-      final body = payload['body'];
-      if (body is Map<String, Object?> && body['data'] is String) {
-        return _decodeBase64(body['data']! as String);
-      }
-    }
-    final parts = payload['parts'];
-    if (parts is List) {
-      final texts = <String>[];
-      for (final part in parts) {
-        final text = _payloadText(part);
-        if (text.trim().isNotEmpty) texts.add(text);
-      }
-      if (texts.isNotEmpty) return texts.join('\n');
+    final filename = payload['filename'];
+    if (filename is String && filename.isNotEmpty) return '';
+    final mime = payload['mimeType'] is String
+        ? payload['mimeType']! as String
+        : '';
+    if (mime.startsWith('multipart/')) {
+      // multipart/alternative: выбираем text/plain и не склеиваем с HTML.
+      // multipart/mixed: также предпочитаем plain, вложения пропускаем.
+      final plain = _findPartText(payload, 'text/plain');
+      if (plain != null) return plain;
+      final html = _findPartText(payload, 'text/html');
+      if (html != null) return _htmlToText(html);
+      return '';
     }
     final body = payload['body'];
     if (body is Map<String, Object?> && body['data'] is String) {
-      return _decodeBase64(body['data']! as String);
+      final text = _decodeBase64(body['data']! as String);
+      return mime == 'text/html' ? _htmlToText(text) : text;
     }
     return '';
   }
+
+  /// Ищет первую непустую текстовую часть нужного MIME-типа.
+  static String? _findPartText(Object? part, String targetMime) {
+    if (part is! Map<String, Object?>) return null;
+    final filename = part['filename'];
+    if (filename is String && filename.isNotEmpty) return null;
+    final mime = part['mimeType'] is String ? part['mimeType']! as String : '';
+    if (mime == targetMime) {
+      final body = part['body'];
+      if (body is Map<String, Object?> && body['data'] is String) {
+        final text = _decodeBase64(body['data']! as String);
+        return text.trim().isEmpty ? null : text;
+      }
+    }
+    final parts = part['parts'];
+    if (parts is List) {
+      for (final child in parts) {
+        final found = _findPartText(child, targetMime);
+        if (found != null) return found;
+      }
+    }
+    return null;
+  }
+
+  static String _htmlToText(String html) => html
+      .replaceAll(RegExp(r'<br\s*/?>', caseSensitive: false), '\n')
+      .replaceAll(RegExp(r'</p\s*>', caseSensitive: false), '\n')
+      .replaceAll(RegExp('<[^>]*>'), ' ')
+      .replaceAll('&nbsp;', ' ')
+      .replaceAll('&amp;', '&')
+      .replaceAll('&lt;', '<')
+      .replaceAll('&gt;', '>')
+      .replaceAll('&quot;', '"')
+      .replaceAll('&#39;', "'")
+      .replaceAll(RegExp(r'[ \t]+'), ' ')
+      .replaceAll(RegExp(r'\n{3,}'), '\n\n')
+      .trim();
 
   static String _decodeBase64(String raw) {
     try {

@@ -1,4 +1,5 @@
 import '../../../core/error/app_exception.dart';
+import '../../../core/logging/app_logger.dart';
 import '../../../core/result/result.dart';
 import '../../../data/repositories/llm_config_repository.dart';
 import '../../llm/application/llm_config_controller.dart';
@@ -32,6 +33,7 @@ class MailSummaryService {
       );
     }
     if (messages.any((message) => message.isPrivateForLlm)) {
+      AppLogger.i('MailSummary: private mail blocked from LLM');
       return const Result.failure(
         ValidationException(
           'MailSummary: приватное письмо не отправляется в LLM',
