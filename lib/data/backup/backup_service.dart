@@ -21,7 +21,7 @@ class BackupService {
   BackupService(this._db);
 
   static const String format = 'second-brain.backup';
-  static const int version = 2;
+  static const int version = 3;
 
   final db.AppDatabase _db;
 
@@ -206,6 +206,8 @@ class BackupService {
         : await (_db.select(
             _db.learningSessions,
           )..where((s) => s.trackId.isIn(trackIds))).get();
+    final mailAccounts = await _db.select(_db.mailAccounts).get();
+    final mailMessages = await _db.select(_db.mailMessages).get();
 
     return {
       'format': format,
@@ -315,6 +317,36 @@ class BackupService {
             'created_at': _iso(row.createdAt),
           },
       ],
+      'mail_accounts': [
+        for (final row in mailAccounts)
+          {
+            'id': row.id,
+            'provider_type': row.providerType,
+            'email': row.email,
+            'display_name': row.displayName,
+            'client_id': row.clientId,
+            'secret_ref': row.secretRef,
+            'is_private_for_llm': row.isPrivateForLlm,
+            'created_at': _iso(row.createdAt),
+            'updated_at': _iso(row.updatedAt),
+          },
+      ],
+      'mail_messages': [
+        for (final row in mailMessages)
+          {
+            'id': row.id,
+            'account_id': row.accountId,
+            'remote_id': row.remoteId,
+            'thread_id': row.threadId,
+            'from': row.fromAddress,
+            'subject': row.subject,
+            'snippet': row.snippet,
+            'body': row.body,
+            'received_at': _iso(row.receivedAt),
+            'is_private_for_llm': row.isPrivateForLlm,
+            'created_at': _iso(row.createdAt),
+          },
+      ],
     };
   }
 
@@ -370,6 +402,13 @@ class BackupService {
         }
       }
     }
+    if (fileVersion >= 3) {
+      for (final key in ['mail_accounts', 'mail_messages']) {
+        if (data[key] is! List) {
+          throw ValidationException('BackupService: нет массива "$key"');
+        }
+      }
+    }
   }
 
   Future<void> _clearAll() async {
@@ -382,6 +421,8 @@ class BackupService {
     await _db.delete(_db.financeTransactions).go();
     await _db.delete(_db.learningSessions).go();
     await _db.delete(_db.learningTracks).go();
+    await _db.delete(_db.mailMessages).go();
+    await _db.delete(_db.mailAccounts).go();
     await _db.delete(_db.notes).go();
     await _db.delete(_db.tags).go();
     await _db.delete(_db.categories).go();
@@ -635,6 +676,61 @@ class BackupService {
                 notes: Value(_string(session['notes'])),
                 date: _calendarDate(session, 'date'),
                 createdAt: _requiredDate(session, 'created_at'),
+              ),
+            );
+      }
+    }
+
+    final mailAccounts = data['mail_accounts'];
+    final mailAccountIds = <int>{};
+    if (mailAccounts is List) {
+      for (final item in mailAccounts) {
+        final account = _map(item, 'mailAccount');
+        final id = _requiredInt(account, 'id');
+        await _db
+            .into(_db.mailAccounts)
+            .insert(
+              db.MailAccountsCompanion.insert(
+                id: Value(id),
+                providerType: _requiredString(account, 'provider_type'),
+                email: _requiredString(account, 'email').toLowerCase(),
+                displayName: Value(_string(account['display_name'])),
+                clientId: Value(_string(account['client_id'])),
+                secretRef: _requiredString(account, 'secret_ref'),
+                isPrivateForLlm: Value(_bool(account['is_private_for_llm'])),
+                createdAt: _requiredDate(account, 'created_at'),
+                updatedAt: _requiredDate(account, 'updated_at'),
+              ),
+            );
+        mailAccountIds.add(id);
+      }
+    }
+
+    final mailMessages = data['mail_messages'];
+    if (mailMessages is List) {
+      for (final item in mailMessages) {
+        final message = _map(item, 'mailMessage');
+        final accountId = _requiredInt(message, 'account_id');
+        if (!mailAccountIds.contains(accountId)) {
+          throw ValidationException(
+            'BackupService: письмо ссылается на отсутствующий ящик $accountId',
+          );
+        }
+        await _db
+            .into(_db.mailMessages)
+            .insert(
+              db.MailMessagesCompanion.insert(
+                id: Value(_requiredInt(message, 'id')),
+                accountId: accountId,
+                remoteId: _requiredString(message, 'remote_id'),
+                threadId: Value(_emptyToNull(message['thread_id']?.toString())),
+                fromAddress: Value(_string(message['from'])),
+                subject: Value(_string(message['subject'])),
+                snippet: Value(_string(message['snippet'])),
+                body: Value(_string(message['body'])),
+                receivedAt: _requiredDate(message, 'received_at'),
+                isPrivateForLlm: Value(_bool(message['is_private_for_llm'])),
+                createdAt: _requiredDate(message, 'created_at'),
               ),
             );
       }

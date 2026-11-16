@@ -1218,6 +1218,7 @@ ADR-021 (tools и аудит)
 - `MailSyncService`: ensure token → fetch → upsert.
 - `MailSummaryService`: суммаризация через default LLM; приватное письмо
   fail-closed, тело не уходит.
+- JSON-бэкап **v3** включает аккаунты и кэш писем, но не OAuth-токены.
 - UI интеграций: подключение ящика (provider/email/client ID), список
   аккаунтов, sync/delete/privacy, поиск писем, просмотр, суммаризация и
   создание задачи из письма.

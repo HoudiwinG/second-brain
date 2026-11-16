@@ -780,4 +780,5 @@ success. Независимое ревью ещё не проводилось.
 | 2026-11-16 | — | privacy | private account/message не уходит в LLM; summary fail-closed |
 | 2026-11-16 | — | UI | подключение/синхронизация/приватность/поиск/просмотр/задача |
 | 2026-11-16 | — | тесты | repository, OAuth, Gmail parser, summary, widget, v7→v8 |
+| 2026-11-16 | — | backup | JSON v3: mail_accounts/mail_messages, без OAuth-токенов |
 | 2026-11-16 | — | статус | self-check done; ожидается независимое ревью stage-06 |

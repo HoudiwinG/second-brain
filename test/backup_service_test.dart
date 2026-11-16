@@ -3,12 +3,14 @@ import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:second_brain/core/result/result.dart';
+import 'package:second_brain/core/secrets/in_memory_secret_store.dart';
 import 'package:second_brain/data/backup/backup_service.dart';
 import 'package:second_brain/data/db/app_database.dart';
 import 'package:second_brain/data/repositories/categories_repository.dart';
 import 'package:second_brain/data/repositories/finance_repository.dart';
 import 'package:second_brain/data/repositories/ideas_repository.dart';
 import 'package:second_brain/data/repositories/learning_repository.dart';
+import 'package:second_brain/data/repositories/mail_repository.dart';
 import 'package:second_brain/data/repositories/notes_repository.dart';
 import 'package:second_brain/data/repositories/search_repository.dart';
 import 'package:second_brain/data/repositories/tasks_repository.dart';
@@ -16,6 +18,9 @@ import 'package:second_brain/features/finance/domain/finance_transaction.dart';
 import 'package:second_brain/features/ideas/domain/idea_entry.dart';
 import 'package:second_brain/features/learning/domain/learning_session.dart';
 import 'package:second_brain/features/learning/domain/learning_track.dart';
+import 'package:second_brain/features/mail/domain/mail_account.dart';
+import 'package:second_brain/features/mail/domain/mail_message.dart';
+import 'package:second_brain/features/mail/domain/mail_provider_type.dart';
 import 'package:second_brain/features/notes/domain/note.dart';
 import 'package:second_brain/features/tasks/domain/task_item.dart';
 
@@ -110,6 +115,26 @@ void main() {
           date: DateTime.utc(2026, 10, 5),
         ),
       )).unwrap();
+      final mail = DriftMailRepository(db, InMemorySecretStore());
+      final mailAccount = (await mail.createAccount(
+        const MailAccountDraft(
+          provider: MailProviderType.gmail,
+          email: 'mail@example.com',
+          clientId: 'client',
+          isPrivateForLlm: true,
+        ),
+      )).unwrap();
+      final mailMessage = (await mail.upsertMessages(mailAccount.id, [
+        MailMessageDraft(
+          remoteId: 'remote-1',
+          threadId: 'thread-1',
+          fromAddress: 'sender@example.com',
+          subject: 'Письмо',
+          snippet: 'Кратко',
+          body: 'Тело',
+          receivedAt: DateTime.utc(2026, 10, 6),
+        ),
+      ])).unwrap();
 
       final file = File('${temp.path}/backup.json');
       await backup.exportJson(file).then((r) => r.unwrap());
@@ -121,6 +146,8 @@ void main() {
       expect(decoded['notes'], hasLength(1));
       expect(decoded['learning_tracks'], hasLength(1));
       expect(decoded['learning_sessions'], hasLength(1));
+      expect(decoded['mail_accounts'], hasLength(1));
+      expect(decoded['mail_messages'], hasLength(1));
 
       // Импорт заменяет содержимое: лишняя запись должна исчезнуть.
       await notes.create(const NoteDraft(title: 'Лишняя'));
@@ -177,6 +204,16 @@ void main() {
       expect(restoredSessions.single.id, session.id);
       expect(restoredSessions.single.durationMinutes, 45);
       expect(restoredSessions.single.notes, 'Практика');
+
+      final restoredAccounts = (await mail.listAccounts()).unwrap();
+      expect(restoredAccounts, hasLength(1));
+      expect(restoredAccounts.single.email, 'mail@example.com');
+      expect(restoredAccounts.single.isPrivateForLlm, isTrue);
+      final restoredMail = (await mail.listMessages()).unwrap();
+      expect(restoredMail, hasLength(1));
+      expect(restoredMail.single.subject, 'Письмо');
+      expect(restoredMail.single.isPrivateForLlm, isTrue);
+      expect(mailMessage, 1);
 
       // После импорта FTS-индекс должен работать.
       final search = DriftSearchRepository(db);
