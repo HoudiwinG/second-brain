@@ -727,4 +727,113 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get learningRoadmapEmptyGoal => 'Сначала заполните цель трека.';
+
+  @override
+  String get mailSection => 'Почта';
+
+  @override
+  String get mailHint =>
+      'Ящики подключаются только через OAuth 2.0. Токены хранятся в защищённом хранилище ОС.';
+
+  @override
+  String get mailAddAccount => 'Подключить ящик';
+
+  @override
+  String get mailNoAccounts => 'Почтовые ящики не подключены';
+
+  @override
+  String get mailProvider => 'Провайдер';
+
+  @override
+  String get mailEmail => 'Email';
+
+  @override
+  String get mailDisplayName => 'Название ящика';
+
+  @override
+  String get mailClientId => 'OAuth client ID';
+
+  @override
+  String get mailClientIdHint => 'Публичный client ID вашего OAuth-приложения';
+
+  @override
+  String get mailConnect => 'Подключить';
+
+  @override
+  String get mailConnecting => 'Ожидание OAuth…';
+
+  @override
+  String get mailAccountAdded => 'Ящик подключён';
+
+  @override
+  String get mailAccountAddError => 'Не удалось подключить ящик';
+
+  @override
+  String get mailSync => 'Синхронизировать';
+
+  @override
+  String get mailSyncing => 'Синхронизация…';
+
+  @override
+  String mailSyncDone(int count) {
+    return 'Загружено писем: $count';
+  }
+
+  @override
+  String get mailSyncError => 'Не удалось синхронизировать почту';
+
+  @override
+  String get mailMessages => 'Письма';
+
+  @override
+  String get mailNoMessages => 'Писем пока нет';
+
+  @override
+  String get mailSearchHint => 'Поиск по почте';
+
+  @override
+  String get mailPrivate => 'Не отправлять письма в LLM';
+
+  @override
+  String get mailDeleteAccount => 'Удалить ящик';
+
+  @override
+  String get mailAccountDeleted => 'Ящик удалён';
+
+  @override
+  String get mailSummary => 'Суммаризировать';
+
+  @override
+  String get mailCreateTask => 'Создать задачу';
+
+  @override
+  String get mailTaskCreated => 'Задача создана';
+
+  @override
+  String get mailTaskCreateError => 'Не удалось создать задачу';
+
+  @override
+  String get mailSummarizeError => 'Не удалось получить резюме';
+
+  @override
+  String get mailBody => 'Текст письма';
+
+  @override
+  String get mailFrom => 'От';
+
+  @override
+  String get mailSubject => 'Тема';
+
+  @override
+  String get mailReceived => 'Получено';
+
+  @override
+  String get mailOAuthHint =>
+      'Откроется браузер. Завершите вход и вернитесь в приложение.';
+
+  @override
+  String get mailOAuthError => 'OAuth не завершён';
+
+  @override
+  String get mailOAuthMissing => 'Заполните провайдера, email и client ID.';
 }

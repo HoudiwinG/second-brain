@@ -1471,6 +1471,216 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Fill in the track goal first.'**
   String get learningRoadmapEmptyGoal;
+
+  /// No description provided for @mailSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Mail'**
+  String get mailSection;
+
+  /// No description provided for @mailHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Accounts connect via OAuth 2.0 only. Tokens are stored in the OS secure storage.'**
+  String get mailHint;
+
+  /// No description provided for @mailAddAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Connect mailbox'**
+  String get mailAddAccount;
+
+  /// No description provided for @mailNoAccounts.
+  ///
+  /// In en, this message translates to:
+  /// **'No mailboxes connected'**
+  String get mailNoAccounts;
+
+  /// No description provided for @mailProvider.
+  ///
+  /// In en, this message translates to:
+  /// **'Provider'**
+  String get mailProvider;
+
+  /// No description provided for @mailEmail.
+  ///
+  /// In en, this message translates to:
+  /// **'Email'**
+  String get mailEmail;
+
+  /// No description provided for @mailDisplayName.
+  ///
+  /// In en, this message translates to:
+  /// **'Mailbox name'**
+  String get mailDisplayName;
+
+  /// No description provided for @mailClientId.
+  ///
+  /// In en, this message translates to:
+  /// **'OAuth client ID'**
+  String get mailClientId;
+
+  /// No description provided for @mailClientIdHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Public client ID of your OAuth application'**
+  String get mailClientIdHint;
+
+  /// No description provided for @mailConnect.
+  ///
+  /// In en, this message translates to:
+  /// **'Connect'**
+  String get mailConnect;
+
+  /// No description provided for @mailConnecting.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting for OAuth…'**
+  String get mailConnecting;
+
+  /// No description provided for @mailAccountAdded.
+  ///
+  /// In en, this message translates to:
+  /// **'Mailbox connected'**
+  String get mailAccountAdded;
+
+  /// No description provided for @mailAccountAddError.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not connect the mailbox'**
+  String get mailAccountAddError;
+
+  /// No description provided for @mailSync.
+  ///
+  /// In en, this message translates to:
+  /// **'Sync'**
+  String get mailSync;
+
+  /// No description provided for @mailSyncing.
+  ///
+  /// In en, this message translates to:
+  /// **'Syncing…'**
+  String get mailSyncing;
+
+  /// No description provided for @mailSyncDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Messages loaded: {count}'**
+  String mailSyncDone(int count);
+
+  /// No description provided for @mailSyncError.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not sync mail'**
+  String get mailSyncError;
+
+  /// No description provided for @mailMessages.
+  ///
+  /// In en, this message translates to:
+  /// **'Messages'**
+  String get mailMessages;
+
+  /// No description provided for @mailNoMessages.
+  ///
+  /// In en, this message translates to:
+  /// **'No messages yet'**
+  String get mailNoMessages;
+
+  /// No description provided for @mailSearchHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Search mail'**
+  String get mailSearchHint;
+
+  /// No description provided for @mailPrivate.
+  ///
+  /// In en, this message translates to:
+  /// **'Do not send mail to LLM'**
+  String get mailPrivate;
+
+  /// No description provided for @mailDeleteAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete mailbox'**
+  String get mailDeleteAccount;
+
+  /// No description provided for @mailAccountDeleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Mailbox deleted'**
+  String get mailAccountDeleted;
+
+  /// No description provided for @mailSummary.
+  ///
+  /// In en, this message translates to:
+  /// **'Summarize'**
+  String get mailSummary;
+
+  /// No description provided for @mailCreateTask.
+  ///
+  /// In en, this message translates to:
+  /// **'Create task'**
+  String get mailCreateTask;
+
+  /// No description provided for @mailTaskCreated.
+  ///
+  /// In en, this message translates to:
+  /// **'Task created'**
+  String get mailTaskCreated;
+
+  /// No description provided for @mailTaskCreateError.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not create the task'**
+  String get mailTaskCreateError;
+
+  /// No description provided for @mailSummarizeError.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not get a summary'**
+  String get mailSummarizeError;
+
+  /// No description provided for @mailBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Message body'**
+  String get mailBody;
+
+  /// No description provided for @mailFrom.
+  ///
+  /// In en, this message translates to:
+  /// **'From'**
+  String get mailFrom;
+
+  /// No description provided for @mailSubject.
+  ///
+  /// In en, this message translates to:
+  /// **'Subject'**
+  String get mailSubject;
+
+  /// No description provided for @mailReceived.
+  ///
+  /// In en, this message translates to:
+  /// **'Received'**
+  String get mailReceived;
+
+  /// No description provided for @mailOAuthHint.
+  ///
+  /// In en, this message translates to:
+  /// **'A browser will open. Complete sign-in and return to the app.'**
+  String get mailOAuthHint;
+
+  /// No description provided for @mailOAuthError.
+  ///
+  /// In en, this message translates to:
+  /// **'OAuth was not completed'**
+  String get mailOAuthError;
+
+  /// No description provided for @mailOAuthMissing.
+  ///
+  /// In en, this message translates to:
+  /// **'Fill in provider, email and client ID.'**
+  String get mailOAuthMissing;
 }
 
 class _AppLocalizationsDelegate

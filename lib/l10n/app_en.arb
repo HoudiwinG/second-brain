@@ -275,5 +275,47 @@
   "learningRoadmapReplace": "Replace the current roadmap with the generated one?",
   "learningReplace": "Replace",
   "learningChangeStepStatus": "Change step status",
-  "learningRoadmapEmptyGoal": "Fill in the track goal first."
+  "learningRoadmapEmptyGoal": "Fill in the track goal first.",
+  "mailSection": "Mail",
+  "mailHint": "Accounts connect via OAuth 2.0 only. Tokens are stored in the OS secure storage.",
+  "mailAddAccount": "Connect mailbox",
+  "mailNoAccounts": "No mailboxes connected",
+  "mailProvider": "Provider",
+  "mailEmail": "Email",
+  "mailDisplayName": "Mailbox name",
+  "mailClientId": "OAuth client ID",
+  "mailClientIdHint": "Public client ID of your OAuth application",
+  "mailConnect": "Connect",
+  "mailConnecting": "Waiting for OAuth…",
+  "mailAccountAdded": "Mailbox connected",
+  "mailAccountAddError": "Could not connect the mailbox",
+  "mailSync": "Sync",
+  "mailSyncing": "Syncing…",
+  "mailSyncDone": "Messages loaded: {count}",
+  "@mailSyncDone": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "mailSyncError": "Could not sync mail",
+  "mailMessages": "Messages",
+  "mailNoMessages": "No messages yet",
+  "mailSearchHint": "Search mail",
+  "mailPrivate": "Do not send mail to LLM",
+  "mailDeleteAccount": "Delete mailbox",
+  "mailAccountDeleted": "Mailbox deleted",
+  "mailSummary": "Summarize",
+  "mailCreateTask": "Create task",
+  "mailTaskCreated": "Task created",
+  "mailTaskCreateError": "Could not create the task",
+  "mailSummarizeError": "Could not get a summary",
+  "mailBody": "Message body",
+  "mailFrom": "From",
+  "mailSubject": "Subject",
+  "mailReceived": "Received",
+  "mailOAuthHint": "A browser will open. Complete sign-in and return to the app.",
+  "mailOAuthError": "OAuth was not completed",
+  "mailOAuthMissing": "Fill in provider, email and client ID."
 }

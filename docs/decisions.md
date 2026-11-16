@@ -3,10 +3,10 @@
 Формат записи. Одна запись = одно критическое решение/изменение.
 Шаблон отдельного ADR — в [decisions.template.md](decisions.template.md).
 
-Разделы: architecture (ADR-001..005, 008, 012, 018..022), dependency (ADR-006,
-007, 011, 017), integration (ADR-006, 009, 019), security (ADR-003, 018,
-020, 021, 022), ux (ADR-005, 008, 010, 016), data/search (ADR-013), schema
-(ADR-002, 012, 015, 018, 021, 022).
+Разделы: architecture (ADR-001..005, 008, 012, 018..023), dependency (ADR-006,
+007, 011, 017), integration (ADR-006, 009, 019, 023), security (ADR-003, 018,
+020, 021, 022, 023), ux (ADR-005, 008, 010, 016), data/search (ADR-013), schema
+(ADR-002, 012, 015, 018, 021, 022, 023).
 
 ---
 
@@ -1184,3 +1184,68 @@ ADR-018 (схема), ADR-019 (транспорт), ADR-020 (контракт LL
 ### Связанные записи
 ADR-003 (секреты), ADR-018 (схема и privacy), ADR-020 (LLM-контракт),
 ADR-021 (tools и аудит)
+
+---
+
+## ADR-023: Почта — OAuth 2.0, secure tokens и локальный кэш
+
+- **Дата (UTC):** 2026-11-16
+- **Этап:** stage-06 (почта)
+- **Тип:** architecture / security / integration / schema
+- **Автор/агент:** agent-1
+- **Статус:** accepted
+
+### Контекст
+Нужно подключать Gmail, Yandex Mail и Mail.ru без IMAP, просматривать/искать
+письма, суммаризировать их через LLM и создавать задачи. OAuth-токены —
+секреты; письма могут быть приватными. Нужен офлайн-кэш.
+
+### Решение
+- Схема **v8**: `mail_accounts` (provider, email, client_id, secret_ref,
+  privacy, timestamps) и `mail_messages` (account FK, remote_id, thread_id,
+  from, subject, snippet, body, received_at, privacy).
+- OAuth 2.0 Authorization Code + PKCE (`S256`), loopback redirect
+  `http://127.0.0.1:53682/oauth/callback`. Client ID публичный и вводится
+  пользователем; токены (access/refresh/expiry) хранятся в `SecretStore` по
+  `secret_ref`, в БД только ссылка.
+- `MailOAuthService` обменивает code, обновляет access token и не пишет тело
+  ошибок/токены в логи. `MailTokenStore` сериализует токены в secure storage.
+- `MailRepository` — аккаунты, upsert писем по `(account_id, remote_id)`,
+  поиск по subject/from/snippet/body, privacy-фильтр, каскадное удаление.
+- `MailProvider`: Gmail API (`users.messages.list/get`, MIME-разбор) и
+  REST-адаптер для Yandex/Mail.ru с контрактом `/messages?limit=&q=`.
+  Точные официальные эндпоинты Yandex/Mail.ru требуют живой проверки.
+- `MailSyncService`: ensure token → fetch → upsert.
+- `MailSummaryService`: суммаризация через default LLM; приватное письмо
+  fail-closed, тело не уходит.
+- UI интеграций: подключение ящика (provider/email/client ID), список
+  аккаунтов, sync/delete/privacy, поиск писем, просмотр, суммаризация и
+  создание задачи из письма.
+
+### Альтернативы
+- IMAP-универсал: запрещён PROMPT; отвергнуто.
+- Хранить refresh-токены в БД: небезопасно; отвергнуто.
+- Отправлять письма в LLM без флага: нарушает privacy; отвергнуто.
+- Отдельный сервер для OAuth callback: лишняя инфраструктура; loopback
+  достаточно для desktop MVP.
+
+### Последствия
+- Положительные: токены вне БД, офлайн-кэш, единый интерфейс провайдеров,
+  приватность на уровне ящика/письма, UI для основных сценариев.
+- Отрицательные/риски: OAuth-приложения и redirect URI нужно зарегистрировать
+  у провайдеров; Yandex/Mail.ru REST-контракт не проверен live; «полный»
+  JSON-бэкап пока не включает почту (как и чат/настройки); персональные
+  письма хранятся локально в открытом виде, как остальные данные.
+- Совместимость: миграция `v7 → v8` создаёт таблицы/индексы; старые данные
+  сохраняются.
+
+### Затронутые файлы/модули
+- `lib/features/mail/**`, `lib/data/repositories/mail_repository.dart`,
+  `lib/features/integrations/presentation/integrations_screen.dart`.
+- `lib/data/db/app_database.dart` (v8), `lib/app/di.dart`, ARB.
+- `test/mail_*`, `test/integrations_screen_widget_test.dart`,
+  `test/db_migration_test.dart`.
+
+### Связанные записи
+ADR-003 (секреты), ADR-018 (schema/privacy), ADR-020 (LLM-контракт),
+ADR-022 (JSON-бэкап и обучение)

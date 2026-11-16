@@ -1,28 +1,22 @@
 # INDEX — карта документации
 
 ## Состояние
-- Текущий этап: stage-05 (обучение) — **PASS WITH COMMENTS (0 MAJOR).**
-  Первое ревью — FAIL (S05-001, JSON-бэкап), все S05-001…011 и финальные
-  S05Z исправлены; финальное ревью — PASS WITH COMMENTS. Треки, roadmap,
-  сессии, AI-тренер, приватный трек, backup v2, схема **v7**. Analyze 0,
-  test **193/193**, Windows debug build success; CI `43901179307`
-  (`82f49d5`) — success. Stage-06 разблокирован.
-- Предыдущий этап: stage-04 (инструменты ассистента) — **PASS WITH COMMENTS
-  (0 MAJOR)**. Исходное ревью — FAIL; повторное ревью — FAIL (3 MAJOR), все
-  11 `S04R` исправлены; повторная проверка — **PASS WITH COMMENTS**;
-  комментарии S04F/S04Z fixed. Analyze 0, test **172/172**, CI
-  `43835793997` (`9f54bcc`) — success.
-- Stage-03 закрыт повторным независимым ревью **PASS** (2026-10-28), 28/28
-  verified. Stage-02 — **PASS WITH COMMENTS** (ревью №3); R02-014/R02-015
-  остаются неблокирующими комментариями.
-- Гейты stage-05 (2026-11-16): `flutter analyze --fatal-infos` — **No issues
-  found**, `flutter test` — **193/193**, `flutter build windows --debug` —
-  **success**; CI-run
-  [43901179307](https://github.com/HoudiwinG/second-brain/actions/runs/43901179307)
-  (`82f49d5`) — success.
+- Текущий этап: stage-06 (почта) — **реализация и self-check готовы,
+  независимое ревью ещё не проводилось.** OAuth 2.0 + PKCE, токены в secure
+  storage, Gmail API и REST-адаптер Yandex/Mail.ru, локальный кэш/поиск,
+  суммаризация и создание задачи; схема **v8**. Analyze 0, test **209/209**,
+  Windows debug build success.
+- Предыдущий этап: stage-05 (обучение) — **PASS WITH COMMENTS (0 MAJOR)**;
+  S05-001…011 и S05Z fixed; analyze 0, test 193/193, CI
+  `43901179307` (`82f49d5`) — success. Stage-04 — **PASS WITH COMMENTS**;
+  stage-03 — **PASS**; stage-02 — **PASS WITH COMMENTS**.
+- Гейты stage-06 (2026-11-16): `flutter analyze --fatal-infos` — **No issues
+  found**, `flutter test` — **209/209**, `flutter build windows --debug` —
+  **success**; CI — после push.
 - Локальные гейты stage-03 (2026-10-28): analyze 0, test 132/132, Windows debug
   build; CI `40636764573` (`49bc00f`, включая `14e63a7`) — success.
 - Снимок состояния: [context.md](context.md)
+- Отчёт stage-06: [stages/stage-06.md](stages/stage-06.md).
 - Отчёт stage-05: [stages/stage-05.md](stages/stage-05.md).
 - Отчёт stage-03: [stages/stage-03.md](stages/stage-03.md).
 - Ревью stage-03: [reviews/stage-03-review.md](reviews/stage-03-review.md) —
@@ -74,6 +68,8 @@
 - [stage-05-final-review](reviews/stage-05-final-review.md) — финальное ревью
   (2026-11-16, два прохода): **PASS WITH COMMENTS**, 0 MAJOR; S05Z fixed;
   stage-06 разблокирован.
+- Ревью stage-06 — не проводилось (self-check; независимая проверка
+  запланирована после реализации).
 - Исправления stage-04:
   [reviews/stage-04-fix-results.md](reviews/stage-04-fix-results.md) — все 9
   исходных находок закрыты коммитом `821b4f8` (+ docs-коммит).
@@ -92,7 +88,7 @@
 2. Прочитай [context.md](context.md) — текущее состояние
 3. Прочитай [decisions.md](decisions.md) — все ADR
 4. Прочитай [tech-debt.md](tech-debt.md) — открытый/принятый техдолг
-5. Прочитай отчёт последнего этапа: [stages/stage-05.md](stages/stage-05.md)
+5. Прочитай отчёт последнего этапа: [stages/stage-06.md](stages/stage-06.md)
 
 ## Отчёты по этапам
 - [stage-00](stages/stage-00.md) — каркас (done, PASS WITH COMMENTS)
@@ -110,7 +106,11 @@
 - [stage-05](stages/stage-05.md) — обучение (треки, roadmap, сессии,
   AI-тренер, backup v2; ADR-022; схема v7; первое ревью **FAIL** по
   S05-001 → **PASS WITH COMMENTS** после S05/S05Z; analyze 0, test 193/193,
-  Windows debug build success; stage-06 разблокирован)
+  Windows debug build success)
+- [stage-06](stages/stage-06.md) — почта (OAuth 2.0 + PKCE, secure tokens,
+  Gmail API, Yandex/Mail.ru REST, кэш/поиск, суммаризация, задача из письма;
+  ADR-023; схема v8; analyze 0, test 209/209, Windows debug build success;
+  независимое ревью ожидается)
 
 ## Шаблоны
 - [decisions.template.md](decisions.template.md) — формат ADR
@@ -161,13 +161,13 @@
 - [decisions.md](decisions.md) — все ADR
 - Разделы:
   - architecture: ADR-001, ADR-002, ADR-004, ADR-005, ADR-008, ADR-012,
-    ADR-016, ADR-018, ADR-019, ADR-020, ADR-021, ADR-022
-  - security: ADR-003, ADR-018, ADR-020, ADR-021, ADR-022
+    ADR-016, ADR-018, ADR-019, ADR-020, ADR-021, ADR-022, ADR-023
+  - security: ADR-003, ADR-018, ADR-020, ADR-021, ADR-022, ADR-023
   - dependency: ADR-006, ADR-007, ADR-011, ADR-017
-  - integration: ADR-006, ADR-009, ADR-014, ADR-017, ADR-019
+  - integration: ADR-006, ADR-009, ADR-014, ADR-017, ADR-019, ADR-023
   - ux: ADR-005, ADR-008, ADR-010, ADR-016
   - data/search: ADR-013
-  - schema: ADR-002, ADR-012, ADR-015, ADR-018, ADR-021, ADR-022
+  - schema: ADR-002, ADR-012, ADR-015, ADR-018, ADR-021, ADR-022, ADR-023
 
 ## Дебаг
 - [debug/log.md](debug/log.md) — хронология находок

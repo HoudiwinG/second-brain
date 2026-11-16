@@ -7181,6 +7181,1239 @@ class LearningSessionsCompanion extends UpdateCompanion<LearningSession> {
   }
 }
 
+class $MailAccountsTable extends MailAccounts
+    with TableInfo<$MailAccountsTable, MailAccount> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $MailAccountsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _providerTypeMeta = const VerificationMeta(
+    'providerType',
+  );
+  @override
+  late final GeneratedColumn<String> providerType = GeneratedColumn<String>(
+    'provider_type',
+    aliasedName,
+    false,
+    additionalChecks: GeneratedColumn.checkTextLength(
+      minTextLength: 1,
+      maxTextLength: 40,
+    ),
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _emailMeta = const VerificationMeta('email');
+  @override
+  late final GeneratedColumn<String> email = GeneratedColumn<String>(
+    'email',
+    aliasedName,
+    false,
+    additionalChecks: GeneratedColumn.checkTextLength(
+      minTextLength: 1,
+      maxTextLength: 320,
+    ),
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _displayNameMeta = const VerificationMeta(
+    'displayName',
+  );
+  @override
+  late final GeneratedColumn<String> displayName = GeneratedColumn<String>(
+    'display_name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _clientIdMeta = const VerificationMeta(
+    'clientId',
+  );
+  @override
+  late final GeneratedColumn<String> clientId = GeneratedColumn<String>(
+    'client_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _secretRefMeta = const VerificationMeta(
+    'secretRef',
+  );
+  @override
+  late final GeneratedColumn<String> secretRef = GeneratedColumn<String>(
+    'secret_ref',
+    aliasedName,
+    false,
+    additionalChecks: GeneratedColumn.checkTextLength(
+      minTextLength: 1,
+      maxTextLength: 200,
+    ),
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _isPrivateForLlmMeta = const VerificationMeta(
+    'isPrivateForLlm',
+  );
+  @override
+  late final GeneratedColumn<bool> isPrivateForLlm = GeneratedColumn<bool>(
+    'is_private_for_llm',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("is_private_for_llm" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    providerType,
+    email,
+    displayName,
+    clientId,
+    secretRef,
+    isPrivateForLlm,
+    createdAt,
+    updatedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'mail_accounts';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<MailAccount> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('provider_type')) {
+      context.handle(
+        _providerTypeMeta,
+        providerType.isAcceptableOrUnknown(
+          data['provider_type']!,
+          _providerTypeMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_providerTypeMeta);
+    }
+    if (data.containsKey('email')) {
+      context.handle(
+        _emailMeta,
+        email.isAcceptableOrUnknown(data['email']!, _emailMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_emailMeta);
+    }
+    if (data.containsKey('display_name')) {
+      context.handle(
+        _displayNameMeta,
+        displayName.isAcceptableOrUnknown(
+          data['display_name']!,
+          _displayNameMeta,
+        ),
+      );
+    }
+    if (data.containsKey('client_id')) {
+      context.handle(
+        _clientIdMeta,
+        clientId.isAcceptableOrUnknown(data['client_id']!, _clientIdMeta),
+      );
+    }
+    if (data.containsKey('secret_ref')) {
+      context.handle(
+        _secretRefMeta,
+        secretRef.isAcceptableOrUnknown(data['secret_ref']!, _secretRefMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_secretRefMeta);
+    }
+    if (data.containsKey('is_private_for_llm')) {
+      context.handle(
+        _isPrivateForLlmMeta,
+        isPrivateForLlm.isAcceptableOrUnknown(
+          data['is_private_for_llm']!,
+          _isPrivateForLlmMeta,
+        ),
+      );
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_updatedAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  MailAccount map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return MailAccount(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      providerType: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}provider_type'],
+      )!,
+      email: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}email'],
+      )!,
+      displayName: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}display_name'],
+      )!,
+      clientId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}client_id'],
+      )!,
+      secretRef: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}secret_ref'],
+      )!,
+      isPrivateForLlm: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}is_private_for_llm'],
+      )!,
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at'],
+      )!,
+    );
+  }
+
+  @override
+  $MailAccountsTable createAlias(String alias) {
+    return $MailAccountsTable(attachedDatabase, alias);
+  }
+}
+
+class MailAccount extends DataClass implements Insertable<MailAccount> {
+  final int id;
+
+  /// gmail | yandex | mailru
+  final String providerType;
+  final String email;
+  final String displayName;
+
+  /// Публичный OAuth client id (не секрет).
+  final String clientId;
+  final String secretRef;
+  final bool isPrivateForLlm;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+  const MailAccount({
+    required this.id,
+    required this.providerType,
+    required this.email,
+    required this.displayName,
+    required this.clientId,
+    required this.secretRef,
+    required this.isPrivateForLlm,
+    required this.createdAt,
+    required this.updatedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['provider_type'] = Variable<String>(providerType);
+    map['email'] = Variable<String>(email);
+    map['display_name'] = Variable<String>(displayName);
+    map['client_id'] = Variable<String>(clientId);
+    map['secret_ref'] = Variable<String>(secretRef);
+    map['is_private_for_llm'] = Variable<bool>(isPrivateForLlm);
+    map['created_at'] = Variable<DateTime>(createdAt);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    return map;
+  }
+
+  MailAccountsCompanion toCompanion(bool nullToAbsent) {
+    return MailAccountsCompanion(
+      id: Value(id),
+      providerType: Value(providerType),
+      email: Value(email),
+      displayName: Value(displayName),
+      clientId: Value(clientId),
+      secretRef: Value(secretRef),
+      isPrivateForLlm: Value(isPrivateForLlm),
+      createdAt: Value(createdAt),
+      updatedAt: Value(updatedAt),
+    );
+  }
+
+  factory MailAccount.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return MailAccount(
+      id: serializer.fromJson<int>(json['id']),
+      providerType: serializer.fromJson<String>(json['providerType']),
+      email: serializer.fromJson<String>(json['email']),
+      displayName: serializer.fromJson<String>(json['displayName']),
+      clientId: serializer.fromJson<String>(json['clientId']),
+      secretRef: serializer.fromJson<String>(json['secretRef']),
+      isPrivateForLlm: serializer.fromJson<bool>(json['isPrivateForLlm']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'providerType': serializer.toJson<String>(providerType),
+      'email': serializer.toJson<String>(email),
+      'displayName': serializer.toJson<String>(displayName),
+      'clientId': serializer.toJson<String>(clientId),
+      'secretRef': serializer.toJson<String>(secretRef),
+      'isPrivateForLlm': serializer.toJson<bool>(isPrivateForLlm),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+    };
+  }
+
+  MailAccount copyWith({
+    int? id,
+    String? providerType,
+    String? email,
+    String? displayName,
+    String? clientId,
+    String? secretRef,
+    bool? isPrivateForLlm,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+  }) => MailAccount(
+    id: id ?? this.id,
+    providerType: providerType ?? this.providerType,
+    email: email ?? this.email,
+    displayName: displayName ?? this.displayName,
+    clientId: clientId ?? this.clientId,
+    secretRef: secretRef ?? this.secretRef,
+    isPrivateForLlm: isPrivateForLlm ?? this.isPrivateForLlm,
+    createdAt: createdAt ?? this.createdAt,
+    updatedAt: updatedAt ?? this.updatedAt,
+  );
+  MailAccount copyWithCompanion(MailAccountsCompanion data) {
+    return MailAccount(
+      id: data.id.present ? data.id.value : this.id,
+      providerType: data.providerType.present
+          ? data.providerType.value
+          : this.providerType,
+      email: data.email.present ? data.email.value : this.email,
+      displayName: data.displayName.present
+          ? data.displayName.value
+          : this.displayName,
+      clientId: data.clientId.present ? data.clientId.value : this.clientId,
+      secretRef: data.secretRef.present ? data.secretRef.value : this.secretRef,
+      isPrivateForLlm: data.isPrivateForLlm.present
+          ? data.isPrivateForLlm.value
+          : this.isPrivateForLlm,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('MailAccount(')
+          ..write('id: $id, ')
+          ..write('providerType: $providerType, ')
+          ..write('email: $email, ')
+          ..write('displayName: $displayName, ')
+          ..write('clientId: $clientId, ')
+          ..write('secretRef: $secretRef, ')
+          ..write('isPrivateForLlm: $isPrivateForLlm, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    providerType,
+    email,
+    displayName,
+    clientId,
+    secretRef,
+    isPrivateForLlm,
+    createdAt,
+    updatedAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is MailAccount &&
+          other.id == this.id &&
+          other.providerType == this.providerType &&
+          other.email == this.email &&
+          other.displayName == this.displayName &&
+          other.clientId == this.clientId &&
+          other.secretRef == this.secretRef &&
+          other.isPrivateForLlm == this.isPrivateForLlm &&
+          other.createdAt == this.createdAt &&
+          other.updatedAt == this.updatedAt);
+}
+
+class MailAccountsCompanion extends UpdateCompanion<MailAccount> {
+  final Value<int> id;
+  final Value<String> providerType;
+  final Value<String> email;
+  final Value<String> displayName;
+  final Value<String> clientId;
+  final Value<String> secretRef;
+  final Value<bool> isPrivateForLlm;
+  final Value<DateTime> createdAt;
+  final Value<DateTime> updatedAt;
+  const MailAccountsCompanion({
+    this.id = const Value.absent(),
+    this.providerType = const Value.absent(),
+    this.email = const Value.absent(),
+    this.displayName = const Value.absent(),
+    this.clientId = const Value.absent(),
+    this.secretRef = const Value.absent(),
+    this.isPrivateForLlm = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+  });
+  MailAccountsCompanion.insert({
+    this.id = const Value.absent(),
+    required String providerType,
+    required String email,
+    this.displayName = const Value.absent(),
+    this.clientId = const Value.absent(),
+    required String secretRef,
+    this.isPrivateForLlm = const Value.absent(),
+    required DateTime createdAt,
+    required DateTime updatedAt,
+  }) : providerType = Value(providerType),
+       email = Value(email),
+       secretRef = Value(secretRef),
+       createdAt = Value(createdAt),
+       updatedAt = Value(updatedAt);
+  static Insertable<MailAccount> custom({
+    Expression<int>? id,
+    Expression<String>? providerType,
+    Expression<String>? email,
+    Expression<String>? displayName,
+    Expression<String>? clientId,
+    Expression<String>? secretRef,
+    Expression<bool>? isPrivateForLlm,
+    Expression<DateTime>? createdAt,
+    Expression<DateTime>? updatedAt,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (providerType != null) 'provider_type': providerType,
+      if (email != null) 'email': email,
+      if (displayName != null) 'display_name': displayName,
+      if (clientId != null) 'client_id': clientId,
+      if (secretRef != null) 'secret_ref': secretRef,
+      if (isPrivateForLlm != null) 'is_private_for_llm': isPrivateForLlm,
+      if (createdAt != null) 'created_at': createdAt,
+      if (updatedAt != null) 'updated_at': updatedAt,
+    });
+  }
+
+  MailAccountsCompanion copyWith({
+    Value<int>? id,
+    Value<String>? providerType,
+    Value<String>? email,
+    Value<String>? displayName,
+    Value<String>? clientId,
+    Value<String>? secretRef,
+    Value<bool>? isPrivateForLlm,
+    Value<DateTime>? createdAt,
+    Value<DateTime>? updatedAt,
+  }) {
+    return MailAccountsCompanion(
+      id: id ?? this.id,
+      providerType: providerType ?? this.providerType,
+      email: email ?? this.email,
+      displayName: displayName ?? this.displayName,
+      clientId: clientId ?? this.clientId,
+      secretRef: secretRef ?? this.secretRef,
+      isPrivateForLlm: isPrivateForLlm ?? this.isPrivateForLlm,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (providerType.present) {
+      map['provider_type'] = Variable<String>(providerType.value);
+    }
+    if (email.present) {
+      map['email'] = Variable<String>(email.value);
+    }
+    if (displayName.present) {
+      map['display_name'] = Variable<String>(displayName.value);
+    }
+    if (clientId.present) {
+      map['client_id'] = Variable<String>(clientId.value);
+    }
+    if (secretRef.present) {
+      map['secret_ref'] = Variable<String>(secretRef.value);
+    }
+    if (isPrivateForLlm.present) {
+      map['is_private_for_llm'] = Variable<bool>(isPrivateForLlm.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('MailAccountsCompanion(')
+          ..write('id: $id, ')
+          ..write('providerType: $providerType, ')
+          ..write('email: $email, ')
+          ..write('displayName: $displayName, ')
+          ..write('clientId: $clientId, ')
+          ..write('secretRef: $secretRef, ')
+          ..write('isPrivateForLlm: $isPrivateForLlm, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $MailMessagesTable extends MailMessages
+    with TableInfo<$MailMessagesTable, MailMessage> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $MailMessagesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _accountIdMeta = const VerificationMeta(
+    'accountId',
+  );
+  @override
+  late final GeneratedColumn<int> accountId = GeneratedColumn<int>(
+    'account_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES mail_accounts (id) ON DELETE CASCADE',
+    ),
+  );
+  static const VerificationMeta _remoteIdMeta = const VerificationMeta(
+    'remoteId',
+  );
+  @override
+  late final GeneratedColumn<String> remoteId = GeneratedColumn<String>(
+    'remote_id',
+    aliasedName,
+    false,
+    additionalChecks: GeneratedColumn.checkTextLength(
+      minTextLength: 1,
+      maxTextLength: 300,
+    ),
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _threadIdMeta = const VerificationMeta(
+    'threadId',
+  );
+  @override
+  late final GeneratedColumn<String> threadId = GeneratedColumn<String>(
+    'thread_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _fromAddressMeta = const VerificationMeta(
+    'fromAddress',
+  );
+  @override
+  late final GeneratedColumn<String> fromAddress = GeneratedColumn<String>(
+    'from_address',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _subjectMeta = const VerificationMeta(
+    'subject',
+  );
+  @override
+  late final GeneratedColumn<String> subject = GeneratedColumn<String>(
+    'subject',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _snippetMeta = const VerificationMeta(
+    'snippet',
+  );
+  @override
+  late final GeneratedColumn<String> snippet = GeneratedColumn<String>(
+    'snippet',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _bodyMeta = const VerificationMeta('body');
+  @override
+  late final GeneratedColumn<String> body = GeneratedColumn<String>(
+    'body',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _receivedAtMeta = const VerificationMeta(
+    'receivedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> receivedAt = GeneratedColumn<DateTime>(
+    'received_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _isPrivateForLlmMeta = const VerificationMeta(
+    'isPrivateForLlm',
+  );
+  @override
+  late final GeneratedColumn<bool> isPrivateForLlm = GeneratedColumn<bool>(
+    'is_private_for_llm',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("is_private_for_llm" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    accountId,
+    remoteId,
+    threadId,
+    fromAddress,
+    subject,
+    snippet,
+    body,
+    receivedAt,
+    isPrivateForLlm,
+    createdAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'mail_messages';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<MailMessage> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('account_id')) {
+      context.handle(
+        _accountIdMeta,
+        accountId.isAcceptableOrUnknown(data['account_id']!, _accountIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_accountIdMeta);
+    }
+    if (data.containsKey('remote_id')) {
+      context.handle(
+        _remoteIdMeta,
+        remoteId.isAcceptableOrUnknown(data['remote_id']!, _remoteIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_remoteIdMeta);
+    }
+    if (data.containsKey('thread_id')) {
+      context.handle(
+        _threadIdMeta,
+        threadId.isAcceptableOrUnknown(data['thread_id']!, _threadIdMeta),
+      );
+    }
+    if (data.containsKey('from_address')) {
+      context.handle(
+        _fromAddressMeta,
+        fromAddress.isAcceptableOrUnknown(
+          data['from_address']!,
+          _fromAddressMeta,
+        ),
+      );
+    }
+    if (data.containsKey('subject')) {
+      context.handle(
+        _subjectMeta,
+        subject.isAcceptableOrUnknown(data['subject']!, _subjectMeta),
+      );
+    }
+    if (data.containsKey('snippet')) {
+      context.handle(
+        _snippetMeta,
+        snippet.isAcceptableOrUnknown(data['snippet']!, _snippetMeta),
+      );
+    }
+    if (data.containsKey('body')) {
+      context.handle(
+        _bodyMeta,
+        body.isAcceptableOrUnknown(data['body']!, _bodyMeta),
+      );
+    }
+    if (data.containsKey('received_at')) {
+      context.handle(
+        _receivedAtMeta,
+        receivedAt.isAcceptableOrUnknown(data['received_at']!, _receivedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_receivedAtMeta);
+    }
+    if (data.containsKey('is_private_for_llm')) {
+      context.handle(
+        _isPrivateForLlmMeta,
+        isPrivateForLlm.isAcceptableOrUnknown(
+          data['is_private_for_llm']!,
+          _isPrivateForLlmMeta,
+        ),
+      );
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  MailMessage map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return MailMessage(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      accountId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}account_id'],
+      )!,
+      remoteId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}remote_id'],
+      )!,
+      threadId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}thread_id'],
+      ),
+      fromAddress: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}from_address'],
+      )!,
+      subject: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}subject'],
+      )!,
+      snippet: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}snippet'],
+      )!,
+      body: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}body'],
+      )!,
+      receivedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}received_at'],
+      )!,
+      isPrivateForLlm: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}is_private_for_llm'],
+      )!,
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+    );
+  }
+
+  @override
+  $MailMessagesTable createAlias(String alias) {
+    return $MailMessagesTable(attachedDatabase, alias);
+  }
+}
+
+class MailMessage extends DataClass implements Insertable<MailMessage> {
+  final int id;
+  final int accountId;
+  final String remoteId;
+  final String? threadId;
+  final String fromAddress;
+  final String subject;
+  final String snippet;
+  final String body;
+  final DateTime receivedAt;
+  final bool isPrivateForLlm;
+  final DateTime createdAt;
+  const MailMessage({
+    required this.id,
+    required this.accountId,
+    required this.remoteId,
+    this.threadId,
+    required this.fromAddress,
+    required this.subject,
+    required this.snippet,
+    required this.body,
+    required this.receivedAt,
+    required this.isPrivateForLlm,
+    required this.createdAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['account_id'] = Variable<int>(accountId);
+    map['remote_id'] = Variable<String>(remoteId);
+    if (!nullToAbsent || threadId != null) {
+      map['thread_id'] = Variable<String>(threadId);
+    }
+    map['from_address'] = Variable<String>(fromAddress);
+    map['subject'] = Variable<String>(subject);
+    map['snippet'] = Variable<String>(snippet);
+    map['body'] = Variable<String>(body);
+    map['received_at'] = Variable<DateTime>(receivedAt);
+    map['is_private_for_llm'] = Variable<bool>(isPrivateForLlm);
+    map['created_at'] = Variable<DateTime>(createdAt);
+    return map;
+  }
+
+  MailMessagesCompanion toCompanion(bool nullToAbsent) {
+    return MailMessagesCompanion(
+      id: Value(id),
+      accountId: Value(accountId),
+      remoteId: Value(remoteId),
+      threadId: threadId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(threadId),
+      fromAddress: Value(fromAddress),
+      subject: Value(subject),
+      snippet: Value(snippet),
+      body: Value(body),
+      receivedAt: Value(receivedAt),
+      isPrivateForLlm: Value(isPrivateForLlm),
+      createdAt: Value(createdAt),
+    );
+  }
+
+  factory MailMessage.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return MailMessage(
+      id: serializer.fromJson<int>(json['id']),
+      accountId: serializer.fromJson<int>(json['accountId']),
+      remoteId: serializer.fromJson<String>(json['remoteId']),
+      threadId: serializer.fromJson<String?>(json['threadId']),
+      fromAddress: serializer.fromJson<String>(json['fromAddress']),
+      subject: serializer.fromJson<String>(json['subject']),
+      snippet: serializer.fromJson<String>(json['snippet']),
+      body: serializer.fromJson<String>(json['body']),
+      receivedAt: serializer.fromJson<DateTime>(json['receivedAt']),
+      isPrivateForLlm: serializer.fromJson<bool>(json['isPrivateForLlm']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'accountId': serializer.toJson<int>(accountId),
+      'remoteId': serializer.toJson<String>(remoteId),
+      'threadId': serializer.toJson<String?>(threadId),
+      'fromAddress': serializer.toJson<String>(fromAddress),
+      'subject': serializer.toJson<String>(subject),
+      'snippet': serializer.toJson<String>(snippet),
+      'body': serializer.toJson<String>(body),
+      'receivedAt': serializer.toJson<DateTime>(receivedAt),
+      'isPrivateForLlm': serializer.toJson<bool>(isPrivateForLlm),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+    };
+  }
+
+  MailMessage copyWith({
+    int? id,
+    int? accountId,
+    String? remoteId,
+    Value<String?> threadId = const Value.absent(),
+    String? fromAddress,
+    String? subject,
+    String? snippet,
+    String? body,
+    DateTime? receivedAt,
+    bool? isPrivateForLlm,
+    DateTime? createdAt,
+  }) => MailMessage(
+    id: id ?? this.id,
+    accountId: accountId ?? this.accountId,
+    remoteId: remoteId ?? this.remoteId,
+    threadId: threadId.present ? threadId.value : this.threadId,
+    fromAddress: fromAddress ?? this.fromAddress,
+    subject: subject ?? this.subject,
+    snippet: snippet ?? this.snippet,
+    body: body ?? this.body,
+    receivedAt: receivedAt ?? this.receivedAt,
+    isPrivateForLlm: isPrivateForLlm ?? this.isPrivateForLlm,
+    createdAt: createdAt ?? this.createdAt,
+  );
+  MailMessage copyWithCompanion(MailMessagesCompanion data) {
+    return MailMessage(
+      id: data.id.present ? data.id.value : this.id,
+      accountId: data.accountId.present ? data.accountId.value : this.accountId,
+      remoteId: data.remoteId.present ? data.remoteId.value : this.remoteId,
+      threadId: data.threadId.present ? data.threadId.value : this.threadId,
+      fromAddress: data.fromAddress.present
+          ? data.fromAddress.value
+          : this.fromAddress,
+      subject: data.subject.present ? data.subject.value : this.subject,
+      snippet: data.snippet.present ? data.snippet.value : this.snippet,
+      body: data.body.present ? data.body.value : this.body,
+      receivedAt: data.receivedAt.present
+          ? data.receivedAt.value
+          : this.receivedAt,
+      isPrivateForLlm: data.isPrivateForLlm.present
+          ? data.isPrivateForLlm.value
+          : this.isPrivateForLlm,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('MailMessage(')
+          ..write('id: $id, ')
+          ..write('accountId: $accountId, ')
+          ..write('remoteId: $remoteId, ')
+          ..write('threadId: $threadId, ')
+          ..write('fromAddress: $fromAddress, ')
+          ..write('subject: $subject, ')
+          ..write('snippet: $snippet, ')
+          ..write('body: $body, ')
+          ..write('receivedAt: $receivedAt, ')
+          ..write('isPrivateForLlm: $isPrivateForLlm, ')
+          ..write('createdAt: $createdAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    accountId,
+    remoteId,
+    threadId,
+    fromAddress,
+    subject,
+    snippet,
+    body,
+    receivedAt,
+    isPrivateForLlm,
+    createdAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is MailMessage &&
+          other.id == this.id &&
+          other.accountId == this.accountId &&
+          other.remoteId == this.remoteId &&
+          other.threadId == this.threadId &&
+          other.fromAddress == this.fromAddress &&
+          other.subject == this.subject &&
+          other.snippet == this.snippet &&
+          other.body == this.body &&
+          other.receivedAt == this.receivedAt &&
+          other.isPrivateForLlm == this.isPrivateForLlm &&
+          other.createdAt == this.createdAt);
+}
+
+class MailMessagesCompanion extends UpdateCompanion<MailMessage> {
+  final Value<int> id;
+  final Value<int> accountId;
+  final Value<String> remoteId;
+  final Value<String?> threadId;
+  final Value<String> fromAddress;
+  final Value<String> subject;
+  final Value<String> snippet;
+  final Value<String> body;
+  final Value<DateTime> receivedAt;
+  final Value<bool> isPrivateForLlm;
+  final Value<DateTime> createdAt;
+  const MailMessagesCompanion({
+    this.id = const Value.absent(),
+    this.accountId = const Value.absent(),
+    this.remoteId = const Value.absent(),
+    this.threadId = const Value.absent(),
+    this.fromAddress = const Value.absent(),
+    this.subject = const Value.absent(),
+    this.snippet = const Value.absent(),
+    this.body = const Value.absent(),
+    this.receivedAt = const Value.absent(),
+    this.isPrivateForLlm = const Value.absent(),
+    this.createdAt = const Value.absent(),
+  });
+  MailMessagesCompanion.insert({
+    this.id = const Value.absent(),
+    required int accountId,
+    required String remoteId,
+    this.threadId = const Value.absent(),
+    this.fromAddress = const Value.absent(),
+    this.subject = const Value.absent(),
+    this.snippet = const Value.absent(),
+    this.body = const Value.absent(),
+    required DateTime receivedAt,
+    this.isPrivateForLlm = const Value.absent(),
+    required DateTime createdAt,
+  }) : accountId = Value(accountId),
+       remoteId = Value(remoteId),
+       receivedAt = Value(receivedAt),
+       createdAt = Value(createdAt);
+  static Insertable<MailMessage> custom({
+    Expression<int>? id,
+    Expression<int>? accountId,
+    Expression<String>? remoteId,
+    Expression<String>? threadId,
+    Expression<String>? fromAddress,
+    Expression<String>? subject,
+    Expression<String>? snippet,
+    Expression<String>? body,
+    Expression<DateTime>? receivedAt,
+    Expression<bool>? isPrivateForLlm,
+    Expression<DateTime>? createdAt,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (accountId != null) 'account_id': accountId,
+      if (remoteId != null) 'remote_id': remoteId,
+      if (threadId != null) 'thread_id': threadId,
+      if (fromAddress != null) 'from_address': fromAddress,
+      if (subject != null) 'subject': subject,
+      if (snippet != null) 'snippet': snippet,
+      if (body != null) 'body': body,
+      if (receivedAt != null) 'received_at': receivedAt,
+      if (isPrivateForLlm != null) 'is_private_for_llm': isPrivateForLlm,
+      if (createdAt != null) 'created_at': createdAt,
+    });
+  }
+
+  MailMessagesCompanion copyWith({
+    Value<int>? id,
+    Value<int>? accountId,
+    Value<String>? remoteId,
+    Value<String?>? threadId,
+    Value<String>? fromAddress,
+    Value<String>? subject,
+    Value<String>? snippet,
+    Value<String>? body,
+    Value<DateTime>? receivedAt,
+    Value<bool>? isPrivateForLlm,
+    Value<DateTime>? createdAt,
+  }) {
+    return MailMessagesCompanion(
+      id: id ?? this.id,
+      accountId: accountId ?? this.accountId,
+      remoteId: remoteId ?? this.remoteId,
+      threadId: threadId ?? this.threadId,
+      fromAddress: fromAddress ?? this.fromAddress,
+      subject: subject ?? this.subject,
+      snippet: snippet ?? this.snippet,
+      body: body ?? this.body,
+      receivedAt: receivedAt ?? this.receivedAt,
+      isPrivateForLlm: isPrivateForLlm ?? this.isPrivateForLlm,
+      createdAt: createdAt ?? this.createdAt,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (accountId.present) {
+      map['account_id'] = Variable<int>(accountId.value);
+    }
+    if (remoteId.present) {
+      map['remote_id'] = Variable<String>(remoteId.value);
+    }
+    if (threadId.present) {
+      map['thread_id'] = Variable<String>(threadId.value);
+    }
+    if (fromAddress.present) {
+      map['from_address'] = Variable<String>(fromAddress.value);
+    }
+    if (subject.present) {
+      map['subject'] = Variable<String>(subject.value);
+    }
+    if (snippet.present) {
+      map['snippet'] = Variable<String>(snippet.value);
+    }
+    if (body.present) {
+      map['body'] = Variable<String>(body.value);
+    }
+    if (receivedAt.present) {
+      map['received_at'] = Variable<DateTime>(receivedAt.value);
+    }
+    if (isPrivateForLlm.present) {
+      map['is_private_for_llm'] = Variable<bool>(isPrivateForLlm.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('MailMessagesCompanion(')
+          ..write('id: $id, ')
+          ..write('accountId: $accountId, ')
+          ..write('remoteId: $remoteId, ')
+          ..write('threadId: $threadId, ')
+          ..write('fromAddress: $fromAddress, ')
+          ..write('subject: $subject, ')
+          ..write('snippet: $snippet, ')
+          ..write('body: $body, ')
+          ..write('receivedAt: $receivedAt, ')
+          ..write('isPrivateForLlm: $isPrivateForLlm, ')
+          ..write('createdAt: $createdAt')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -7206,6 +8439,8 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $LearningSessionsTable learningSessions = $LearningSessionsTable(
     this,
   );
+  late final $MailAccountsTable mailAccounts = $MailAccountsTable(this);
+  late final $MailMessagesTable mailMessages = $MailMessagesTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -7227,6 +8462,8 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     toolAuditEntries,
     learningTracks,
     learningSessions,
+    mailAccounts,
+    mailMessages,
   ];
   @override
   StreamQueryUpdateRules get streamUpdateRules => const StreamQueryUpdateRules([
@@ -7313,6 +8550,13 @@ abstract class _$AppDatabase extends GeneratedDatabase {
         limitUpdateKind: UpdateKind.delete,
       ),
       result: [TableUpdate('learning_sessions', kind: UpdateKind.delete)],
+    ),
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'mail_accounts',
+        limitUpdateKind: UpdateKind.delete,
+      ),
+      result: [TableUpdate('mail_messages', kind: UpdateKind.delete)],
     ),
   ]);
 }
@@ -13360,6 +14604,812 @@ typedef $$LearningSessionsTableProcessedTableManager =
       LearningSession,
       PrefetchHooks Function({bool trackId})
     >;
+typedef $$MailAccountsTableCreateCompanionBuilder =
+    MailAccountsCompanion Function({
+      Value<int> id,
+      required String providerType,
+      required String email,
+      Value<String> displayName,
+      Value<String> clientId,
+      required String secretRef,
+      Value<bool> isPrivateForLlm,
+      required DateTime createdAt,
+      required DateTime updatedAt,
+    });
+typedef $$MailAccountsTableUpdateCompanionBuilder =
+    MailAccountsCompanion Function({
+      Value<int> id,
+      Value<String> providerType,
+      Value<String> email,
+      Value<String> displayName,
+      Value<String> clientId,
+      Value<String> secretRef,
+      Value<bool> isPrivateForLlm,
+      Value<DateTime> createdAt,
+      Value<DateTime> updatedAt,
+    });
+
+final class $$MailAccountsTableReferences
+    extends BaseReferences<_$AppDatabase, $MailAccountsTable, MailAccount> {
+  $$MailAccountsTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static MultiTypedResultKey<$MailMessagesTable, List<MailMessage>>
+  _mailMessagesRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+    db.mailMessages,
+    aliasName: 'mail_accounts__id__mail_messages__account_id',
+  );
+
+  $$MailMessagesTableProcessedTableManager get mailMessagesRefs {
+    final manager = $$MailMessagesTableTableManager(
+      $_db,
+      $_db.mailMessages,
+    ).filter((f) => f.accountId.id.sqlEquals($_itemColumn<int>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_mailMessagesRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+}
+
+class $$MailAccountsTableFilterComposer
+    extends Composer<_$AppDatabase, $MailAccountsTable> {
+  $$MailAccountsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get providerType => $composableBuilder(
+    column: $table.providerType,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get email => $composableBuilder(
+    column: $table.email,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get displayName => $composableBuilder(
+    column: $table.displayName,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get clientId => $composableBuilder(
+    column: $table.clientId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get secretRef => $composableBuilder(
+    column: $table.secretRef,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get isPrivateForLlm => $composableBuilder(
+    column: $table.isPrivateForLlm,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  Expression<bool> mailMessagesRefs(
+    Expression<bool> Function($$MailMessagesTableFilterComposer f) f,
+  ) {
+    final $$MailMessagesTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.mailMessages,
+      getReferencedColumn: (t) => t.accountId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$MailMessagesTableFilterComposer(
+            $db: $db,
+            $table: $db.mailMessages,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+}
+
+class $$MailAccountsTableOrderingComposer
+    extends Composer<_$AppDatabase, $MailAccountsTable> {
+  $$MailAccountsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get providerType => $composableBuilder(
+    column: $table.providerType,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get email => $composableBuilder(
+    column: $table.email,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get displayName => $composableBuilder(
+    column: $table.displayName,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get clientId => $composableBuilder(
+    column: $table.clientId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get secretRef => $composableBuilder(
+    column: $table.secretRef,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get isPrivateForLlm => $composableBuilder(
+    column: $table.isPrivateForLlm,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$MailAccountsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $MailAccountsTable> {
+  $$MailAccountsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get providerType => $composableBuilder(
+    column: $table.providerType,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get email =>
+      $composableBuilder(column: $table.email, builder: (column) => column);
+
+  GeneratedColumn<String> get displayName => $composableBuilder(
+    column: $table.displayName,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get clientId =>
+      $composableBuilder(column: $table.clientId, builder: (column) => column);
+
+  GeneratedColumn<String> get secretRef =>
+      $composableBuilder(column: $table.secretRef, builder: (column) => column);
+
+  GeneratedColumn<bool> get isPrivateForLlm => $composableBuilder(
+    column: $table.isPrivateForLlm,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+
+  Expression<T> mailMessagesRefs<T extends Object>(
+    Expression<T> Function($$MailMessagesTableAnnotationComposer a) f,
+  ) {
+    final $$MailMessagesTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.mailMessages,
+      getReferencedColumn: (t) => t.accountId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$MailMessagesTableAnnotationComposer(
+            $db: $db,
+            $table: $db.mailMessages,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+}
+
+class $$MailAccountsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $MailAccountsTable,
+          MailAccount,
+          $$MailAccountsTableFilterComposer,
+          $$MailAccountsTableOrderingComposer,
+          $$MailAccountsTableAnnotationComposer,
+          $$MailAccountsTableCreateCompanionBuilder,
+          $$MailAccountsTableUpdateCompanionBuilder,
+          (MailAccount, $$MailAccountsTableReferences),
+          MailAccount,
+          PrefetchHooks Function({bool mailMessagesRefs})
+        > {
+  $$MailAccountsTableTableManager(_$AppDatabase db, $MailAccountsTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$MailAccountsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$MailAccountsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$MailAccountsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<String> providerType = const Value.absent(),
+                Value<String> email = const Value.absent(),
+                Value<String> displayName = const Value.absent(),
+                Value<String> clientId = const Value.absent(),
+                Value<String> secretRef = const Value.absent(),
+                Value<bool> isPrivateForLlm = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+              }) => MailAccountsCompanion(
+                id: id,
+                providerType: providerType,
+                email: email,
+                displayName: displayName,
+                clientId: clientId,
+                secretRef: secretRef,
+                isPrivateForLlm: isPrivateForLlm,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                required String providerType,
+                required String email,
+                Value<String> displayName = const Value.absent(),
+                Value<String> clientId = const Value.absent(),
+                required String secretRef,
+                Value<bool> isPrivateForLlm = const Value.absent(),
+                required DateTime createdAt,
+                required DateTime updatedAt,
+              }) => MailAccountsCompanion.insert(
+                id: id,
+                providerType: providerType,
+                email: email,
+                displayName: displayName,
+                clientId: clientId,
+                secretRef: secretRef,
+                isPrivateForLlm: isPrivateForLlm,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$MailAccountsTable, MailAccount>(table),
+                  $$MailAccountsTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({mailMessagesRefs = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [if (mailMessagesRefs) db.mailMessages],
+              addJoins: null,
+              getPrefetchedDataCallback: (items) async {
+                return [
+                  if (mailMessagesRefs)
+                    await $_getPrefetchedData<
+                      MailAccount,
+                      $MailAccountsTable,
+                      MailMessage
+                    >(
+                      currentTable: table,
+                      referencedTable: $$MailAccountsTableReferences
+                          ._mailMessagesRefsTable(db),
+                      managerFromTypedResult: (p0) =>
+                          $$MailAccountsTableReferences(
+                            db,
+                            table,
+                            p0,
+                          ).mailMessagesRefs,
+                      referencedItemsForCurrentItem: (item, referencedItems) =>
+                          referencedItems.where((e) => e.accountId == item.id),
+                      typedResults: items,
+                    ),
+                ];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$MailAccountsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $MailAccountsTable,
+      MailAccount,
+      $$MailAccountsTableFilterComposer,
+      $$MailAccountsTableOrderingComposer,
+      $$MailAccountsTableAnnotationComposer,
+      $$MailAccountsTableCreateCompanionBuilder,
+      $$MailAccountsTableUpdateCompanionBuilder,
+      (MailAccount, $$MailAccountsTableReferences),
+      MailAccount,
+      PrefetchHooks Function({bool mailMessagesRefs})
+    >;
+typedef $$MailMessagesTableCreateCompanionBuilder =
+    MailMessagesCompanion Function({
+      Value<int> id,
+      required int accountId,
+      required String remoteId,
+      Value<String?> threadId,
+      Value<String> fromAddress,
+      Value<String> subject,
+      Value<String> snippet,
+      Value<String> body,
+      required DateTime receivedAt,
+      Value<bool> isPrivateForLlm,
+      required DateTime createdAt,
+    });
+typedef $$MailMessagesTableUpdateCompanionBuilder =
+    MailMessagesCompanion Function({
+      Value<int> id,
+      Value<int> accountId,
+      Value<String> remoteId,
+      Value<String?> threadId,
+      Value<String> fromAddress,
+      Value<String> subject,
+      Value<String> snippet,
+      Value<String> body,
+      Value<DateTime> receivedAt,
+      Value<bool> isPrivateForLlm,
+      Value<DateTime> createdAt,
+    });
+
+final class $$MailMessagesTableReferences
+    extends BaseReferences<_$AppDatabase, $MailMessagesTable, MailMessage> {
+  $$MailMessagesTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static $MailAccountsTable _accountIdTable(_$AppDatabase db) => db.mailAccounts
+      .createAlias('mail_messages__account_id__mail_accounts__id');
+
+  $$MailAccountsTableProcessedTableManager get accountId {
+    final $_column = $_itemColumn<int>('account_id')!;
+
+    final manager = $$MailAccountsTableTableManager(
+      $_db,
+      $_db.mailAccounts,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_accountIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$MailMessagesTableFilterComposer
+    extends Composer<_$AppDatabase, $MailMessagesTable> {
+  $$MailMessagesTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get remoteId => $composableBuilder(
+    column: $table.remoteId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get threadId => $composableBuilder(
+    column: $table.threadId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get fromAddress => $composableBuilder(
+    column: $table.fromAddress,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get subject => $composableBuilder(
+    column: $table.subject,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get snippet => $composableBuilder(
+    column: $table.snippet,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get body => $composableBuilder(
+    column: $table.body,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get receivedAt => $composableBuilder(
+    column: $table.receivedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get isPrivateForLlm => $composableBuilder(
+    column: $table.isPrivateForLlm,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$MailAccountsTableFilterComposer get accountId {
+    final $$MailAccountsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.accountId,
+      referencedTable: $db.mailAccounts,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$MailAccountsTableFilterComposer(
+            $db: $db,
+            $table: $db.mailAccounts,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$MailMessagesTableOrderingComposer
+    extends Composer<_$AppDatabase, $MailMessagesTable> {
+  $$MailMessagesTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get remoteId => $composableBuilder(
+    column: $table.remoteId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get threadId => $composableBuilder(
+    column: $table.threadId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get fromAddress => $composableBuilder(
+    column: $table.fromAddress,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get subject => $composableBuilder(
+    column: $table.subject,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get snippet => $composableBuilder(
+    column: $table.snippet,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get body => $composableBuilder(
+    column: $table.body,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get receivedAt => $composableBuilder(
+    column: $table.receivedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get isPrivateForLlm => $composableBuilder(
+    column: $table.isPrivateForLlm,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$MailAccountsTableOrderingComposer get accountId {
+    final $$MailAccountsTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.accountId,
+      referencedTable: $db.mailAccounts,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$MailAccountsTableOrderingComposer(
+            $db: $db,
+            $table: $db.mailAccounts,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$MailMessagesTableAnnotationComposer
+    extends Composer<_$AppDatabase, $MailMessagesTable> {
+  $$MailMessagesTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get remoteId =>
+      $composableBuilder(column: $table.remoteId, builder: (column) => column);
+
+  GeneratedColumn<String> get threadId =>
+      $composableBuilder(column: $table.threadId, builder: (column) => column);
+
+  GeneratedColumn<String> get fromAddress => $composableBuilder(
+    column: $table.fromAddress,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get subject =>
+      $composableBuilder(column: $table.subject, builder: (column) => column);
+
+  GeneratedColumn<String> get snippet =>
+      $composableBuilder(column: $table.snippet, builder: (column) => column);
+
+  GeneratedColumn<String> get body =>
+      $composableBuilder(column: $table.body, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get receivedAt => $composableBuilder(
+    column: $table.receivedAt,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get isPrivateForLlm => $composableBuilder(
+    column: $table.isPrivateForLlm,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  $$MailAccountsTableAnnotationComposer get accountId {
+    final $$MailAccountsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.accountId,
+      referencedTable: $db.mailAccounts,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$MailAccountsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.mailAccounts,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$MailMessagesTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $MailMessagesTable,
+          MailMessage,
+          $$MailMessagesTableFilterComposer,
+          $$MailMessagesTableOrderingComposer,
+          $$MailMessagesTableAnnotationComposer,
+          $$MailMessagesTableCreateCompanionBuilder,
+          $$MailMessagesTableUpdateCompanionBuilder,
+          (MailMessage, $$MailMessagesTableReferences),
+          MailMessage,
+          PrefetchHooks Function({bool accountId})
+        > {
+  $$MailMessagesTableTableManager(_$AppDatabase db, $MailMessagesTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$MailMessagesTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$MailMessagesTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$MailMessagesTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<int> accountId = const Value.absent(),
+                Value<String> remoteId = const Value.absent(),
+                Value<String?> threadId = const Value.absent(),
+                Value<String> fromAddress = const Value.absent(),
+                Value<String> subject = const Value.absent(),
+                Value<String> snippet = const Value.absent(),
+                Value<String> body = const Value.absent(),
+                Value<DateTime> receivedAt = const Value.absent(),
+                Value<bool> isPrivateForLlm = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+              }) => MailMessagesCompanion(
+                id: id,
+                accountId: accountId,
+                remoteId: remoteId,
+                threadId: threadId,
+                fromAddress: fromAddress,
+                subject: subject,
+                snippet: snippet,
+                body: body,
+                receivedAt: receivedAt,
+                isPrivateForLlm: isPrivateForLlm,
+                createdAt: createdAt,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                required int accountId,
+                required String remoteId,
+                Value<String?> threadId = const Value.absent(),
+                Value<String> fromAddress = const Value.absent(),
+                Value<String> subject = const Value.absent(),
+                Value<String> snippet = const Value.absent(),
+                Value<String> body = const Value.absent(),
+                required DateTime receivedAt,
+                Value<bool> isPrivateForLlm = const Value.absent(),
+                required DateTime createdAt,
+              }) => MailMessagesCompanion.insert(
+                id: id,
+                accountId: accountId,
+                remoteId: remoteId,
+                threadId: threadId,
+                fromAddress: fromAddress,
+                subject: subject,
+                snippet: snippet,
+                body: body,
+                receivedAt: receivedAt,
+                isPrivateForLlm: isPrivateForLlm,
+                createdAt: createdAt,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$MailMessagesTable, MailMessage>(table),
+                  $$MailMessagesTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({accountId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins:
+                  <
+                    T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (accountId) {
+                      state = state.withJoin(
+                        currentTable: table,
+                        currentColumn: table.accountId,
+                        referencedTable: $$MailMessagesTableReferences
+                            ._accountIdTable(db),
+                        referencedColumn: $$MailMessagesTableReferences
+                            ._accountIdTable(db)
+                            .id,
+                      ) as T;
+                    }
+
+                    return state;
+                  },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$MailMessagesTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $MailMessagesTable,
+      MailMessage,
+      $$MailMessagesTableFilterComposer,
+      $$MailMessagesTableOrderingComposer,
+      $$MailMessagesTableAnnotationComposer,
+      $$MailMessagesTableCreateCompanionBuilder,
+      $$MailMessagesTableUpdateCompanionBuilder,
+      (MailMessage, $$MailMessagesTableReferences),
+      MailMessage,
+      PrefetchHooks Function({bool accountId})
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -13395,4 +15445,8 @@ class $AppDatabaseManager {
       $$LearningTracksTableTableManager(_db, _db.learningTracks);
   $$LearningSessionsTableTableManager get learningSessions =>
       $$LearningSessionsTableTableManager(_db, _db.learningSessions);
+  $$MailAccountsTableTableManager get mailAccounts =>
+      $$MailAccountsTableTableManager(_db, _db.mailAccounts);
+  $$MailMessagesTableTableManager get mailMessages =>
+      $$MailMessagesTableTableManager(_db, _db.mailMessages);
 }

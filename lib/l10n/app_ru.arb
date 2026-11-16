@@ -269,5 +269,47 @@
   "learningRoadmapReplace": "Заменить текущий roadmap сгенерированным?",
   "learningReplace": "Заменить",
   "learningChangeStepStatus": "Изменить статус шага",
-  "learningRoadmapEmptyGoal": "Сначала заполните цель трека."
+  "learningRoadmapEmptyGoal": "Сначала заполните цель трека.",
+  "mailSection": "Почта",
+  "mailHint": "Ящики подключаются только через OAuth 2.0. Токены хранятся в защищённом хранилище ОС.",
+  "mailAddAccount": "Подключить ящик",
+  "mailNoAccounts": "Почтовые ящики не подключены",
+  "mailProvider": "Провайдер",
+  "mailEmail": "Email",
+  "mailDisplayName": "Название ящика",
+  "mailClientId": "OAuth client ID",
+  "mailClientIdHint": "Публичный client ID вашего OAuth-приложения",
+  "mailConnect": "Подключить",
+  "mailConnecting": "Ожидание OAuth…",
+  "mailAccountAdded": "Ящик подключён",
+  "mailAccountAddError": "Не удалось подключить ящик",
+  "mailSync": "Синхронизировать",
+  "mailSyncing": "Синхронизация…",
+  "mailSyncDone": "Загружено писем: {count}",
+  "@mailSyncDone": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "mailSyncError": "Не удалось синхронизировать почту",
+  "mailMessages": "Письма",
+  "mailNoMessages": "Писем пока нет",
+  "mailSearchHint": "Поиск по почте",
+  "mailPrivate": "Не отправлять письма в LLM",
+  "mailDeleteAccount": "Удалить ящик",
+  "mailAccountDeleted": "Ящик удалён",
+  "mailSummary": "Суммаризировать",
+  "mailCreateTask": "Создать задачу",
+  "mailTaskCreated": "Задача создана",
+  "mailTaskCreateError": "Не удалось создать задачу",
+  "mailSummarizeError": "Не удалось получить резюме",
+  "mailBody": "Текст письма",
+  "mailFrom": "От",
+  "mailSubject": "Тема",
+  "mailReceived": "Получено",
+  "mailOAuthHint": "Откроется браузер. Завершите вход и вернитесь в приложение.",
+  "mailOAuthError": "OAuth не завершён",
+  "mailOAuthMissing": "Заполните провайдера, email и client ID."
 }

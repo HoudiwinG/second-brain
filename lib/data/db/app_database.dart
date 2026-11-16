@@ -320,6 +320,57 @@ class LearningTracks extends Table {
   DateTimeColumn get deletedAt => dateTime().nullable()();
 }
 
+/// Подключённый почтовый ящик. OAuth-токены лежат в SecretStore по [secretRef].
+class MailAccounts extends Table {
+  IntColumn get id => integer().autoIncrement()();
+
+  /// gmail | yandex | mailru
+  TextColumn get providerType => text().withLength(min: 1, max: 40)();
+
+  TextColumn get email => text().withLength(min: 1, max: 320)();
+
+  TextColumn get displayName => text().withDefault(const Constant(''))();
+
+  /// Публичный OAuth client id (не секрет).
+  TextColumn get clientId => text().withDefault(const Constant(''))();
+
+  TextColumn get secretRef => text().withLength(min: 1, max: 200)();
+
+  BoolColumn get isPrivateForLlm =>
+      boolean().withDefault(const Constant(false))();
+
+  DateTimeColumn get createdAt => dateTime()();
+
+  DateTimeColumn get updatedAt => dateTime()();
+}
+
+/// Кэш писем для офлайн-просмотра. Тело письма может быть приватным.
+class MailMessages extends Table {
+  IntColumn get id => integer().autoIncrement()();
+
+  IntColumn get accountId =>
+      integer().references(MailAccounts, #id, onDelete: KeyAction.cascade)();
+
+  TextColumn get remoteId => text().withLength(min: 1, max: 300)();
+
+  TextColumn get threadId => text().nullable()();
+
+  TextColumn get fromAddress => text().withDefault(const Constant(''))();
+
+  TextColumn get subject => text().withDefault(const Constant(''))();
+
+  TextColumn get snippet => text().withDefault(const Constant(''))();
+
+  TextColumn get body => text().withDefault(const Constant(''))();
+
+  DateTimeColumn get receivedAt => dateTime()();
+
+  BoolColumn get isPrivateForLlm =>
+      boolean().withDefault(const Constant(false))();
+
+  DateTimeColumn get createdAt => dateTime()();
+}
+
 class LearningSessions extends Table {
   IntColumn get id => integer().autoIncrement()();
 
@@ -387,6 +438,8 @@ class ToolAuditEntries extends Table {
     ToolAuditEntries,
     LearningTracks,
     LearningSessions,
+    MailAccounts,
+    MailMessages,
   ],
 )
 class AppDatabase extends _$AppDatabase {
@@ -408,7 +461,7 @@ class AppDatabase extends _$AppDatabase {
   static AppDatabase inMemory() => AppDatabase(NativeDatabase.memory());
 
   @override
-  int get schemaVersion => 7;
+  int get schemaVersion => 8;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -419,6 +472,7 @@ class AppDatabase extends _$AppDatabase {
       await _createIndexes();
       await _createAuditIndexes();
       await _createLearningIndexes();
+      await _createMailIndexes();
     },
     // ВАЖНО: createAll() в onUpgrade не используется. Он создаёт только
     // отсутствующие таблицы и молча пропускает ALTER/перенос данных,
@@ -430,7 +484,7 @@ class AppDatabase extends _$AppDatabase {
       // добавить колонку и индекс, а затем падает, оставляя файл в
       // промежуточном состоянии; downgrade v4 → v3 и вовсе молча
       // перезаписывал user_version (R02-004).
-      if (from > to || from > 7 || to > 7) {
+      if (from > to || from > 8 || to > 8) {
         throw UnsupportedError(
           'AppDatabase: нет миграции схемы $from → $to. '
           'Добавьте явную миграцию в onUpgrade (ADR-012).',
@@ -485,6 +539,12 @@ class AppDatabase extends _$AppDatabase {
         await m.createTable(learningSessions);
         await _createLearningIndexes();
       }
+      if (from < 8) {
+        // v8: почта — OAuth-аккаунты и офлайн-кэш писем.
+        await m.createTable(mailAccounts);
+        await m.createTable(mailMessages);
+        await _createMailIndexes();
+      }
     },
     beforeOpen: (details) async {
       AppLogger.d('AppDatabase: beforeOpen (upgrade=${details.hadUpgrade})');
@@ -492,6 +552,7 @@ class AppDatabase extends _$AppDatabase {
       // Идемпотентно досоздаём индексы для dev-баз, открытых на промежуточной
       // сборке v7, где индекс ещё не был добавлен.
       await _createLearningIndexes();
+      await _createMailIndexes();
     },
   );
 
@@ -578,6 +639,22 @@ class AppDatabase extends _$AppDatabase {
     await customStatement(
       'CREATE INDEX IF NOT EXISTS idx_learning_sessions_track_date '
       'ON learning_sessions(track_id, date)',
+    );
+  }
+
+  /// Индексы почты (v8).
+  Future<void> _createMailIndexes() async {
+    await customStatement(
+      'CREATE INDEX IF NOT EXISTS idx_mail_accounts_provider '
+      'ON mail_accounts(provider_type)',
+    );
+    await customStatement(
+      'CREATE INDEX IF NOT EXISTS idx_mail_messages_account_received '
+      'ON mail_messages(account_id, received_at)',
+    );
+    await customStatement(
+      'CREATE UNIQUE INDEX IF NOT EXISTS idx_mail_messages_account_remote '
+      'ON mail_messages(account_id, remote_id)',
     );
   }
 

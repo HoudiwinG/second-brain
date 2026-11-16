@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:http/http.dart' as http;
 
 import '../core/secrets/secret_store.dart';
 import '../core/secrets/secure_secret_store.dart';
@@ -13,6 +14,7 @@ import '../data/repositories/finance_repository.dart';
 import '../data/repositories/ideas_repository.dart';
 import '../data/repositories/learning_repository.dart';
 import '../data/repositories/llm_config_repository.dart';
+import '../data/repositories/mail_repository.dart';
 import '../data/repositories/notes_repository.dart';
 import '../data/repositories/search_repository.dart';
 import '../data/repositories/settings_repository.dart';
@@ -23,6 +25,10 @@ import '../features/finance/domain/finance_transaction.dart';
 import '../features/ideas/domain/idea_entry.dart';
 import '../features/learning/application/learning_trainer.dart';
 import '../features/learning/domain/learning_track.dart';
+import '../features/mail/application/mail_oauth.dart';
+import '../features/mail/application/mail_summary_service.dart';
+import '../features/mail/application/mail_sync_service.dart';
+import '../features/mail/domain/mail_repository.dart';
 import '../features/llm/application/llm_config_controller.dart';
 import '../features/llm/application/llm_context_loader.dart';
 import '../features/llm/data/llm_provider_factory.dart';
@@ -117,6 +123,44 @@ final learningTrainerProvider = FutureProvider<LearningTrainer>((ref) async {
   final configs = await ref.watch(llmConfigControllerProvider.future);
   final configRepo = await ref.watch(llmConfigRepositoryProvider.future);
   return LearningTrainer(
+    configs: configs,
+    configRepo: configRepo,
+    factory: ref.watch(llmProviderFactoryProvider),
+  );
+});
+
+/// Почтовые аккаунты и локальный кэш писем.
+final mailRepositoryProvider = FutureProvider<MailRepository>((ref) async {
+  final db = await ref.watch(appDatabaseProvider.future);
+  return DriftMailRepository(db, ref.watch(secretStoreProvider));
+});
+
+final mailTokenStoreProvider = Provider<MailTokenStore>(
+  (ref) => MailTokenStore(ref.watch(secretStoreProvider)),
+);
+
+final mailOAuthServiceProvider = Provider<MailOAuthService>((ref) {
+  final client = http.Client();
+  ref.onDispose(client.close);
+  return MailOAuthService(
+    tokenStore: ref.watch(mailTokenStoreProvider),
+    client: client,
+  );
+});
+
+final mailSyncServiceProvider = FutureProvider<MailSyncService>((ref) async {
+  return MailSyncService(
+    repository: await ref.watch(mailRepositoryProvider.future),
+    oauth: ref.watch(mailOAuthServiceProvider),
+  );
+});
+
+final mailSummaryServiceProvider = FutureProvider<MailSummaryService>((
+  ref,
+) async {
+  final configs = await ref.watch(llmConfigControllerProvider.future);
+  final configRepo = await ref.watch(llmConfigRepositoryProvider.future);
+  return MailSummaryService(
     configs: configs,
     configRepo: configRepo,
     factory: ref.watch(llmProviderFactoryProvider),

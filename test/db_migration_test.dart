@@ -16,11 +16,11 @@ import 'helpers/in_memory_db.dart';
 ///
 /// Нужна, чтобы проверить политику ADR-012: непокрытый переход onUpgrade
 /// обязан падать, а не молча создавать недостающие таблицы.
-final class _AppDatabaseV8 extends AppDatabase {
-  _AppDatabaseV8(super.executor);
+final class _AppDatabaseV9 extends AppDatabase {
+  _AppDatabaseV9(super.executor);
 
   @override
-  int get schemaVersion => 8;
+  int get schemaVersion => 9;
 }
 
 /// База, которая «не понимает» файл v5: нужна для проверки downgrade.
@@ -33,11 +33,11 @@ final class _AppDatabaseV3 extends AppDatabase {
 
 /// Интеграционные тесты миграций drift.
 void main() {
-  group('AppDatabase схема v7', () {
-    test('schemaVersion = 7 (ядро, напоминания, LLM, аудит и обучение)', () {
+  group('AppDatabase схема v8', () {
+    test('schemaVersion = 8 (ядро, LLM, обучение и почта)', () {
       final db = InMemoryDbFactory.open();
       addTearDown(db.close);
-      expect(db.schemaVersion, 7);
+      expect(db.schemaVersion, 8);
     });
 
     test('onCreate создаёт app_settings и таблицы ядра', () async {
@@ -72,6 +72,8 @@ void main() {
       expect(await db.select(db.chatMessages).get(), isEmpty);
       expect(await db.select(db.learningTracks).get(), isEmpty);
       expect(await db.select(db.learningSessions).get(), isEmpty);
+      expect(await db.select(db.mailAccounts).get(), isEmpty);
+      expect(await db.select(db.mailMessages).get(), isEmpty);
 
       final fts = await db
           .customSelect(
@@ -125,17 +127,17 @@ void main() {
             );
         await v5.close();
 
-        final v8 = _AppDatabaseV8(NativeDatabase(file));
+        final v9 = _AppDatabaseV9(NativeDatabase(file));
         addTearDown(() async {
           try {
-            await v8.close();
+            await v9.close();
           } on Object {
             // Соединение могло остаться в незавершённой миграции.
           }
         });
 
         await expectLater(
-          () => v8.select(v8.appSettings).get(),
+          () => v9.select(v9.appSettings).get(),
           throwsA(isA<UnsupportedError>()),
         );
       },
@@ -188,31 +190,114 @@ void main() {
       final hits = (await search.search('миграции')).unwrap();
       expect(hits, hasLength(1));
       expect(hits.single.entityId, note.id);
-      expect(db.schemaVersion, 7);
+      expect(db.schemaVersion, 8);
       expect(await db.select(db.llmProviderConfigs).get(), isEmpty);
       expect(await db.select(db.chatThreads).get(), isEmpty);
       expect(await db.select(db.chatMessages).get(), isEmpty);
+      expect(await db.select(db.mailAccounts).get(), isEmpty);
+      expect(await db.select(db.mailMessages).get(), isEmpty);
+    });
+  });
+
+  group('Миграция v7 → v8', () {
+    test('создаёт почтовые таблицы и сохраняет данные', () async {
+      final dir = await Directory.systemTemp.createTemp('second_brain_db_');
+      addTearDown(() async {
+        if (dir.existsSync()) await dir.delete(recursive: true);
+      });
+      final file = File('${dir.path}/v7.sqlite');
+
+      final seed = AppDatabase(NativeDatabase(file));
+      await seed
+          .into(seed.appSettings)
+          .insert(
+            AppSettingsCompanion.insert(
+              key: 'keep.me',
+              value: 'v7',
+              updatedAt: DateTime.utc(2026, 1, 1),
+            ),
+          );
+      await seed.customStatement(
+        'DROP INDEX IF EXISTS idx_mail_messages_account_remote',
+      );
+      await seed.customStatement(
+        'DROP INDEX IF EXISTS idx_mail_messages_account_received',
+      );
+      await seed.customStatement(
+        'DROP INDEX IF EXISTS idx_mail_accounts_provider',
+      );
+      await seed.customStatement('DROP TABLE IF EXISTS mail_messages');
+      await seed.customStatement('DROP TABLE IF EXISTS mail_accounts');
+      await seed.customStatement('PRAGMA user_version = 7');
+      await seed.close();
+
+      final db = AppDatabase(NativeDatabase(file));
+      addTearDown(db.close);
+      final setting = await (db.select(
+        db.appSettings,
+      )..where((t) => t.key.equals('keep.me'))).getSingle();
+      expect(setting.value, 'v7');
+
+      final accountId = await db
+          .into(db.mailAccounts)
+          .insert(
+            MailAccountsCompanion.insert(
+              providerType: 'gmail',
+              email: 'test@example.com',
+              clientId: const Value('client'),
+              secretRef: 'secret',
+              createdAt: DateTime.utc(2026, 11, 1),
+              updatedAt: DateTime.utc(2026, 11, 1),
+            ),
+          );
+      await db
+          .into(db.mailMessages)
+          .insert(
+            MailMessagesCompanion.insert(
+              accountId: accountId,
+              remoteId: 'remote-1',
+              receivedAt: DateTime.utc(2026, 11, 2),
+              createdAt: DateTime.utc(2026, 11, 2),
+            ),
+          );
+      expect(await db.select(db.mailAccounts).get(), hasLength(1));
+      expect(await db.select(db.mailMessages).get(), hasLength(1));
+
+      final indexes = await db
+          .customSelect(
+            "SELECT name FROM sqlite_master WHERE type = 'index' "
+            "AND name IN ('idx_mail_accounts_provider', "
+            "'idx_mail_messages_account_received', "
+            "'idx_mail_messages_account_remote')",
+          )
+          .get();
+      expect(indexes, hasLength(3));
+
+      await (db.delete(
+        db.mailAccounts,
+      )..where((a) => a.id.equals(accountId))).go();
+      expect(await db.select(db.mailMessages).get(), isEmpty);
     });
   });
 
   group('Защита миграций (R02-004)', () {
     test(
-      'v2 → v8 падает до DDL и не оставляет файл в промежуточном виде',
+      'v2 → v9 падает до DDL и не оставляет файл в промежуточном виде',
       () async {
         final dir = await Directory.systemTemp.createTemp('second_brain_db_');
         addTearDown(() async {
           if (dir.existsSync()) await dir.delete(recursive: true);
         });
-        final file = File('${dir.path}/v2_to_v8.sqlite');
+        final file = File('${dir.path}/v2_to_v9.sqlite');
         await _seedV2(file);
 
-        final v8 = _AppDatabaseV8(NativeDatabase(file));
+        final v9 = _AppDatabaseV9(NativeDatabase(file));
         await expectLater(
-          () => v8.select(v8.appSettings).get(),
+          () => v9.select(v9.appSettings).get(),
           throwsA(isA<UnsupportedError>()),
         );
         try {
-          await v8.close();
+          await v9.close();
         } on Object {
           // Соединение могло остаться в незавершённой миграции.
         }
@@ -316,7 +401,7 @@ void main() {
 
         final db = AppDatabase(NativeDatabase(file));
         addTearDown(db.close);
-        expect(db.schemaVersion, 7);
+        expect(db.schemaVersion, 8);
 
         final task = await db.select(db.tasks).getSingle();
         expect(task.title, 'Напоминание после миграции');
@@ -420,7 +505,7 @@ void main() {
 
       final db = AppDatabase(NativeDatabase(file));
       addTearDown(db.close);
-      expect(db.schemaVersion, 7);
+      expect(db.schemaVersion, 8);
 
       final configColumns = await db
           .customSelect('PRAGMA table_info(llm_provider_configs)')
@@ -675,7 +760,7 @@ void main() {
 
       final db = AppDatabase(NativeDatabase(file));
       addTearDown(db.close);
-      expect(db.schemaVersion, 7);
+      expect(db.schemaVersion, 8);
       expect((await db.select(db.tasks).getSingle()).title, 'До LLM-слоя');
       expect(await db.select(db.llmProviderConfigs).get(), isEmpty);
       expect(await db.select(db.chatThreads).get(), isEmpty);

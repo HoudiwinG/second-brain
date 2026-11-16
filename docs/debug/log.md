@@ -763,3 +763,21 @@ track/date. Гейты: analyze 0, test **185/185**, Windows debug build success
 | 2026-11-16 | — | гейты | analyze 0; test **193/193**; Windows debug build success |
 | 2026-11-16 | — | CI | `43901179307` (`82f49d5`) — success, оба job'а |
 | 2026-11-16 | — | финал | финальное ревью — **PASS WITH COMMENTS** (0 MAJOR); stage-06 разблокирован |
+
+## Stage-06: почта (2026-11-16)
+
+Реализованы OAuth 2.0 + PKCE, secure tokens, Gmail API adapter, REST-адаптер
+Yandex/Mail.ru, локальный кэш/поиск, суммаризация через LLM и создание задачи
+из письма. Схема v8: `mail_accounts`, `mail_messages`, индексы и unique
+account/remote. Гейты: analyze 0, test **209/209**, Windows debug build
+success. Независимое ревью ещё не проводилось.
+
+| Timestamp (UTC) | ID | Действие | Примечание |
+|-----------------|----|----------|------------|
+| 2026-11-16 | — | схема | v7 → v8: почтовые аккаунты/письма, индексы, FK cascade |
+| 2026-11-16 | — | OAuth | PKCE S256, loopback callback, токены в SecretStore, refresh |
+| 2026-11-16 | — | providers | Gmail API list/get; REST-контракт Yandex/Mail.ru |
+| 2026-11-16 | — | privacy | private account/message не уходит в LLM; summary fail-closed |
+| 2026-11-16 | — | UI | подключение/синхронизация/приватность/поиск/просмотр/задача |
+| 2026-11-16 | — | тесты | repository, OAuth, Gmail parser, summary, widget, v7→v8 |
+| 2026-11-16 | — | статус | self-check done; ожидается независимое ревью stage-06 |

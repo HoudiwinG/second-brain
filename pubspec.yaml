@@ -29,6 +29,9 @@ dependencies:
   flutter_secure_storage: ^11.2.0
   logger: ^2.8.0
 
+  # PKCE для OAuth 2.0 (S256 code challenge)
+  crypto: ^3.0.7
+
   # Локализация
   intl: ^0.20.3
 

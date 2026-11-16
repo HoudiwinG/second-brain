@@ -727,4 +727,113 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get learningRoadmapEmptyGoal => 'Fill in the track goal first.';
+
+  @override
+  String get mailSection => 'Mail';
+
+  @override
+  String get mailHint =>
+      'Accounts connect via OAuth 2.0 only. Tokens are stored in the OS secure storage.';
+
+  @override
+  String get mailAddAccount => 'Connect mailbox';
+
+  @override
+  String get mailNoAccounts => 'No mailboxes connected';
+
+  @override
+  String get mailProvider => 'Provider';
+
+  @override
+  String get mailEmail => 'Email';
+
+  @override
+  String get mailDisplayName => 'Mailbox name';
+
+  @override
+  String get mailClientId => 'OAuth client ID';
+
+  @override
+  String get mailClientIdHint => 'Public client ID of your OAuth application';
+
+  @override
+  String get mailConnect => 'Connect';
+
+  @override
+  String get mailConnecting => 'Waiting for OAuth…';
+
+  @override
+  String get mailAccountAdded => 'Mailbox connected';
+
+  @override
+  String get mailAccountAddError => 'Could not connect the mailbox';
+
+  @override
+  String get mailSync => 'Sync';
+
+  @override
+  String get mailSyncing => 'Syncing…';
+
+  @override
+  String mailSyncDone(int count) {
+    return 'Messages loaded: $count';
+  }
+
+  @override
+  String get mailSyncError => 'Could not sync mail';
+
+  @override
+  String get mailMessages => 'Messages';
+
+  @override
+  String get mailNoMessages => 'No messages yet';
+
+  @override
+  String get mailSearchHint => 'Search mail';
+
+  @override
+  String get mailPrivate => 'Do not send mail to LLM';
+
+  @override
+  String get mailDeleteAccount => 'Delete mailbox';
+
+  @override
+  String get mailAccountDeleted => 'Mailbox deleted';
+
+  @override
+  String get mailSummary => 'Summarize';
+
+  @override
+  String get mailCreateTask => 'Create task';
+
+  @override
+  String get mailTaskCreated => 'Task created';
+
+  @override
+  String get mailTaskCreateError => 'Could not create the task';
+
+  @override
+  String get mailSummarizeError => 'Could not get a summary';
+
+  @override
+  String get mailBody => 'Message body';
+
+  @override
+  String get mailFrom => 'From';
+
+  @override
+  String get mailSubject => 'Subject';
+
+  @override
+  String get mailReceived => 'Received';
+
+  @override
+  String get mailOAuthHint =>
+      'A browser will open. Complete sign-in and return to the app.';
+
+  @override
+  String get mailOAuthError => 'OAuth was not completed';
+
+  @override
+  String get mailOAuthMissing => 'Fill in provider, email and client ID.';
 }
