@@ -785,3 +785,4 @@ Mail API, локальный кэш/поиск, per-message privacy, сумма�
 | 2026-11-16 | — | fixes | rundll32, debounce, Yandex API, per-message privacy, 401-retry, 225/225 |
 | 2026-11-16 | — | re-review | A/B FAIL: 401 throw, Yandex links, unique beforeOpen, re-auth |
 | 2026-11-16 | — | fixes-2 | provider Failure, contract links, safe beforeOpen, re-auth UI, 225/225 |
+| 2026-11-16 | — | CI | run 43923720070 (`83ece84`): analyze-and-test + build-windows success |

@@ -10,7 +10,8 @@
   блокеры обоих кругов исправлены (см.
   [reviews/stage-06-fix-results.md](../reviews/stage-06-fix-results.md)).
   Гейты: `flutter analyze --fatal-infos` — 0 issues, `flutter test` —
-  **225/225**, `flutter build windows --debug` — success.
+  **225/225**, `flutter build windows --debug` — success; CI
+  `43923720070` (`83ece84`) — success, оба job'а.
 - **Предыдущий этап:** stage-05 — **PASS WITH COMMENTS**, stage-06
   разблокирован.
 - **Схема БД:** **v8** (`mail_accounts`, `mail_messages`).
