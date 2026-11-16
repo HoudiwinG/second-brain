@@ -1,14 +1,15 @@
 # Контекст проекта (снимок состояния)
 
-- **Текущий этап:** stage-04 (инструменты ассистента) — **реализация (`f2d9f08`)
-  и исправления по ревью (`821b4f8`) закоммичены, гейты зелёные** (analyze 0,
-  test **160/160**, Windows debug build success). **Независимое ревью — FAIL**:
-  0 critical, 1 major (`S04-001`), 7 minor, 1 nit; **все 9 находок закрыты**
-  ([stage-04-fix-results.md](reviews/stage-04-fix-results.md)), повторное ревью
-  ещё не проводилось. Блокер снят: Google-провайдер группирует результаты
-  нескольких tool calls в один `user`-content. Отчёт:
-  [stages/stage-04.md](stages/stage-04.md). Схема БД — **v6**
-  (`tool_audit_log`). ADR-021.
+- **Текущий этап:** stage-04 (инструменты ассистента) — **повторное независимое
+  ревью FAIL** (2026-11-16, два прохода). Реализация `f2d9f08`, исправления
+  `821b4f8`; исходные 9 находок закрыты, но найдены **3 новых MAJOR**:
+  `S04R-001` (Anthropic не группирует параллельные `tool_result`),
+  `S04R-002` (Google теряет `functionCall.id`), `S04R-003` (retry после tool
+  loop дублирует создание). **Stage-05 заблокирован.** Гейты на `0aa69de`:
+  analyze 0, test **160/160**, Windows debug build в CI — success. Отчёт:
+  [stages/stage-04.md](stages/stage-04.md), повторное ревью:
+  [reviews/stage-04-repeat-review.md](reviews/stage-04-repeat-review.md).
+  Схема БД — **v6** (`tool_audit_log`). ADR-021.
 - **Предыдущий этап:** stage-03 (LLM-слой) **закрыт повторным независимым
   ревью: PASS** (2026-10-28). Исходное ревью остаётся **FAIL** (2026-10-25);
   все 28 находок S03-001…S03-028 исправлены коммитом `14e63a7` и подтверждены
@@ -34,34 +35,50 @@
   (0 critical, 0 major, 2 minor S03R-001/S03R-002, 2 nit S03R-003/S03R-004).
 - **Исправления stage-03:** [reviews/stage-03-fix-results.md](reviews/stage-03-fix-results.md)
   — доказательства по каждому S03-ID; все 28 закрыты, новых TD не заведено.
-- **Последний PASS-ревью:** stage-02 —
+- **Исходное ревью stage-04:** [reviews/stage-04-review.md](reviews/stage-04-review.md)
+  — **FAIL** (2026-10-29): 0 critical, 1 major (`S04-001`), 7 minor, 1 nit;
+  все 9 находок исправлены в `821b4f8`.
+- **Повторное ревью stage-04:** [reviews/stage-04-repeat-review.md](reviews/stage-04-repeat-review.md)
+  — **FAIL** (2026-11-16, два прохода): 0 critical, **3 major**, 5 minor,
+  3 nit после объединения дублей. Блокеры: `S04R-001`, `S04R-002`,
+  `S04R-003`. Исходные S04-001…S04-009 закрыты; S04-006 — код исправлен,
+  не хватает regression-теста смены треда.
+- **Последний PASS-ревью:** stage-03 —
+  [reviews/stage-03-repeat-review.md](reviews/stage-03-repeat-review.md),
+  **PASS** (2026-10-28, 28/28 verified, 0 major). Stage-02 —
   [reviews/stage-02-review.md](reviews/stage-02-review.md),
   **PASS WITH COMMENTS** (ревью №3, 2026-10-24); исторические вердикты
   **FAIL** (ревью и повторное №2). Результаты исправлений R02-001…R02-008 —
   [reviews/stage-02-review-results.md](reviews/stage-02-review-results.md),
   R02-009…R02-013 — [reviews/stage-02-fix-results.md](reviews/stage-02-fix-results.md).
-- **Текущий отчёт:** [stages/stage-03.md](stages/stage-03.md)
+- **Текущий отчёт:** [stages/stage-04.md](stages/stage-04.md)
 - **Открытых CRITICAL:** 0
-- **Открытых исходных S03-находок:** 0 (28/28 подтверждены повторным ревью).
-  **Не блокирующие комментарии:** S03R-001/S03R-002 (MINOR), S03R-003/S03R-004
-  (NIT), R02-014 (MINOR), R02-015 (NIT). **Принятый TD:** TD-28 (нет UI выбора
-  контекста). TD-21 — отдельное принятое ограничение `REAL` для финансов.
+- **Открытых MAJOR stage-04:** 3 (`S04R-001`, `S04R-002`, `S04R-003`);
+  **MINOR:** 5 (`S04R-004`…`S04R-008`); **NIT:** 3 (`S04R-009`…`S04R-011`).
+  Исходные S04-001…S04-009 закрыты; S04-006 требует regression-теста смены
+  треда. **Открытых исходных S03-находок:** 0 (28/28 подтверждены повторным
+  ревью). **Не блокирующие комментарии:** S03R-001/S03R-002 (MINOR),
+  S03R-003/S03R-004 (NIT), R02-014 (MINOR), R02-015 (NIT). **Принятый TD:**
+  TD-28 (нет UI выбора контекста). TD-21 — отдельное принятое ограничение
+  `REAL` для финансов.
 - **Сборка:** `flutter analyze --fatal-infos` — **No issues found**;
-  `flutter test` — **132/132**; `flutter build windows --debug` — **success**
-  (2026-10-28, локально, `build\windows\x64\runner\Debug\second_brain.exe`)
+  `flutter test` — **160/160**; `flutter build windows --debug` — **success**
+  (CI `40834088339` для `0aa69de`, 2026-11-07;
+  `build\windows\x64\runner\Debug\second_brain.exe`)
 - **Flutter SDK:** 3.47.7 stable, `C:\src\flutter` (Dart 3.13.5)
 - **Windows-тулчейн:** Visual Studio Build Tools 2022 17.14 (MSVC v143 +
   Windows SDK + ATL/ATLMFC), установлен 2026-10-24; `flutter doctor` — без
   замечаний. Android: cmdline-tools 23.0 + `JAVA_HOME` → Android Studio JBR.
   До 2026-10-24 VS на этой машине отсутствовал: записи о «локальной сборке»
   от 2026-10-22 относились к другому ПК (см. `docs/debug/log.md`).
-- **Ветка:** `master`; базовая реализация stage-03 — `0ae0c85`, отчёт stage-03
-  — `0defdb0`, уточнение отчёта — `9fedec7`, независимое ревью — `6906c2d`,
-  исправления S03 — `14e63a7`, документация исправлений — `49bc00f` и
-  `3089b79`; повторное ревью — отдельный коммит после `3089b79`.
-  Код исправлений ревью №2 stage-02 — `a50d972` и `92a9642`; исправления
-  первого ревью — `8956179`; базовая реализация stage-02 — `82b04a2`; HEAD до
-  stage-02 — `6faeb90`.
+- **Ветка:** `master`; текущий HEAD — `0aa69de` (stage-04: реализация
+  `f2d9f08`, исправления `821b4f8`, документация `0aa69de`). Базовая
+  реализация stage-03 — `0ae0c85`, отчёт stage-03 — `0defdb0`, уточнение
+  отчёта — `9fedec7`, независимое ревью — `6906c2d`, исправления S03 —
+  `14e63a7`, документация исправлений — `49bc00f` и `3089b79`, повторное
+  ревью stage-03 — `0e72495`. Код исправлений ревью №2 stage-02 — `a50d972`
+  и `92a9642`; исправления первого ревью — `8956179`; базовая реализация
+  stage-02 — `82b04a2`; HEAD до stage-02 — `6faeb90`.
 
 ## Активные фича-флаги
 - experimental.llmChat = true (чат и LLM-провайдеры используются на stage-03)
@@ -150,11 +167,36 @@
   сущности и логирует только количество/типы, без содержимого.
 - У сообщений чата есть `is_private_for_llm`; такие сообщения и error-маркеры
   не попадают в следующий запрос.
-- `LlmToolRegistry`/`LlmTool` — контракт и реестр; на stage-03 реестр пуст,
-  определения передаются в запрос. Имена trim-ятся единообразно.
+- `LlmToolRegistry`/`LlmTool` — контракт и реестр; на stage-03 реестр был
+  пуст, на stage-04 заполнен встроенными инструментами. Имена trim-ятся
+  единообразно.
 - `EmbeddingService` и `VectorStore` — интерфейсы RAG, без индексации.
 - В чате пока нет UI выбора контекста (TD-28), но production-путь
   `sendMessage(contextRefs:)` покрыт тестами.
+
+## Что сделано на stage-04
+
+### Инструменты и tool loop
+- Встроенные инструменты: `create_task` (с `remind_at`), `create_note`,
+  `update_task_status`, `search_data`, `summarize_mail_mock`.
+- `ToolRunner`: неизвестный инструмент, битый JSON и ошибка валидации не
+  прерывают запрос; модель получает `{"ok": false, "error": ...}`.
+- `ChatController` выполняет tool calls раундами, лимит `maxToolRounds = 3`;
+  при превышении — `llm_error` с сохранением partial-текста. Отмена
+  останавливает следующий раунд, но уже выполненные инструменты не
+  откатываются.
+- Провайдеры: OpenAI-compatible `tool_calls`/`tool`, Anthropic
+  `tool_use`/`tool_result`, Google `functionCall`/`functionResponse`.
+  Известные дефекты повторного ревью: Anthropic не группирует результаты
+  параллельных вызовов (`S04R-001`), Google теряет `functionCall.id`
+  (`S04R-002`).
+- Аудит: схема **v6**, `tool_audit_log` (`ToolAuditEntries`); пишутся имя
+  инструмента, статус, имена аргументов без значений, `entity_id`, время.
+- Повторный retry после ошибки следующего раунда может повторно выполнить
+  создающие инструменты (`S04R-003`); это известный блокер, а не штатное
+  поведение.
+- Тесты stage-04: 160/160; CI `40834088339` (`0aa69de`) — success, включая
+  Windows debug build.
 
 ## Что сделано на stage-02
 
@@ -262,17 +304,24 @@
   после освобождения хоткей зарегистрировался и работает.
 
 ## Известные ограничения / принятый техдолг
+- **Stage-04 — повторное ревью FAIL (2026-11-16).** Открыты `S04R-001`
+  (Anthropic parallel tool results), `S04R-002` (Google `functionCall.id`),
+  `S04R-003` (retry дублирует создающие инструменты); stage-05 заблокирован.
+  Исходные S04-001…S04-009 закрыты, S04-006 требует regression-теста смены
+  треда.
 - **Stage-03 — исходное ревью FAIL (2026-10-25) сохранено, повторное — PASS
   (2026-10-28).** Все 28 находок S03-001…S03-028 исправлены в `14e63a7` и
-  подтверждены; stage-04 разблокирован. S03R-001/S03R-002 (MINOR) и
-  S03R-003/S03R-004 (NIT) — неблокирующие комментарии для stage-04.
+  подтверждены. S03R-001/S03R-002 (MINOR) и S03R-003/S03R-004 (NIT) —
+  неблокирующие комментарии.
 - Все адаптеры проверены через `MockClient`; реальный запрос с настоящим
   API-ключом и ручной GUI-streaming после исправлений не выполнялись.
 - **TD-28 (MINOR, accepted):** в чате нет UI выбора контекста; production-путь
   `ChatController.sendMessage(contextRefs:)` читает флаги из БД и покрыт
   тестами, но обычный пользователь пока не может прикрепить заметку/задачу.
-- Tool calls парсятся, но не исполняются; реестр инструментов пуст до
-  stage-04.
+  Триггер stage-04 не выполнен; вопрос перенесён на stage-05.
+- Инструменты исполняются, но tool calls/результаты не сохраняются в
+  `chat_messages`; трассировка — только в `tool_audit_log`. Поэтому retry
+  после ошибки не знает о уже выполненных действиях.
 - RAG: только интерфейсы `EmbeddingService`/`VectorStore`, индексации нет.
 - Модель вводится вручную; списка моделей от провайдера нет.
 - Retry после начала SSE-потока не выполняется; partial-ответ сохраняется с
@@ -304,12 +353,15 @@
 - DST-переход (23/25-часовые сутки) локально не воспроизводился; тест
   `dashboard_period_test.dart` проверяет календарную семантику границ.
 
-## Ближайшие задачи (stage-04)
-- Stage-04: tools (создание задач/заметок/напоминаний, поиск, обновление
-  трекера), аудит действий без содержимого приватных полей.
-- Учесть неблокирующие S03R-001…S03R-004: контекст при последнем
-  `assistant`-сообщении, отмена streaming при удалении провайдера, `enabled`
-  у composer и дубль `hintGlobalHotkey` в ARB.
+## Ближайшие задачи (сначала stage-04, затем stage-05)
+- Исправить блокеры S04R-001…S04R-003 и добавить регрессионные тесты:
+  Anthropic parallel tool results, Google `functionCall.id`, retry после
+  mutating tools.
+- Закрыть S04R-004…S04R-007: приватные результаты create-инструментов,
+  regression-тест смены треда в tool loop, гонка cancel/terminal, pre-tool
+  текст при отмене.
+- Повторное независимое ревью stage-04; после PASS — stage-05.
+- Учесть неблокирующие S03R-001…S03R-004 и S04R-008…S04R-011.
 - Добавить UI выбора контекста в чат (TD-28), чтобы privacy guard был
   достижим в пользовательском сценарии.
 - RAG: реализация `EmbeddingService`/`VectorStore` и индексация заметок.
@@ -337,6 +389,8 @@
   до потока
 - ADR-020: единый контракт LLM, streaming, privacy guard через `LlmContextRef`
   и границы tools/RAG
+- ADR-021: инструменты ассистента, tool loop, аудит без содержимого и
+  приватность результатов
 
 ## Активный агент
 - agent-1: DeepSeek V4.1 Flash Free (OpenCode), ветка master
@@ -352,8 +406,19 @@
 - independent repeat reviewer (Gemini 4 Argon, 2026-10-28): повторное ревью
   stage-03 — **PASS**, 28/28 verified, 0 critical/0 major; S03R-001…S03R-004
   неблокирующие. Stage-04 разблокирован.
+- reviewer A (agent-2, 2026-11-07): повторное ревью stage-04 — **FAIL**
+  (2 MAJOR, 3 MINOR, 2 NIT); reviewer B (agent-3, 2026-11-07): **FAIL**
+  (3 MAJOR, 3 MINOR, 1 NIT); после объединения — 3 MAJOR, 5 MINOR, 3 NIT.
+  Stage-05 заблокирован.
 
 ## Ссылки
+- Отчёт stage-04: [stages/stage-04.md](stages/stage-04.md)
+- Исходное ревью stage-04:
+  [reviews/stage-04-review.md](reviews/stage-04-review.md)
+- Повторное ревью stage-04:
+  [reviews/stage-04-repeat-review.md](reviews/stage-04-repeat-review.md)
+- Результаты исправлений stage-04:
+  [reviews/stage-04-fix-results.md](reviews/stage-04-fix-results.md)
 - Отчёт stage-03: [stages/stage-03.md](stages/stage-03.md)
 - Ревью stage-03: [reviews/stage-03-review.md](reviews/stage-03-review.md)
 - Повторное ревью stage-03:

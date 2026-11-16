@@ -60,6 +60,17 @@
 > как TD. Отчёт —
 > [reviews/stage-03-repeat-review.md](reviews/stage-03-repeat-review.md).
 > Stage-04 разблокирован.
+>
+> **Повторное независимое ревью stage-04 (2026-11-16, два прохода):**
+> **FAIL**, critical 0, **major 3**, minor 5, nit 3 после объединения дублей.
+> Блокеры: S04R-001 (Anthropic parallel tool results), S04R-002 (Google
+> `functionCall.id`), S04R-003 (retry дублирует создающие инструменты).
+> Исходные S04-001…S04-009 закрыты; S04-006 требует regression-теста смены
+> треда. Полный список —
+> [reviews/stage-04-repeat-review.md](reviews/stage-04-repeat-review.md).
+> Находки S04R не заведены как TD: они блокируют stage-05 и должны быть
+> исправлены. TD-28 (UI выбора контекста) остаётся accepted; его триггер
+> stage-04 не выполнен и переносится на stage-05.
 
 Проверка после исправлений R02-009…R02-013 (2026-10-24, Flutter 3.47.7):
 `flutter pub get --enforce-lockfile` → OK; `flutter analyze --fatal-infos` →
