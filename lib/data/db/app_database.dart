@@ -300,6 +300,45 @@ class ChatMessages extends Table {
 ///
 /// Хранит только имена аргументов и id сущности: значения (заголовки, тексты)
 /// не пишутся, чтобы аудит не стал копией приватного содержимого.
+class LearningTracks extends Table {
+  IntColumn get id => integer().autoIncrement()();
+
+  TextColumn get title => text().withLength(min: 1, max: 200)();
+
+  TextColumn get goal => text().withDefault(const Constant(''))();
+
+  /// JSON-массив шагов roadmap (id, title, description, status).
+  TextColumn get roadmapJson => text().withDefault(const Constant('[]'))();
+
+  /// JSON-объект пользовательских полей трекера.
+  TextColumn get customFieldsJson => text().withDefault(const Constant('{}'))();
+
+  BoolColumn get isPrivateForLlm =>
+      boolean().withDefault(const Constant(false))();
+
+  DateTimeColumn get createdAt => dateTime()();
+
+  DateTimeColumn get updatedAt => dateTime()();
+
+  DateTimeColumn get deletedAt => dateTime().nullable()();
+}
+
+class LearningSessions extends Table {
+  IntColumn get id => integer().autoIncrement()();
+
+  IntColumn get trackId =>
+      integer().references(LearningTracks, #id, onDelete: KeyAction.cascade)();
+
+  /// Длительность сессии в минутах.
+  IntColumn get durationMinutes => integer()();
+
+  TextColumn get notes => text().withDefault(const Constant(''))();
+
+  DateTimeColumn get date => dateTime()();
+
+  DateTimeColumn get createdAt => dateTime()();
+}
+
 class ToolAuditEntries extends Table {
   @override
   String get tableName => 'tool_audit_log';
@@ -322,9 +361,10 @@ class ToolAuditEntries extends Table {
 
 /// Локальная БД SQLite (Drift).
 ///
-/// Схема v6 — ядро данных stage-01 + напоминания stage-02 + LLM-слой stage-03
+/// Схема v7 — ядро данных stage-01 + напоминания stage-02 + LLM-слой stage-03
 /// с исправлениями ревью (embedding-модель, приватность сообщений,
-/// единственный default-провайдер) + аудит инструментов stage-04.
+/// единственный default-провайдер) + аудит инструментов stage-04 + треки и
+/// сессии обучения stage-05.
 /// Полнотекстовый индекс `search_index`
 /// создаётся отдельными SQL-командами: FTS5 — виртуальная таблица, которую
 /// Drift не описывает декларативно (ADR-013).
@@ -344,6 +384,8 @@ class ToolAuditEntries extends Table {
     ChatThreads,
     ChatMessages,
     ToolAuditEntries,
+    LearningTracks,
+    LearningSessions,
   ],
 )
 class AppDatabase extends _$AppDatabase {
@@ -365,7 +407,7 @@ class AppDatabase extends _$AppDatabase {
   static AppDatabase inMemory() => AppDatabase(NativeDatabase.memory());
 
   @override
-  int get schemaVersion => 6;
+  int get schemaVersion => 7;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -375,6 +417,7 @@ class AppDatabase extends _$AppDatabase {
       await _createSearchSchema();
       await _createIndexes();
       await _createAuditIndexes();
+      await _createLearningIndexes();
     },
     // ВАЖНО: createAll() в onUpgrade не используется. Он создаёт только
     // отсутствующие таблицы и молча пропускает ALTER/перенос данных,
@@ -386,7 +429,7 @@ class AppDatabase extends _$AppDatabase {
       // добавить колонку и индекс, а затем падает, оставляя файл в
       // промежуточном состоянии; downgrade v4 → v3 и вовсе молча
       // перезаписывал user_version (R02-004).
-      if (from > to || from > 6 || to > 6) {
+      if (from > to || from > 7 || to > 7) {
         throw UnsupportedError(
           'AppDatabase: нет миграции схемы $from → $to. '
           'Добавьте явную миграцию в onUpgrade (ADR-012).',
@@ -434,6 +477,12 @@ class AppDatabase extends _$AppDatabase {
         // v6: аудит вызовов инструментов ассистента.
         await m.createTable(toolAuditEntries);
         await _createAuditIndexes();
+      }
+      if (from < 7) {
+        // v7: обучение — треки, roadmap-шаги и сессии.
+        await m.createTable(learningTracks);
+        await m.createTable(learningSessions);
+        await _createLearningIndexes();
       }
     },
     beforeOpen: (details) async {
@@ -509,6 +558,18 @@ class AppDatabase extends _$AppDatabase {
     await customStatement(
       'CREATE INDEX IF NOT EXISTS idx_tool_audit_created '
       'ON tool_audit_log(created_at)',
+    );
+  }
+
+  /// Индексы обучения (v7).
+  Future<void> _createLearningIndexes() async {
+    await customStatement(
+      'CREATE INDEX IF NOT EXISTS idx_learning_tracks_updated '
+      'ON learning_tracks(updated_at)',
+    );
+    await customStatement(
+      'CREATE INDEX IF NOT EXISTS idx_learning_sessions_track_date '
+      'ON learning_sessions(track_id, date)',
     );
   }
 

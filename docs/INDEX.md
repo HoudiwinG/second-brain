@@ -1,27 +1,25 @@
 # INDEX — карта документации
 
 ## Состояние
-- Текущий этап: stage-04 (инструменты ассистента) — **PASS WITH COMMENTS
-  (0 MAJOR).** Исходное ревью — FAIL; повторное ревью 2026-11-16 — FAIL
-  (3 MAJOR), все 11 `S04R` исправлены; повторная проверка — **PASS WITH
-  COMMENTS**. Комментарии `S04F` (4 MINOR/3 NIT у A, 3 MINOR/5 NIT у B)
-  исправлены; финальная проверка — **PASS WITH COMMENTS** (0 MAJOR),
-  комментарии S04Z fixed. Analyze 0, test **172/172**, Windows debug build
-  success; CI `43835793997` (`9f54bcc`) — success. Stage-05 разблокирован.
-- Предыдущий этап: stage-03 (LLM-слой) **закрыт повторным независимым ревью:
-  PASS** (2026-10-28). Исходное ревью остаётся **FAIL** (2026-10-25), вердикт
-  сохранён. Все 28 находок S03-001…S03-028 исправлены коммитом `14e63a7` и
-  подтверждены (28/28 verified). Stage-02 закрыт с вердиктом **PASS WITH
-  COMMENTS** (ревью №3); R02-001…R02-013 закрыты, R02-014/R02-015 остаются
-  не блокирующими комментариями.
-- Гейты stage-04 после исправлений S04R/S04F/S04Z (2026-11-16): `flutter
-  analyze --fatal-infos` — **No issues found**, `flutter test` — **172/172**,
-  `flutter build windows --debug` — **success**; CI-run
-  [43835793997](https://github.com/HoudiwinG/second-brain/actions/runs/43835793997)
-  (`9f54bcc`) — **success**, включая Windows debug build.
+- Текущий этап: stage-05 (обучение) — **реализация и self-check готовы,
+  независимое ревью ещё не проводилось.** Треки, roadmap-шаги, сессии,
+  AI-тренер (roadmap/материалы/check-in), приватный трек не уходит в LLM,
+  схема **v7**. Analyze 0, test **185/185**, Windows debug build success.
+- Предыдущий этап: stage-04 (инструменты ассистента) — **PASS WITH COMMENTS
+  (0 MAJOR)**. Исходное ревью — FAIL; повторное ревью — FAIL (3 MAJOR), все
+  11 `S04R` исправлены; повторная проверка — **PASS WITH COMMENTS**;
+  комментарии S04F/S04Z fixed. Analyze 0, test **172/172**, CI
+  `43835793997` (`9f54bcc`) — success.
+- Stage-03 закрыт повторным независимым ревью **PASS** (2026-10-28), 28/28
+  verified. Stage-02 — **PASS WITH COMMENTS** (ревью №3); R02-014/R02-015
+  остаются неблокирующими комментариями.
+- Гейты stage-05 (2026-11-16): `flutter analyze --fatal-infos` — **No issues
+  found**, `flutter test` — **185/185**, `flutter build windows --debug` —
+  **success**; CI — после push.
 - Локальные гейты stage-03 (2026-10-28): analyze 0, test 132/132, Windows debug
   build; CI `40636764573` (`49bc00f`, включая `14e63a7`) — success.
 - Снимок состояния: [context.md](context.md)
+- Отчёт stage-05: [stages/stage-05.md](stages/stage-05.md).
 - Отчёт stage-03: [stages/stage-03.md](stages/stage-03.md).
 - Ревью stage-03: [reviews/stage-03-review.md](reviews/stage-03-review.md) —
   **FAIL**, critical 0, major 3, minor 17, nit 8; полный список
@@ -63,6 +61,8 @@
 - [stage-04-final-review](reviews/stage-04-final-review.md) — финальное
   ревью (2026-11-16, два прохода): **PASS WITH COMMENTS**, 0 MAJOR; S04F
   verified, S04Z fixed; stage-05 разблокирован.
+- Ревью stage-05 — не проводилось (self-check; независимая проверка
+  запланирована после реализации).
 - Исправления stage-04:
   [reviews/stage-04-fix-results.md](reviews/stage-04-fix-results.md) — все 9
   исходных находок закрыты коммитом `821b4f8` (+ docs-коммит).
@@ -81,7 +81,7 @@
 2. Прочитай [context.md](context.md) — текущее состояние
 3. Прочитай [decisions.md](decisions.md) — все ADR
 4. Прочитай [tech-debt.md](tech-debt.md) — открытый/принятый техдолг
-5. Прочитай отчёт последнего этапа: [stages/stage-04.md](stages/stage-04.md)
+5. Прочитай отчёт последнего этапа: [stages/stage-05.md](stages/stage-05.md)
 
 ## Отчёты по этапам
 - [stage-00](stages/stage-00.md) — каркас (done, PASS WITH COMMENTS)
@@ -92,11 +92,13 @@
 - [stage-03](stages/stage-03.md) — LLM-слой (done; исходное ревью **FAIL**
   сохранено, повторное — **PASS** 28/28; 132/132, analyze 0, Windows debug
   build, CI `40636764573` success; stage-04 разблокирован)
-- [stage-04](stages/stage-04.md) — инструменты ассистента (реализация `f2d9f08`,
-  исправления по ревью `821b4f8`; исходное ревью **FAIL**, 9/9 fixed;
-  повторное ревью **FAIL** → **PASS WITH COMMENTS** после S04R, 11/11 fixed;
-  комментарии S04F fixed; analyze 0, test 172/172, Windows debug build
-  success; ADR-021; схема v6; stage-05 разблокирован)
+- [stage-04](stages/stage-04.md) — инструменты ассистента (исходное ревью
+  **FAIL**, 9/9 fixed; повторное **FAIL** → **PASS WITH COMMENTS** после
+  S04R, 11/11 fixed; S04F/S04Z fixed; analyze 0, test 172/172, Windows debug
+  build success; ADR-021; схема v6; stage-05 разблокирован)
+- [stage-05](stages/stage-05.md) — обучение (треки, roadmap, сессии,
+  AI-тренер; ADR-022; схема v7; analyze 0, test 185/185, Windows debug build
+  success; независимое ревью ожидается)
 
 ## Шаблоны
 - [decisions.template.md](decisions.template.md) — формат ADR
@@ -147,13 +149,13 @@
 - [decisions.md](decisions.md) — все ADR
 - Разделы:
   - architecture: ADR-001, ADR-002, ADR-004, ADR-005, ADR-008, ADR-012,
-    ADR-016, ADR-018, ADR-019, ADR-020, ADR-021
-  - security: ADR-003, ADR-018, ADR-020, ADR-021
+    ADR-016, ADR-018, ADR-019, ADR-020, ADR-021, ADR-022
+  - security: ADR-003, ADR-018, ADR-020, ADR-021, ADR-022
   - dependency: ADR-006, ADR-007, ADR-011, ADR-017
   - integration: ADR-006, ADR-009, ADR-014, ADR-017, ADR-019
   - ux: ADR-005, ADR-008, ADR-010, ADR-016
   - data/search: ADR-013
-  - schema: ADR-002, ADR-012, ADR-015, ADR-018
+  - schema: ADR-002, ADR-012, ADR-015, ADR-018, ADR-021, ADR-022
 
 ## Дебаг
 - [debug/log.md](debug/log.md) — хронология находок

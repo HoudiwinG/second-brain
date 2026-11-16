@@ -107,6 +107,9 @@ class AppLocalizationsRu extends AppLocalizations {
   String get actionSave => 'Сохранить';
 
   @override
+  String get actionClose => 'Закрыть';
+
+  @override
   String get actionCancel => 'Отмена';
 
   @override
@@ -589,4 +592,133 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get chatConfigMissing => 'Сначала настройте LLM-провайдера.';
+
+  @override
+  String get learningEmpty => 'Треков обучения пока нет';
+
+  @override
+  String get learningAddTrack => 'Новый трек';
+
+  @override
+  String get learningEditTrack => 'Редактировать трек';
+
+  @override
+  String get learningTrackTitle => 'Название трека';
+
+  @override
+  String get learningGoal => 'Цель';
+
+  @override
+  String get learningPrivate => 'Не отправлять трек в LLM';
+
+  @override
+  String get learningCustomFields => 'Дополнительные поля';
+
+  @override
+  String get learningCustomFieldsHint => 'По одному на строку: поле=значение';
+
+  @override
+  String get learningRoadmap => 'Roadmap';
+
+  @override
+  String get learningNoSteps => 'Шагов пока нет';
+
+  @override
+  String get learningAddStep => 'Добавить шаг';
+
+  @override
+  String get learningStepTitle => 'Шаг';
+
+  @override
+  String get learningStepDescription => 'Описание шага';
+
+  @override
+  String learningProgress(int done, int total) {
+    return 'Прогресс: $done/$total';
+  }
+
+  @override
+  String get learningStepTodo => 'К выполнению';
+
+  @override
+  String get learningStepInProgress => 'В работе';
+
+  @override
+  String get learningStepDone => 'Готово';
+
+  @override
+  String get learningSessions => 'Сессии';
+
+  @override
+  String get learningNoSessions => 'Сессий пока нет';
+
+  @override
+  String get learningAddSession => 'Добавить сессию';
+
+  @override
+  String get learningSessionDuration => 'Минуты';
+
+  @override
+  String get learningSessionNotes => 'Заметки';
+
+  @override
+  String get learningSessionDate => 'Дата';
+
+  @override
+  String learningTotalMinutes(int minutes) {
+    return 'Всего: $minutes мин';
+  }
+
+  @override
+  String get learningAiTrainer => 'AI-тренер';
+
+  @override
+  String get learningGenerateRoadmap => 'Сгенерировать roadmap';
+
+  @override
+  String get learningSuggestMaterials => 'Предложить материалы';
+
+  @override
+  String get learningCheckIn => 'Спросить о прогрессе';
+
+  @override
+  String get learningAiPrivate => 'Приватный трек не отправляется в LLM';
+
+  @override
+  String get learningAiResult => 'Ответ тренера';
+
+  @override
+  String get learningCheckInHint =>
+      'Давно не было сессии. Как продвигается обучение?';
+
+  @override
+  String get learningTrackSaved => 'Трек сохранён';
+
+  @override
+  String get learningTrackSaveError => 'Не удалось сохранить трек';
+
+  @override
+  String get learningTrackDeleted => 'Трек удалён';
+
+  @override
+  String get learningTrackDeleteError => 'Не удалось удалить трек';
+
+  @override
+  String get learningSessionSaved => 'Сессия добавлена';
+
+  @override
+  String get learningSessionSaveError => 'Не удалось добавить сессию';
+
+  @override
+  String get learningSessionDeleted => 'Сессия удалена';
+
+  @override
+  String get learningSessionDeleteError => 'Не удалось удалить сессию';
+
+  @override
+  String get learningRoadmapReplace =>
+      'Заменить текущий roadmap сгенерированным?';
+
+  @override
+  String get learningRoadmapEmptyGoal => 'Сначала заполните цель трека.';
 }

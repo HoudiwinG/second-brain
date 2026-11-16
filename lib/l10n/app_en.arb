@@ -32,6 +32,7 @@
   "trayMenuQuit": "Quit",
   "actionAdd": "Add",
   "actionSave": "Save",
+  "actionClose": "Close",
   "actionCancel": "Cancel",
   "actionDelete": "Delete",
   "actionEdit": "Edit",
@@ -208,5 +209,63 @@
   "chatThreadDeleted": "Thread deleted",
   "chatDeleteThread": "Delete thread",
   "chatProviderMissing": "The thread provider was deleted. Choose another in Settings.",
-  "chatConfigMissing": "Configure an LLM provider first."
+  "chatConfigMissing": "Configure an LLM provider first.",
+  "learningEmpty": "No learning tracks yet",
+  "learningAddTrack": "New track",
+  "learningEditTrack": "Edit track",
+  "learningTrackTitle": "Track name",
+  "learningGoal": "Goal",
+  "learningPrivate": "Do not send this track to LLM",
+  "learningCustomFields": "Custom fields",
+  "learningCustomFieldsHint": "One per line: field=value",
+  "learningRoadmap": "Roadmap",
+  "learningNoSteps": "No steps yet",
+  "learningAddStep": "Add step",
+  "learningStepTitle": "Step",
+  "learningStepDescription": "Step description",
+  "learningProgress": "Progress: {done}/{total}",
+  "@learningProgress": {
+    "placeholders": {
+      "done": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "learningStepTodo": "To do",
+  "learningStepInProgress": "In progress",
+  "learningStepDone": "Done",
+  "learningSessions": "Sessions",
+  "learningNoSessions": "No sessions yet",
+  "learningAddSession": "Add session",
+  "learningSessionDuration": "Minutes",
+  "learningSessionNotes": "Notes",
+  "learningSessionDate": "Date",
+  "learningTotalMinutes": "Total: {minutes} min",
+  "@learningTotalMinutes": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "learningAiTrainer": "AI trainer",
+  "learningGenerateRoadmap": "Generate roadmap",
+  "learningSuggestMaterials": "Suggest materials",
+  "learningCheckIn": "Ask about progress",
+  "learningAiPrivate": "A private track is not sent to LLM",
+  "learningAiResult": "Trainer response",
+  "learningCheckInHint": "No sessions recently. How is your learning going?",
+  "learningTrackSaved": "Track saved",
+  "learningTrackSaveError": "Could not save the track",
+  "learningTrackDeleted": "Track deleted",
+  "learningTrackDeleteError": "Could not delete the track",
+  "learningSessionSaved": "Session added",
+  "learningSessionSaveError": "Could not add the session",
+  "learningSessionDeleted": "Session deleted",
+  "learningSessionDeleteError": "Could not delete the session",
+  "learningRoadmapReplace": "Replace the current roadmap with the generated one?",
+  "learningRoadmapEmptyGoal": "Fill in the track goal first."
 }

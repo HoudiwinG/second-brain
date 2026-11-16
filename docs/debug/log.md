@@ -729,3 +729,20 @@ regression-теста смены треда.
 | 2026-11-16 | — | гейты | analyze 0; test **172/172**; Windows debug build success |
 | 2026-11-16 | S04Z | fixed | terminal refresh `state.messages`, CI/HEAD docs, дубли задач, комментарии реестра/схемы, `sendMessage` после сохранения user |
 | 2026-11-16 | — | финал | финальное ревью — **PASS WITH COMMENTS** (0 MAJOR); CI `43835793997` (`9f54bcc`) — success; stage-05 разблокирован |
+
+## Stage-05: обучение (2026-11-16)
+
+Реализованы треки, JSON roadmap/custom fields, сессии и AI-тренер.
+Схема v7: `learning_tracks`, `learning_sessions`, индексы по updated_at и
+track/date. Гейты: analyze 0, test **185/185**, Windows debug build success.
+Независимое ревью ещё не проводилось.
+
+| Timestamp (UTC) | ID | Действие | Примечание |
+|-----------------|----|----------|------------|
+| 2026-11-16 | — | схема | v6 → v7: таблицы обучения, индексы; guard `from>7/to>7` |
+| 2026-11-16 | — | domain | `LearningTrack`, `LearningStep`, `LearningSession`, `LearningRepository` |
+| 2026-11-16 | — | repo | JSON roadmap/custom fields, статусы, сессии, soft-delete, forLlm |
+| 2026-11-16 | — | AI | `LearningTrainer`: roadmap, материалы, check-in; private не уходит в LLM |
+| 2026-11-16 | — | UI | список/детали трека, редактор, сессии, AI-панель, check-in баннер |
+| 2026-11-16 | — | тесты | repository, trainer, widget, миграция v6→v7; всего 185/185 |
+| 2026-11-16 | — | статус | self-check done; ожидается независимое ревью stage-05 |

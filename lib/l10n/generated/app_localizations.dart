@@ -290,6 +290,12 @@ abstract class AppLocalizations {
   /// **'Save'**
   String get actionSave;
 
+  /// No description provided for @actionClose.
+  ///
+  /// In en, this message translates to:
+  /// **'Close'**
+  String get actionClose;
+
   /// No description provided for @actionCancel.
   ///
   /// In en, this message translates to:
@@ -1213,6 +1219,252 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Configure an LLM provider first.'**
   String get chatConfigMissing;
+
+  /// No description provided for @learningEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No learning tracks yet'**
+  String get learningEmpty;
+
+  /// No description provided for @learningAddTrack.
+  ///
+  /// In en, this message translates to:
+  /// **'New track'**
+  String get learningAddTrack;
+
+  /// No description provided for @learningEditTrack.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit track'**
+  String get learningEditTrack;
+
+  /// No description provided for @learningTrackTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Track name'**
+  String get learningTrackTitle;
+
+  /// No description provided for @learningGoal.
+  ///
+  /// In en, this message translates to:
+  /// **'Goal'**
+  String get learningGoal;
+
+  /// No description provided for @learningPrivate.
+  ///
+  /// In en, this message translates to:
+  /// **'Do not send this track to LLM'**
+  String get learningPrivate;
+
+  /// No description provided for @learningCustomFields.
+  ///
+  /// In en, this message translates to:
+  /// **'Custom fields'**
+  String get learningCustomFields;
+
+  /// No description provided for @learningCustomFieldsHint.
+  ///
+  /// In en, this message translates to:
+  /// **'One per line: field=value'**
+  String get learningCustomFieldsHint;
+
+  /// No description provided for @learningRoadmap.
+  ///
+  /// In en, this message translates to:
+  /// **'Roadmap'**
+  String get learningRoadmap;
+
+  /// No description provided for @learningNoSteps.
+  ///
+  /// In en, this message translates to:
+  /// **'No steps yet'**
+  String get learningNoSteps;
+
+  /// No description provided for @learningAddStep.
+  ///
+  /// In en, this message translates to:
+  /// **'Add step'**
+  String get learningAddStep;
+
+  /// No description provided for @learningStepTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Step'**
+  String get learningStepTitle;
+
+  /// No description provided for @learningStepDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Step description'**
+  String get learningStepDescription;
+
+  /// No description provided for @learningProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'Progress: {done}/{total}'**
+  String learningProgress(int done, int total);
+
+  /// No description provided for @learningStepTodo.
+  ///
+  /// In en, this message translates to:
+  /// **'To do'**
+  String get learningStepTodo;
+
+  /// No description provided for @learningStepInProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'In progress'**
+  String get learningStepInProgress;
+
+  /// No description provided for @learningStepDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Done'**
+  String get learningStepDone;
+
+  /// No description provided for @learningSessions.
+  ///
+  /// In en, this message translates to:
+  /// **'Sessions'**
+  String get learningSessions;
+
+  /// No description provided for @learningNoSessions.
+  ///
+  /// In en, this message translates to:
+  /// **'No sessions yet'**
+  String get learningNoSessions;
+
+  /// No description provided for @learningAddSession.
+  ///
+  /// In en, this message translates to:
+  /// **'Add session'**
+  String get learningAddSession;
+
+  /// No description provided for @learningSessionDuration.
+  ///
+  /// In en, this message translates to:
+  /// **'Minutes'**
+  String get learningSessionDuration;
+
+  /// No description provided for @learningSessionNotes.
+  ///
+  /// In en, this message translates to:
+  /// **'Notes'**
+  String get learningSessionNotes;
+
+  /// No description provided for @learningSessionDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Date'**
+  String get learningSessionDate;
+
+  /// No description provided for @learningTotalMinutes.
+  ///
+  /// In en, this message translates to:
+  /// **'Total: {minutes} min'**
+  String learningTotalMinutes(int minutes);
+
+  /// No description provided for @learningAiTrainer.
+  ///
+  /// In en, this message translates to:
+  /// **'AI trainer'**
+  String get learningAiTrainer;
+
+  /// No description provided for @learningGenerateRoadmap.
+  ///
+  /// In en, this message translates to:
+  /// **'Generate roadmap'**
+  String get learningGenerateRoadmap;
+
+  /// No description provided for @learningSuggestMaterials.
+  ///
+  /// In en, this message translates to:
+  /// **'Suggest materials'**
+  String get learningSuggestMaterials;
+
+  /// No description provided for @learningCheckIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Ask about progress'**
+  String get learningCheckIn;
+
+  /// No description provided for @learningAiPrivate.
+  ///
+  /// In en, this message translates to:
+  /// **'A private track is not sent to LLM'**
+  String get learningAiPrivate;
+
+  /// No description provided for @learningAiResult.
+  ///
+  /// In en, this message translates to:
+  /// **'Trainer response'**
+  String get learningAiResult;
+
+  /// No description provided for @learningCheckInHint.
+  ///
+  /// In en, this message translates to:
+  /// **'No sessions recently. How is your learning going?'**
+  String get learningCheckInHint;
+
+  /// No description provided for @learningTrackSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Track saved'**
+  String get learningTrackSaved;
+
+  /// No description provided for @learningTrackSaveError.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not save the track'**
+  String get learningTrackSaveError;
+
+  /// No description provided for @learningTrackDeleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Track deleted'**
+  String get learningTrackDeleted;
+
+  /// No description provided for @learningTrackDeleteError.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not delete the track'**
+  String get learningTrackDeleteError;
+
+  /// No description provided for @learningSessionSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Session added'**
+  String get learningSessionSaved;
+
+  /// No description provided for @learningSessionSaveError.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not add the session'**
+  String get learningSessionSaveError;
+
+  /// No description provided for @learningSessionDeleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Session deleted'**
+  String get learningSessionDeleted;
+
+  /// No description provided for @learningSessionDeleteError.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not delete the session'**
+  String get learningSessionDeleteError;
+
+  /// No description provided for @learningRoadmapReplace.
+  ///
+  /// In en, this message translates to:
+  /// **'Replace the current roadmap with the generated one?'**
+  String get learningRoadmapReplace;
+
+  /// No description provided for @learningRoadmapEmptyGoal.
+  ///
+  /// In en, this message translates to:
+  /// **'Fill in the track goal first.'**
+  String get learningRoadmapEmptyGoal;
 }
 
 class _AppLocalizationsDelegate

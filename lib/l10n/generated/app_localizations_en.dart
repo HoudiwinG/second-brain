@@ -107,6 +107,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get actionSave => 'Save';
 
   @override
+  String get actionClose => 'Close';
+
+  @override
   String get actionCancel => 'Cancel';
 
   @override
@@ -589,4 +592,133 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get chatConfigMissing => 'Configure an LLM provider first.';
+
+  @override
+  String get learningEmpty => 'No learning tracks yet';
+
+  @override
+  String get learningAddTrack => 'New track';
+
+  @override
+  String get learningEditTrack => 'Edit track';
+
+  @override
+  String get learningTrackTitle => 'Track name';
+
+  @override
+  String get learningGoal => 'Goal';
+
+  @override
+  String get learningPrivate => 'Do not send this track to LLM';
+
+  @override
+  String get learningCustomFields => 'Custom fields';
+
+  @override
+  String get learningCustomFieldsHint => 'One per line: field=value';
+
+  @override
+  String get learningRoadmap => 'Roadmap';
+
+  @override
+  String get learningNoSteps => 'No steps yet';
+
+  @override
+  String get learningAddStep => 'Add step';
+
+  @override
+  String get learningStepTitle => 'Step';
+
+  @override
+  String get learningStepDescription => 'Step description';
+
+  @override
+  String learningProgress(int done, int total) {
+    return 'Progress: $done/$total';
+  }
+
+  @override
+  String get learningStepTodo => 'To do';
+
+  @override
+  String get learningStepInProgress => 'In progress';
+
+  @override
+  String get learningStepDone => 'Done';
+
+  @override
+  String get learningSessions => 'Sessions';
+
+  @override
+  String get learningNoSessions => 'No sessions yet';
+
+  @override
+  String get learningAddSession => 'Add session';
+
+  @override
+  String get learningSessionDuration => 'Minutes';
+
+  @override
+  String get learningSessionNotes => 'Notes';
+
+  @override
+  String get learningSessionDate => 'Date';
+
+  @override
+  String learningTotalMinutes(int minutes) {
+    return 'Total: $minutes min';
+  }
+
+  @override
+  String get learningAiTrainer => 'AI trainer';
+
+  @override
+  String get learningGenerateRoadmap => 'Generate roadmap';
+
+  @override
+  String get learningSuggestMaterials => 'Suggest materials';
+
+  @override
+  String get learningCheckIn => 'Ask about progress';
+
+  @override
+  String get learningAiPrivate => 'A private track is not sent to LLM';
+
+  @override
+  String get learningAiResult => 'Trainer response';
+
+  @override
+  String get learningCheckInHint =>
+      'No sessions recently. How is your learning going?';
+
+  @override
+  String get learningTrackSaved => 'Track saved';
+
+  @override
+  String get learningTrackSaveError => 'Could not save the track';
+
+  @override
+  String get learningTrackDeleted => 'Track deleted';
+
+  @override
+  String get learningTrackDeleteError => 'Could not delete the track';
+
+  @override
+  String get learningSessionSaved => 'Session added';
+
+  @override
+  String get learningSessionSaveError => 'Could not add the session';
+
+  @override
+  String get learningSessionDeleted => 'Session deleted';
+
+  @override
+  String get learningSessionDeleteError => 'Could not delete the session';
+
+  @override
+  String get learningRoadmapReplace =>
+      'Replace the current roadmap with the generated one?';
+
+  @override
+  String get learningRoadmapEmptyGoal => 'Fill in the track goal first.';
 }

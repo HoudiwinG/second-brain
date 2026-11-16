@@ -11,6 +11,7 @@ import '../data/repositories/categories_repository.dart';
 import '../data/repositories/chat_repository.dart';
 import '../data/repositories/finance_repository.dart';
 import '../data/repositories/ideas_repository.dart';
+import '../data/repositories/learning_repository.dart';
 import '../data/repositories/llm_config_repository.dart';
 import '../data/repositories/notes_repository.dart';
 import '../data/repositories/search_repository.dart';
@@ -20,6 +21,9 @@ import '../data/repositories/tasks_repository.dart';
 import '../data/repositories/tool_audit_repository.dart';
 import '../features/finance/domain/finance_transaction.dart';
 import '../features/ideas/domain/idea_entry.dart';
+import '../features/learning/application/learning_trainer.dart';
+import '../features/learning/domain/learning_track.dart';
+import '../features/llm/application/llm_config_controller.dart';
 import '../features/llm/application/llm_context_loader.dart';
 import '../features/llm/data/llm_provider_factory.dart';
 import '../features/llm/tools/built_in/create_note_tool.dart';
@@ -98,6 +102,25 @@ final searchRepositoryProvider = FutureProvider<SearchRepository>((ref) async {
 final backupServiceProvider = FutureProvider<BackupService>((ref) async {
   final db = await ref.watch(appDatabaseProvider.future);
   return BackupService(db);
+});
+
+/// Треки и сессии обучения.
+final learningRepositoryProvider = FutureProvider<LearningRepository>((
+  ref,
+) async {
+  final db = await ref.watch(appDatabaseProvider.future);
+  return DriftLearningRepository(db);
+});
+
+/// AI-тренер обучения использует текущий default-провайдер LLM.
+final learningTrainerProvider = FutureProvider<LearningTrainer>((ref) async {
+  final configs = await ref.watch(llmConfigControllerProvider.future);
+  final configRepo = await ref.watch(llmConfigRepositoryProvider.future);
+  return LearningTrainer(
+    configs: configs,
+    configRepo: configRepo,
+    factory: ref.watch(llmProviderFactoryProvider),
+  );
 });
 
 /// Офлайн-история чата.

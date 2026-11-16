@@ -6212,6 +6212,975 @@ class ToolAuditEntriesCompanion extends UpdateCompanion<ToolAuditEntry> {
   }
 }
 
+class $LearningTracksTable extends LearningTracks
+    with TableInfo<$LearningTracksTable, LearningTrack> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $LearningTracksTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _titleMeta = const VerificationMeta('title');
+  @override
+  late final GeneratedColumn<String> title = GeneratedColumn<String>(
+    'title',
+    aliasedName,
+    false,
+    additionalChecks: GeneratedColumn.checkTextLength(
+      minTextLength: 1,
+      maxTextLength: 200,
+    ),
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _goalMeta = const VerificationMeta('goal');
+  @override
+  late final GeneratedColumn<String> goal = GeneratedColumn<String>(
+    'goal',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _roadmapJsonMeta = const VerificationMeta(
+    'roadmapJson',
+  );
+  @override
+  late final GeneratedColumn<String> roadmapJson = GeneratedColumn<String>(
+    'roadmap_json',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('[]'),
+  );
+  static const VerificationMeta _customFieldsJsonMeta = const VerificationMeta(
+    'customFieldsJson',
+  );
+  @override
+  late final GeneratedColumn<String> customFieldsJson = GeneratedColumn<String>(
+    'custom_fields_json',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('{}'),
+  );
+  static const VerificationMeta _isPrivateForLlmMeta = const VerificationMeta(
+    'isPrivateForLlm',
+  );
+  @override
+  late final GeneratedColumn<bool> isPrivateForLlm = GeneratedColumn<bool>(
+    'is_private_for_llm',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("is_private_for_llm" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _deletedAtMeta = const VerificationMeta(
+    'deletedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> deletedAt = GeneratedColumn<DateTime>(
+    'deleted_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    title,
+    goal,
+    roadmapJson,
+    customFieldsJson,
+    isPrivateForLlm,
+    createdAt,
+    updatedAt,
+    deletedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'learning_tracks';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<LearningTrack> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('title')) {
+      context.handle(
+        _titleMeta,
+        title.isAcceptableOrUnknown(data['title']!, _titleMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_titleMeta);
+    }
+    if (data.containsKey('goal')) {
+      context.handle(
+        _goalMeta,
+        goal.isAcceptableOrUnknown(data['goal']!, _goalMeta),
+      );
+    }
+    if (data.containsKey('roadmap_json')) {
+      context.handle(
+        _roadmapJsonMeta,
+        roadmapJson.isAcceptableOrUnknown(
+          data['roadmap_json']!,
+          _roadmapJsonMeta,
+        ),
+      );
+    }
+    if (data.containsKey('custom_fields_json')) {
+      context.handle(
+        _customFieldsJsonMeta,
+        customFieldsJson.isAcceptableOrUnknown(
+          data['custom_fields_json']!,
+          _customFieldsJsonMeta,
+        ),
+      );
+    }
+    if (data.containsKey('is_private_for_llm')) {
+      context.handle(
+        _isPrivateForLlmMeta,
+        isPrivateForLlm.isAcceptableOrUnknown(
+          data['is_private_for_llm']!,
+          _isPrivateForLlmMeta,
+        ),
+      );
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_updatedAtMeta);
+    }
+    if (data.containsKey('deleted_at')) {
+      context.handle(
+        _deletedAtMeta,
+        deletedAt.isAcceptableOrUnknown(data['deleted_at']!, _deletedAtMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  LearningTrack map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return LearningTrack(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      title: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}title'],
+      )!,
+      goal: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}goal'],
+      )!,
+      roadmapJson: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}roadmap_json'],
+      )!,
+      customFieldsJson: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}custom_fields_json'],
+      )!,
+      isPrivateForLlm: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}is_private_for_llm'],
+      )!,
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at'],
+      )!,
+      deletedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}deleted_at'],
+      ),
+    );
+  }
+
+  @override
+  $LearningTracksTable createAlias(String alias) {
+    return $LearningTracksTable(attachedDatabase, alias);
+  }
+}
+
+class LearningTrack extends DataClass implements Insertable<LearningTrack> {
+  final int id;
+  final String title;
+  final String goal;
+
+  /// JSON-массив шагов roadmap (id, title, description, status).
+  final String roadmapJson;
+
+  /// JSON-объект пользовательских полей трекера.
+  final String customFieldsJson;
+  final bool isPrivateForLlm;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+  final DateTime? deletedAt;
+  const LearningTrack({
+    required this.id,
+    required this.title,
+    required this.goal,
+    required this.roadmapJson,
+    required this.customFieldsJson,
+    required this.isPrivateForLlm,
+    required this.createdAt,
+    required this.updatedAt,
+    this.deletedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['title'] = Variable<String>(title);
+    map['goal'] = Variable<String>(goal);
+    map['roadmap_json'] = Variable<String>(roadmapJson);
+    map['custom_fields_json'] = Variable<String>(customFieldsJson);
+    map['is_private_for_llm'] = Variable<bool>(isPrivateForLlm);
+    map['created_at'] = Variable<DateTime>(createdAt);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    if (!nullToAbsent || deletedAt != null) {
+      map['deleted_at'] = Variable<DateTime>(deletedAt);
+    }
+    return map;
+  }
+
+  LearningTracksCompanion toCompanion(bool nullToAbsent) {
+    return LearningTracksCompanion(
+      id: Value(id),
+      title: Value(title),
+      goal: Value(goal),
+      roadmapJson: Value(roadmapJson),
+      customFieldsJson: Value(customFieldsJson),
+      isPrivateForLlm: Value(isPrivateForLlm),
+      createdAt: Value(createdAt),
+      updatedAt: Value(updatedAt),
+      deletedAt: deletedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(deletedAt),
+    );
+  }
+
+  factory LearningTrack.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return LearningTrack(
+      id: serializer.fromJson<int>(json['id']),
+      title: serializer.fromJson<String>(json['title']),
+      goal: serializer.fromJson<String>(json['goal']),
+      roadmapJson: serializer.fromJson<String>(json['roadmapJson']),
+      customFieldsJson: serializer.fromJson<String>(json['customFieldsJson']),
+      isPrivateForLlm: serializer.fromJson<bool>(json['isPrivateForLlm']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+      deletedAt: serializer.fromJson<DateTime?>(json['deletedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'title': serializer.toJson<String>(title),
+      'goal': serializer.toJson<String>(goal),
+      'roadmapJson': serializer.toJson<String>(roadmapJson),
+      'customFieldsJson': serializer.toJson<String>(customFieldsJson),
+      'isPrivateForLlm': serializer.toJson<bool>(isPrivateForLlm),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+      'deletedAt': serializer.toJson<DateTime?>(deletedAt),
+    };
+  }
+
+  LearningTrack copyWith({
+    int? id,
+    String? title,
+    String? goal,
+    String? roadmapJson,
+    String? customFieldsJson,
+    bool? isPrivateForLlm,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+    Value<DateTime?> deletedAt = const Value.absent(),
+  }) => LearningTrack(
+    id: id ?? this.id,
+    title: title ?? this.title,
+    goal: goal ?? this.goal,
+    roadmapJson: roadmapJson ?? this.roadmapJson,
+    customFieldsJson: customFieldsJson ?? this.customFieldsJson,
+    isPrivateForLlm: isPrivateForLlm ?? this.isPrivateForLlm,
+    createdAt: createdAt ?? this.createdAt,
+    updatedAt: updatedAt ?? this.updatedAt,
+    deletedAt: deletedAt.present ? deletedAt.value : this.deletedAt,
+  );
+  LearningTrack copyWithCompanion(LearningTracksCompanion data) {
+    return LearningTrack(
+      id: data.id.present ? data.id.value : this.id,
+      title: data.title.present ? data.title.value : this.title,
+      goal: data.goal.present ? data.goal.value : this.goal,
+      roadmapJson: data.roadmapJson.present
+          ? data.roadmapJson.value
+          : this.roadmapJson,
+      customFieldsJson: data.customFieldsJson.present
+          ? data.customFieldsJson.value
+          : this.customFieldsJson,
+      isPrivateForLlm: data.isPrivateForLlm.present
+          ? data.isPrivateForLlm.value
+          : this.isPrivateForLlm,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+      deletedAt: data.deletedAt.present ? data.deletedAt.value : this.deletedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('LearningTrack(')
+          ..write('id: $id, ')
+          ..write('title: $title, ')
+          ..write('goal: $goal, ')
+          ..write('roadmapJson: $roadmapJson, ')
+          ..write('customFieldsJson: $customFieldsJson, ')
+          ..write('isPrivateForLlm: $isPrivateForLlm, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('deletedAt: $deletedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    title,
+    goal,
+    roadmapJson,
+    customFieldsJson,
+    isPrivateForLlm,
+    createdAt,
+    updatedAt,
+    deletedAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is LearningTrack &&
+          other.id == this.id &&
+          other.title == this.title &&
+          other.goal == this.goal &&
+          other.roadmapJson == this.roadmapJson &&
+          other.customFieldsJson == this.customFieldsJson &&
+          other.isPrivateForLlm == this.isPrivateForLlm &&
+          other.createdAt == this.createdAt &&
+          other.updatedAt == this.updatedAt &&
+          other.deletedAt == this.deletedAt);
+}
+
+class LearningTracksCompanion extends UpdateCompanion<LearningTrack> {
+  final Value<int> id;
+  final Value<String> title;
+  final Value<String> goal;
+  final Value<String> roadmapJson;
+  final Value<String> customFieldsJson;
+  final Value<bool> isPrivateForLlm;
+  final Value<DateTime> createdAt;
+  final Value<DateTime> updatedAt;
+  final Value<DateTime?> deletedAt;
+  const LearningTracksCompanion({
+    this.id = const Value.absent(),
+    this.title = const Value.absent(),
+    this.goal = const Value.absent(),
+    this.roadmapJson = const Value.absent(),
+    this.customFieldsJson = const Value.absent(),
+    this.isPrivateForLlm = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.deletedAt = const Value.absent(),
+  });
+  LearningTracksCompanion.insert({
+    this.id = const Value.absent(),
+    required String title,
+    this.goal = const Value.absent(),
+    this.roadmapJson = const Value.absent(),
+    this.customFieldsJson = const Value.absent(),
+    this.isPrivateForLlm = const Value.absent(),
+    required DateTime createdAt,
+    required DateTime updatedAt,
+    this.deletedAt = const Value.absent(),
+  }) : title = Value(title),
+       createdAt = Value(createdAt),
+       updatedAt = Value(updatedAt);
+  static Insertable<LearningTrack> custom({
+    Expression<int>? id,
+    Expression<String>? title,
+    Expression<String>? goal,
+    Expression<String>? roadmapJson,
+    Expression<String>? customFieldsJson,
+    Expression<bool>? isPrivateForLlm,
+    Expression<DateTime>? createdAt,
+    Expression<DateTime>? updatedAt,
+    Expression<DateTime>? deletedAt,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (title != null) 'title': title,
+      if (goal != null) 'goal': goal,
+      if (roadmapJson != null) 'roadmap_json': roadmapJson,
+      if (customFieldsJson != null) 'custom_fields_json': customFieldsJson,
+      if (isPrivateForLlm != null) 'is_private_for_llm': isPrivateForLlm,
+      if (createdAt != null) 'created_at': createdAt,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (deletedAt != null) 'deleted_at': deletedAt,
+    });
+  }
+
+  LearningTracksCompanion copyWith({
+    Value<int>? id,
+    Value<String>? title,
+    Value<String>? goal,
+    Value<String>? roadmapJson,
+    Value<String>? customFieldsJson,
+    Value<bool>? isPrivateForLlm,
+    Value<DateTime>? createdAt,
+    Value<DateTime>? updatedAt,
+    Value<DateTime?>? deletedAt,
+  }) {
+    return LearningTracksCompanion(
+      id: id ?? this.id,
+      title: title ?? this.title,
+      goal: goal ?? this.goal,
+      roadmapJson: roadmapJson ?? this.roadmapJson,
+      customFieldsJson: customFieldsJson ?? this.customFieldsJson,
+      isPrivateForLlm: isPrivateForLlm ?? this.isPrivateForLlm,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      deletedAt: deletedAt ?? this.deletedAt,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (title.present) {
+      map['title'] = Variable<String>(title.value);
+    }
+    if (goal.present) {
+      map['goal'] = Variable<String>(goal.value);
+    }
+    if (roadmapJson.present) {
+      map['roadmap_json'] = Variable<String>(roadmapJson.value);
+    }
+    if (customFieldsJson.present) {
+      map['custom_fields_json'] = Variable<String>(customFieldsJson.value);
+    }
+    if (isPrivateForLlm.present) {
+      map['is_private_for_llm'] = Variable<bool>(isPrivateForLlm.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    if (deletedAt.present) {
+      map['deleted_at'] = Variable<DateTime>(deletedAt.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('LearningTracksCompanion(')
+          ..write('id: $id, ')
+          ..write('title: $title, ')
+          ..write('goal: $goal, ')
+          ..write('roadmapJson: $roadmapJson, ')
+          ..write('customFieldsJson: $customFieldsJson, ')
+          ..write('isPrivateForLlm: $isPrivateForLlm, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('deletedAt: $deletedAt')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $LearningSessionsTable extends LearningSessions
+    with TableInfo<$LearningSessionsTable, LearningSession> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $LearningSessionsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _trackIdMeta = const VerificationMeta(
+    'trackId',
+  );
+  @override
+  late final GeneratedColumn<int> trackId = GeneratedColumn<int>(
+    'track_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES learning_tracks (id) ON DELETE CASCADE',
+    ),
+  );
+  static const VerificationMeta _durationMinutesMeta = const VerificationMeta(
+    'durationMinutes',
+  );
+  @override
+  late final GeneratedColumn<int> durationMinutes = GeneratedColumn<int>(
+    'duration_minutes',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _notesMeta = const VerificationMeta('notes');
+  @override
+  late final GeneratedColumn<String> notes = GeneratedColumn<String>(
+    'notes',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _dateMeta = const VerificationMeta('date');
+  @override
+  late final GeneratedColumn<DateTime> date = GeneratedColumn<DateTime>(
+    'date',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    trackId,
+    durationMinutes,
+    notes,
+    date,
+    createdAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'learning_sessions';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<LearningSession> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('track_id')) {
+      context.handle(
+        _trackIdMeta,
+        trackId.isAcceptableOrUnknown(data['track_id']!, _trackIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_trackIdMeta);
+    }
+    if (data.containsKey('duration_minutes')) {
+      context.handle(
+        _durationMinutesMeta,
+        durationMinutes.isAcceptableOrUnknown(
+          data['duration_minutes']!,
+          _durationMinutesMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_durationMinutesMeta);
+    }
+    if (data.containsKey('notes')) {
+      context.handle(
+        _notesMeta,
+        notes.isAcceptableOrUnknown(data['notes']!, _notesMeta),
+      );
+    }
+    if (data.containsKey('date')) {
+      context.handle(
+        _dateMeta,
+        date.isAcceptableOrUnknown(data['date']!, _dateMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_dateMeta);
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  LearningSession map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return LearningSession(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      trackId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}track_id'],
+      )!,
+      durationMinutes: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}duration_minutes'],
+      )!,
+      notes: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}notes'],
+      )!,
+      date: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}date'],
+      )!,
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+    );
+  }
+
+  @override
+  $LearningSessionsTable createAlias(String alias) {
+    return $LearningSessionsTable(attachedDatabase, alias);
+  }
+}
+
+class LearningSession extends DataClass implements Insertable<LearningSession> {
+  final int id;
+  final int trackId;
+
+  /// Длительность сессии в минутах.
+  final int durationMinutes;
+  final String notes;
+  final DateTime date;
+  final DateTime createdAt;
+  const LearningSession({
+    required this.id,
+    required this.trackId,
+    required this.durationMinutes,
+    required this.notes,
+    required this.date,
+    required this.createdAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['track_id'] = Variable<int>(trackId);
+    map['duration_minutes'] = Variable<int>(durationMinutes);
+    map['notes'] = Variable<String>(notes);
+    map['date'] = Variable<DateTime>(date);
+    map['created_at'] = Variable<DateTime>(createdAt);
+    return map;
+  }
+
+  LearningSessionsCompanion toCompanion(bool nullToAbsent) {
+    return LearningSessionsCompanion(
+      id: Value(id),
+      trackId: Value(trackId),
+      durationMinutes: Value(durationMinutes),
+      notes: Value(notes),
+      date: Value(date),
+      createdAt: Value(createdAt),
+    );
+  }
+
+  factory LearningSession.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return LearningSession(
+      id: serializer.fromJson<int>(json['id']),
+      trackId: serializer.fromJson<int>(json['trackId']),
+      durationMinutes: serializer.fromJson<int>(json['durationMinutes']),
+      notes: serializer.fromJson<String>(json['notes']),
+      date: serializer.fromJson<DateTime>(json['date']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'trackId': serializer.toJson<int>(trackId),
+      'durationMinutes': serializer.toJson<int>(durationMinutes),
+      'notes': serializer.toJson<String>(notes),
+      'date': serializer.toJson<DateTime>(date),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+    };
+  }
+
+  LearningSession copyWith({
+    int? id,
+    int? trackId,
+    int? durationMinutes,
+    String? notes,
+    DateTime? date,
+    DateTime? createdAt,
+  }) => LearningSession(
+    id: id ?? this.id,
+    trackId: trackId ?? this.trackId,
+    durationMinutes: durationMinutes ?? this.durationMinutes,
+    notes: notes ?? this.notes,
+    date: date ?? this.date,
+    createdAt: createdAt ?? this.createdAt,
+  );
+  LearningSession copyWithCompanion(LearningSessionsCompanion data) {
+    return LearningSession(
+      id: data.id.present ? data.id.value : this.id,
+      trackId: data.trackId.present ? data.trackId.value : this.trackId,
+      durationMinutes: data.durationMinutes.present
+          ? data.durationMinutes.value
+          : this.durationMinutes,
+      notes: data.notes.present ? data.notes.value : this.notes,
+      date: data.date.present ? data.date.value : this.date,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('LearningSession(')
+          ..write('id: $id, ')
+          ..write('trackId: $trackId, ')
+          ..write('durationMinutes: $durationMinutes, ')
+          ..write('notes: $notes, ')
+          ..write('date: $date, ')
+          ..write('createdAt: $createdAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode =>
+      Object.hash(id, trackId, durationMinutes, notes, date, createdAt);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is LearningSession &&
+          other.id == this.id &&
+          other.trackId == this.trackId &&
+          other.durationMinutes == this.durationMinutes &&
+          other.notes == this.notes &&
+          other.date == this.date &&
+          other.createdAt == this.createdAt);
+}
+
+class LearningSessionsCompanion extends UpdateCompanion<LearningSession> {
+  final Value<int> id;
+  final Value<int> trackId;
+  final Value<int> durationMinutes;
+  final Value<String> notes;
+  final Value<DateTime> date;
+  final Value<DateTime> createdAt;
+  const LearningSessionsCompanion({
+    this.id = const Value.absent(),
+    this.trackId = const Value.absent(),
+    this.durationMinutes = const Value.absent(),
+    this.notes = const Value.absent(),
+    this.date = const Value.absent(),
+    this.createdAt = const Value.absent(),
+  });
+  LearningSessionsCompanion.insert({
+    this.id = const Value.absent(),
+    required int trackId,
+    required int durationMinutes,
+    this.notes = const Value.absent(),
+    required DateTime date,
+    required DateTime createdAt,
+  }) : trackId = Value(trackId),
+       durationMinutes = Value(durationMinutes),
+       date = Value(date),
+       createdAt = Value(createdAt);
+  static Insertable<LearningSession> custom({
+    Expression<int>? id,
+    Expression<int>? trackId,
+    Expression<int>? durationMinutes,
+    Expression<String>? notes,
+    Expression<DateTime>? date,
+    Expression<DateTime>? createdAt,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (trackId != null) 'track_id': trackId,
+      if (durationMinutes != null) 'duration_minutes': durationMinutes,
+      if (notes != null) 'notes': notes,
+      if (date != null) 'date': date,
+      if (createdAt != null) 'created_at': createdAt,
+    });
+  }
+
+  LearningSessionsCompanion copyWith({
+    Value<int>? id,
+    Value<int>? trackId,
+    Value<int>? durationMinutes,
+    Value<String>? notes,
+    Value<DateTime>? date,
+    Value<DateTime>? createdAt,
+  }) {
+    return LearningSessionsCompanion(
+      id: id ?? this.id,
+      trackId: trackId ?? this.trackId,
+      durationMinutes: durationMinutes ?? this.durationMinutes,
+      notes: notes ?? this.notes,
+      date: date ?? this.date,
+      createdAt: createdAt ?? this.createdAt,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (trackId.present) {
+      map['track_id'] = Variable<int>(trackId.value);
+    }
+    if (durationMinutes.present) {
+      map['duration_minutes'] = Variable<int>(durationMinutes.value);
+    }
+    if (notes.present) {
+      map['notes'] = Variable<String>(notes.value);
+    }
+    if (date.present) {
+      map['date'] = Variable<DateTime>(date.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('LearningSessionsCompanion(')
+          ..write('id: $id, ')
+          ..write('trackId: $trackId, ')
+          ..write('durationMinutes: $durationMinutes, ')
+          ..write('notes: $notes, ')
+          ..write('date: $date, ')
+          ..write('createdAt: $createdAt')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -6233,6 +7202,10 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $ToolAuditEntriesTable toolAuditEntries = $ToolAuditEntriesTable(
     this,
   );
+  late final $LearningTracksTable learningTracks = $LearningTracksTable(this);
+  late final $LearningSessionsTable learningSessions = $LearningSessionsTable(
+    this,
+  );
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -6252,6 +7225,8 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     chatThreads,
     chatMessages,
     toolAuditEntries,
+    learningTracks,
+    learningSessions,
   ];
   @override
   StreamQueryUpdateRules get streamUpdateRules => const StreamQueryUpdateRules([
@@ -6331,6 +7306,13 @@ abstract class _$AppDatabase extends GeneratedDatabase {
         limitUpdateKind: UpdateKind.delete,
       ),
       result: [TableUpdate('chat_messages', kind: UpdateKind.delete)],
+    ),
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'learning_tracks',
+        limitUpdateKind: UpdateKind.delete,
+      ),
+      result: [TableUpdate('learning_sessions', kind: UpdateKind.delete)],
     ),
   ]);
 }
@@ -11653,6 +12635,731 @@ typedef $$ToolAuditEntriesTableProcessedTableManager =
       ToolAuditEntry,
       PrefetchHooks Function()
     >;
+typedef $$LearningTracksTableCreateCompanionBuilder =
+    LearningTracksCompanion Function({
+      Value<int> id,
+      required String title,
+      Value<String> goal,
+      Value<String> roadmapJson,
+      Value<String> customFieldsJson,
+      Value<bool> isPrivateForLlm,
+      required DateTime createdAt,
+      required DateTime updatedAt,
+      Value<DateTime?> deletedAt,
+    });
+typedef $$LearningTracksTableUpdateCompanionBuilder =
+    LearningTracksCompanion Function({
+      Value<int> id,
+      Value<String> title,
+      Value<String> goal,
+      Value<String> roadmapJson,
+      Value<String> customFieldsJson,
+      Value<bool> isPrivateForLlm,
+      Value<DateTime> createdAt,
+      Value<DateTime> updatedAt,
+      Value<DateTime?> deletedAt,
+    });
+
+final class $$LearningTracksTableReferences
+    extends BaseReferences<_$AppDatabase, $LearningTracksTable, LearningTrack> {
+  $$LearningTracksTableReferences(
+    super.$_db,
+    super.$_table,
+    super.$_typedResult,
+  );
+
+  static MultiTypedResultKey<$LearningSessionsTable, List<LearningSession>>
+  _learningSessionsRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+    db.learningSessions,
+    aliasName: 'learning_tracks__id__learning_sessions__track_id',
+  );
+
+  $$LearningSessionsTableProcessedTableManager get learningSessionsRefs {
+    final manager = $$LearningSessionsTableTableManager(
+      $_db,
+      $_db.learningSessions,
+    ).filter((f) => f.trackId.id.sqlEquals($_itemColumn<int>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(
+      _learningSessionsRefsTable($_db),
+    );
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+}
+
+class $$LearningTracksTableFilterComposer
+    extends Composer<_$AppDatabase, $LearningTracksTable> {
+  $$LearningTracksTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get title => $composableBuilder(
+    column: $table.title,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get goal => $composableBuilder(
+    column: $table.goal,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get roadmapJson => $composableBuilder(
+    column: $table.roadmapJson,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get customFieldsJson => $composableBuilder(
+    column: $table.customFieldsJson,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get isPrivateForLlm => $composableBuilder(
+    column: $table.isPrivateForLlm,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get deletedAt => $composableBuilder(
+    column: $table.deletedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  Expression<bool> learningSessionsRefs(
+    Expression<bool> Function($$LearningSessionsTableFilterComposer f) f,
+  ) {
+    final $$LearningSessionsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.learningSessions,
+      getReferencedColumn: (t) => t.trackId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$LearningSessionsTableFilterComposer(
+            $db: $db,
+            $table: $db.learningSessions,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+}
+
+class $$LearningTracksTableOrderingComposer
+    extends Composer<_$AppDatabase, $LearningTracksTable> {
+  $$LearningTracksTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get title => $composableBuilder(
+    column: $table.title,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get goal => $composableBuilder(
+    column: $table.goal,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get roadmapJson => $composableBuilder(
+    column: $table.roadmapJson,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get customFieldsJson => $composableBuilder(
+    column: $table.customFieldsJson,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get isPrivateForLlm => $composableBuilder(
+    column: $table.isPrivateForLlm,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get deletedAt => $composableBuilder(
+    column: $table.deletedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$LearningTracksTableAnnotationComposer
+    extends Composer<_$AppDatabase, $LearningTracksTable> {
+  $$LearningTracksTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get title =>
+      $composableBuilder(column: $table.title, builder: (column) => column);
+
+  GeneratedColumn<String> get goal =>
+      $composableBuilder(column: $table.goal, builder: (column) => column);
+
+  GeneratedColumn<String> get roadmapJson => $composableBuilder(
+    column: $table.roadmapJson,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get customFieldsJson => $composableBuilder(
+    column: $table.customFieldsJson,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get isPrivateForLlm => $composableBuilder(
+    column: $table.isPrivateForLlm,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get deletedAt =>
+      $composableBuilder(column: $table.deletedAt, builder: (column) => column);
+
+  Expression<T> learningSessionsRefs<T extends Object>(
+    Expression<T> Function($$LearningSessionsTableAnnotationComposer a) f,
+  ) {
+    final $$LearningSessionsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.learningSessions,
+      getReferencedColumn: (t) => t.trackId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$LearningSessionsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.learningSessions,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+}
+
+class $$LearningTracksTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $LearningTracksTable,
+          LearningTrack,
+          $$LearningTracksTableFilterComposer,
+          $$LearningTracksTableOrderingComposer,
+          $$LearningTracksTableAnnotationComposer,
+          $$LearningTracksTableCreateCompanionBuilder,
+          $$LearningTracksTableUpdateCompanionBuilder,
+          (LearningTrack, $$LearningTracksTableReferences),
+          LearningTrack,
+          PrefetchHooks Function({bool learningSessionsRefs})
+        > {
+  $$LearningTracksTableTableManager(
+    _$AppDatabase db,
+    $LearningTracksTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$LearningTracksTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$LearningTracksTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$LearningTracksTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<String> title = const Value.absent(),
+                Value<String> goal = const Value.absent(),
+                Value<String> roadmapJson = const Value.absent(),
+                Value<String> customFieldsJson = const Value.absent(),
+                Value<bool> isPrivateForLlm = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+                Value<DateTime?> deletedAt = const Value.absent(),
+              }) => LearningTracksCompanion(
+                id: id,
+                title: title,
+                goal: goal,
+                roadmapJson: roadmapJson,
+                customFieldsJson: customFieldsJson,
+                isPrivateForLlm: isPrivateForLlm,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                deletedAt: deletedAt,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                required String title,
+                Value<String> goal = const Value.absent(),
+                Value<String> roadmapJson = const Value.absent(),
+                Value<String> customFieldsJson = const Value.absent(),
+                Value<bool> isPrivateForLlm = const Value.absent(),
+                required DateTime createdAt,
+                required DateTime updatedAt,
+                Value<DateTime?> deletedAt = const Value.absent(),
+              }) => LearningTracksCompanion.insert(
+                id: id,
+                title: title,
+                goal: goal,
+                roadmapJson: roadmapJson,
+                customFieldsJson: customFieldsJson,
+                isPrivateForLlm: isPrivateForLlm,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                deletedAt: deletedAt,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$LearningTracksTable, LearningTrack>(table),
+                  $$LearningTracksTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({learningSessionsRefs = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [
+                if (learningSessionsRefs) db.learningSessions,
+              ],
+              addJoins: null,
+              getPrefetchedDataCallback: (items) async {
+                return [
+                  if (learningSessionsRefs)
+                    await $_getPrefetchedData<
+                      LearningTrack,
+                      $LearningTracksTable,
+                      LearningSession
+                    >(
+                      currentTable: table,
+                      referencedTable: $$LearningTracksTableReferences
+                          ._learningSessionsRefsTable(db),
+                      managerFromTypedResult: (p0) =>
+                          $$LearningTracksTableReferences(
+                            db,
+                            table,
+                            p0,
+                          ).learningSessionsRefs,
+                      referencedItemsForCurrentItem: (item, referencedItems) =>
+                          referencedItems.where((e) => e.trackId == item.id),
+                      typedResults: items,
+                    ),
+                ];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$LearningTracksTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $LearningTracksTable,
+      LearningTrack,
+      $$LearningTracksTableFilterComposer,
+      $$LearningTracksTableOrderingComposer,
+      $$LearningTracksTableAnnotationComposer,
+      $$LearningTracksTableCreateCompanionBuilder,
+      $$LearningTracksTableUpdateCompanionBuilder,
+      (LearningTrack, $$LearningTracksTableReferences),
+      LearningTrack,
+      PrefetchHooks Function({bool learningSessionsRefs})
+    >;
+typedef $$LearningSessionsTableCreateCompanionBuilder =
+    LearningSessionsCompanion Function({
+      Value<int> id,
+      required int trackId,
+      required int durationMinutes,
+      Value<String> notes,
+      required DateTime date,
+      required DateTime createdAt,
+    });
+typedef $$LearningSessionsTableUpdateCompanionBuilder =
+    LearningSessionsCompanion Function({
+      Value<int> id,
+      Value<int> trackId,
+      Value<int> durationMinutes,
+      Value<String> notes,
+      Value<DateTime> date,
+      Value<DateTime> createdAt,
+    });
+
+final class $$LearningSessionsTableReferences
+    extends
+        BaseReferences<_$AppDatabase, $LearningSessionsTable, LearningSession> {
+  $$LearningSessionsTableReferences(
+    super.$_db,
+    super.$_table,
+    super.$_typedResult,
+  );
+
+  static $LearningTracksTable _trackIdTable(_$AppDatabase db) => db
+      .learningTracks
+      .createAlias('learning_sessions__track_id__learning_tracks__id');
+
+  $$LearningTracksTableProcessedTableManager get trackId {
+    final $_column = $_itemColumn<int>('track_id')!;
+
+    final manager = $$LearningTracksTableTableManager(
+      $_db,
+      $_db.learningTracks,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_trackIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$LearningSessionsTableFilterComposer
+    extends Composer<_$AppDatabase, $LearningSessionsTable> {
+  $$LearningSessionsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get durationMinutes => $composableBuilder(
+    column: $table.durationMinutes,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get notes => $composableBuilder(
+    column: $table.notes,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get date => $composableBuilder(
+    column: $table.date,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$LearningTracksTableFilterComposer get trackId {
+    final $$LearningTracksTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.trackId,
+      referencedTable: $db.learningTracks,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$LearningTracksTableFilterComposer(
+            $db: $db,
+            $table: $db.learningTracks,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$LearningSessionsTableOrderingComposer
+    extends Composer<_$AppDatabase, $LearningSessionsTable> {
+  $$LearningSessionsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get durationMinutes => $composableBuilder(
+    column: $table.durationMinutes,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get notes => $composableBuilder(
+    column: $table.notes,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get date => $composableBuilder(
+    column: $table.date,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$LearningTracksTableOrderingComposer get trackId {
+    final $$LearningTracksTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.trackId,
+      referencedTable: $db.learningTracks,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$LearningTracksTableOrderingComposer(
+            $db: $db,
+            $table: $db.learningTracks,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$LearningSessionsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $LearningSessionsTable> {
+  $$LearningSessionsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<int> get durationMinutes => $composableBuilder(
+    column: $table.durationMinutes,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get notes =>
+      $composableBuilder(column: $table.notes, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get date =>
+      $composableBuilder(column: $table.date, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  $$LearningTracksTableAnnotationComposer get trackId {
+    final $$LearningTracksTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.trackId,
+      referencedTable: $db.learningTracks,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$LearningTracksTableAnnotationComposer(
+            $db: $db,
+            $table: $db.learningTracks,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$LearningSessionsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $LearningSessionsTable,
+          LearningSession,
+          $$LearningSessionsTableFilterComposer,
+          $$LearningSessionsTableOrderingComposer,
+          $$LearningSessionsTableAnnotationComposer,
+          $$LearningSessionsTableCreateCompanionBuilder,
+          $$LearningSessionsTableUpdateCompanionBuilder,
+          (LearningSession, $$LearningSessionsTableReferences),
+          LearningSession,
+          PrefetchHooks Function({bool trackId})
+        > {
+  $$LearningSessionsTableTableManager(
+    _$AppDatabase db,
+    $LearningSessionsTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$LearningSessionsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$LearningSessionsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$LearningSessionsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<int> trackId = const Value.absent(),
+                Value<int> durationMinutes = const Value.absent(),
+                Value<String> notes = const Value.absent(),
+                Value<DateTime> date = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+              }) => LearningSessionsCompanion(
+                id: id,
+                trackId: trackId,
+                durationMinutes: durationMinutes,
+                notes: notes,
+                date: date,
+                createdAt: createdAt,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                required int trackId,
+                required int durationMinutes,
+                Value<String> notes = const Value.absent(),
+                required DateTime date,
+                required DateTime createdAt,
+              }) => LearningSessionsCompanion.insert(
+                id: id,
+                trackId: trackId,
+                durationMinutes: durationMinutes,
+                notes: notes,
+                date: date,
+                createdAt: createdAt,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$LearningSessionsTable, LearningSession>(table),
+                  $$LearningSessionsTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({trackId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins:
+                  <
+                    T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (trackId) {
+                      state = state.withJoin(
+                        currentTable: table,
+                        currentColumn: table.trackId,
+                        referencedTable: $$LearningSessionsTableReferences
+                            ._trackIdTable(db),
+                        referencedColumn: $$LearningSessionsTableReferences
+                            ._trackIdTable(db)
+                            .id,
+                      ) as T;
+                    }
+
+                    return state;
+                  },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$LearningSessionsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $LearningSessionsTable,
+      LearningSession,
+      $$LearningSessionsTableFilterComposer,
+      $$LearningSessionsTableOrderingComposer,
+      $$LearningSessionsTableAnnotationComposer,
+      $$LearningSessionsTableCreateCompanionBuilder,
+      $$LearningSessionsTableUpdateCompanionBuilder,
+      (LearningSession, $$LearningSessionsTableReferences),
+      LearningSession,
+      PrefetchHooks Function({bool trackId})
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -11684,4 +13391,8 @@ class $AppDatabaseManager {
       $$ChatMessagesTableTableManager(_db, _db.chatMessages);
   $$ToolAuditEntriesTableTableManager get toolAuditEntries =>
       $$ToolAuditEntriesTableTableManager(_db, _db.toolAuditEntries);
+  $$LearningTracksTableTableManager get learningTracks =>
+      $$LearningTracksTableTableManager(_db, _db.learningTracks);
+  $$LearningSessionsTableTableManager get learningSessions =>
+      $$LearningSessionsTableTableManager(_db, _db.learningSessions);
 }

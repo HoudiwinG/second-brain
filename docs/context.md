@@ -1,24 +1,17 @@
 # Контекст проекта (снимок состояния)
 
-- **Текущий этап:** stage-04 (инструменты ассистента) — **PASS WITH COMMENTS
-  (0 MAJOR).** Исходное ревью — FAIL; повторное ревью 2026-11-16 — FAIL
-  (3 MAJOR: `S04R-001` Anthropic parallel tool_result, `S04R-002` Google
-  `functionCall.id`, `S04R-003` retry после mutating tool); все 11 `S04R`
-  исправлены, повторная проверка — PASS WITH COMMENTS. Комментарии `S04F`
-  исправлены; финальная проверка — **PASS WITH COMMENTS** (0 MAJOR),
-  комментарии S04Z fixed. Analyze 0, test **172/172**, Windows debug build
-  success. **Stage-05 разблокирован.** Отчёт:
-  [stages/stage-04.md](stages/stage-04.md), повторное ревью:
-  [reviews/stage-04-repeat-review.md](reviews/stage-04-repeat-review.md),
-  финальное ревью:
-  [reviews/stage-04-final-review.md](reviews/stage-04-final-review.md),
-  исправления:
-  [reviews/stage-04-repeat-fix-results.md](reviews/stage-04-repeat-fix-results.md).
-  Схема БД — **v6** (`tool_audit_log`). ADR-021.
-- **Предыдущий этап:** stage-03 (LLM-слой) **закрыт повторным независимым
-  ревью: PASS** (2026-10-28). Исходное ревью остаётся **FAIL** (2026-10-25);
-  все 28 находок S03-001…S03-028 исправлены коммитом `14e63a7` и подтверждены
-  повторной проверкой (**28/28 verified**).
+- **Текущий этап:** stage-05 (обучение) — **реализация и self-check готовы,
+  независимое ревью ещё не проводилось.** Треки, roadmap-шаги, сессии,
+  AI-тренер (roadmap/материалы/check-in), приватный трек не уходит в LLM.
+  Analyze 0, test **185/185**, Windows debug build success. Отчёт:
+  [stages/stage-05.md](stages/stage-05.md); ADR-022; схема **v7**
+  (`learning_tracks`, `learning_sessions`).
+- **Предыдущий этап:** stage-04 (инструменты ассистента) — **PASS WITH
+  COMMENTS (0 MAJOR)**. Все S04R/S04F/S04Z fixed; analyze 0, test 172/172,
+  Windows debug build success. Отчёт: [stages/stage-04.md](stages/stage-04.md),
+  финальное ревью: [reviews/stage-04-final-review.md](reviews/stage-04-final-review.md).
+- **Stage-03 (LLM-слой)** закрыт повторным независимым ревью **PASS**
+  (2026-10-28), 28/28 verified. Исходное ревью остаётся **FAIL** (2026-10-25).
 - **Статус stage-02:** **PASS WITH COMMENTS** (ревью №3); R02-001…R02-013
   закрыты, R02-014 (MINOR, сводка экрана финансов) и R02-015 (NIT, error-лог
   retry) остаются не блокирующими комментариями.
@@ -61,28 +54,28 @@
   **FAIL** (ревью и повторное №2). Результаты исправлений R02-001…R02-008 —
   [reviews/stage-02-review-results.md](reviews/stage-02-review-results.md),
   R02-009…R02-013 — [reviews/stage-02-fix-results.md](reviews/stage-02-fix-results.md).
-- **Текущий отчёт:** [stages/stage-04.md](stages/stage-04.md)
+- **Текущий отчёт:** [stages/stage-05.md](stages/stage-05.md)
 - **Открытых CRITICAL:** 0
-- **Открытых MAJOR stage-04:** 0; **S04R/S04F:** 0 (все исправлены,
-  повторная проверка — PASS WITH COMMENTS). Исходные S04-001…S04-009
-  закрыты. **Открытых исходных S03-находок:** 0 (28/28 подтверждены повторным
-  ревью). **Не блокирующие комментарии:** S03R-001/S03R-002 (MINOR),
-  S03R-003/S03R-004 (NIT), R02-014 (MINOR), R02-015 (NIT). **Принятый TD:**
-  TD-28 (нет UI выбора контекста; триггер перенесён на stage-05). TD-21 —
-  отдельное принятое ограничение `REAL` для финансов.
+- **Stage-05:** реализация и self-check готовы, независимое ревью ещё не
+  проводилось; блокеров нет. **Stage-04:** PASS WITH COMMENTS, все S04R/
+  S04F/S04Z fixed. **Открытых исходных S03-находок:** 0 (28/28 подтверждены
+  повторным ревью). **Не блокирующие комментарии:** S03R-001/S03R-002
+  (MINOR), S03R-003/S03R-004 (NIT), R02-014 (MINOR), R02-015 (NIT).
+  **Принятый TD:** TD-28 (нет UI выбора контекста; триггер перенесён на
+  позднюю доработку чата). TD-21 — отдельное принятое ограничение `REAL` для
+  финансов.
 - **Сборка:** `flutter analyze --fatal-infos` — **No issues found**;
-  `flutter test` — **172/172**; `flutter build windows --debug` — **success**
-  (2026-11-16, `build\windows\x64\runner\Debug\second_brain.exe`); CI-run
-  `43835793997` (`9f54bcc`) — success, включая Windows debug build.
+  `flutter test` — **185/185**; `flutter build windows --debug` — **success**
+  (2026-11-16, `build\windows\x64\runner\Debug\second_brain.exe`); CI —
+  после push stage-05.
 - **Flutter SDK:** 3.47.7 stable, `C:\src\flutter` (Dart 3.13.5)
 - **Windows-тулчейн:** Visual Studio Build Tools 2022 17.14 (MSVC v143 +
   Windows SDK + ATL/ATLMFC), установлен 2026-10-24; `flutter doctor` — без
   замечаний. Android: cmdline-tools 23.0 + `JAVA_HOME` → Android Studio JBR.
   До 2026-10-24 VS на этой машине отсутствовал: записи о «локальной сборке»
   от 2026-10-22 относились к другому ПК (см. `docs/debug/log.md`).
-- **Ветка:** `master`; код и тесты S04R — `789a01f`, документация S04R —
-  `d8b0889`, комментарии S04F — `f99b1eb`, финальные S04Z — `9f54bcc`,
-  документация — `5202cc1`; отчёт повторного ревью — `af023a1`. Базовая
+- **Ветка:** `master`; stage-04 закрыт на `9f54bcc` (комментарии S04F),
+  документация — `5202cc1`/`326299c`; stage-05 — коммит после них. Базовая
   реализация stage-03 — `0ae0c85`, отчёт stage-03 — `0defdb0`, уточнение
   отчёта — `9fedec7`, независимое ревью — `6906c2d`, исправления S03 —
   `14e63a7`, документация исправлений — `49bc00f` и `3089b79`, повторное
@@ -183,6 +176,20 @@
 - `EmbeddingService` и `VectorStore` — интерфейсы RAG, без индексации.
 - В чате пока нет UI выбора контекста (TD-28), но production-путь
   `sendMessage(contextRefs:)` покрыт тестами.
+
+## Что сделано на stage-05
+
+- Схема **v7**: `learning_tracks` (title, goal, JSON roadmap/custom fields,
+  private flag, soft-delete) и `learning_sessions` (track FK, duration,
+  notes, date); индексы по updated_at и track/date.
+- `LearningRepository`: CRUD треков, замена шагов, смена статуса шага,
+  сессии, forLlm-фильтр.
+- `LearningTrainer`: roadmap по цели через default LLM-провайдера, материалы
+  и check-in; приватный трек не отправляется, ключи — из secure storage.
+- UI: список треков, редактор, детали с roadmap/сессиями, AI-панель,
+  check-in баннер при отсутствии сессии более 3 дней.
+- Тесты: 185/185, analyze 0, Windows debug build success. Независимое ревью
+  stage-05 ещё не проводилось.
 
 ## Что сделано на stage-04
 
@@ -310,11 +317,14 @@
   после освобождения хоткей зарегистрировался и работает.
 
 ## Известные ограничения / принятый техдолг
+- **Stage-05 — self-check (2026-11-16).** Треки, roadmap, сессии, AI-тренер
+  и схема v7 готовы; analyze 0, test 185/185, Windows debug build success.
+  Независимое ревью ещё не проводилось. Живые LLM-вызовы тренера не
+  выполнялись; roadmap-парсер ограничен JSON-массивом и 20 шагами.
 - **Stage-04 — PASS WITH COMMENTS (2026-11-16).** Все `S04R-001…S04R-011`
-  fixed; повторная проверка — PASS WITH COMMENTS, комментарии `S04F` fixed;
-  финальная проверка — PASS WITH COMMENTS (0 MAJOR), S04Z fixed. Гейты:
-  analyze 0, test **172/172**, Windows debug build success; CI
-  `43833493988` — success. Stage-05 разблокирован.
+  fixed; повторная проверка — PASS WITH COMMENTS, комментарии `S04F`/`S04Z`
+  fixed. Гейты: analyze 0, test **172/172**, Windows debug build success; CI
+  `43833493988` — success.
 - **Stage-03 — исходное ревью FAIL (2026-10-25) сохранено, повторное — PASS
   (2026-10-28).** Все 28 находок S03-001…S03-028 исправлены в `14e63a7` и
   подтверждены. S03R-001/S03R-002 (MINOR) и S03R-003/S03R-004 (NIT) —
@@ -324,7 +334,8 @@
 - **TD-28 (MINOR, accepted):** в чате нет UI выбора контекста; production-путь
   `ChatController.sendMessage(contextRefs:)` читает флаги из БД и покрыт
   тестами, но обычный пользователь пока не может прикрепить заметку/задачу.
-  Триггер stage-04 не выполнен; вопрос перенесён на stage-05.
+  Триггер stage-04 не выполнен; вопрос перенесён на позднюю доработку чата
+  (stage-06+), не входит в stage-05.
 - Инструменты исполняются, но tool calls/результаты не сохраняются в
   `chat_messages`; трассировка — только в `tool_audit_log`. Поэтому после
   успешного mutating-инструмента обычный Retry запрещён; полная
@@ -360,12 +371,13 @@
 - DST-переход (23/25-часовые сутки) локально не воспроизводился; тест
   `dashboard_period_test.dart` проверяет календарную семантику границ.
 
-## Ближайшие задачи (stage-05)
-- **Stage-05** — следующий этап по `PROMPT.md`; stage-04 закрыт с
-  **PASS WITH COMMENTS**, блокеров нет.
-- Учесть неблокирующие S03R-001…S03R-004 и финальные комментарии S04Z.
-- TD-28 (UI выбора контекста) — триггер stage-05; добавить выбор контекста,
-  показывать отфильтрованные сущности без содержимого.
+## Ближайшие задачи (stage-06)
+- **Stage-06 — почта**: OAuth Gmail/Yandex/Mail.ru, просмотр/поиск,
+  суммаризация письма/треда через LLM, создание задачи из письма; флаг
+  приватности на уровне ящика/письма; refresh-токены только в secure storage.
+- Провести независимое ревью stage-05; после PASS — stage-06.
+- Учесть неблокирующие S03R-001…S03R-004 и S04Z.
+- TD-28 (UI выбора контекста) — отдельная поздняя доработка чата.
 - RAG: реализация `EmbeddingService`/`VectorStore` и индексация заметок.
 - Решить TD-21 перед финансовой аналитикой/бюджетами.
 - По UX-долгу: file-picker (TD-23), корзина (TD-24), golden-тесты (TD-18).
@@ -393,6 +405,7 @@
   и границы tools/RAG
 - ADR-021: инструменты ассистента, tool loop, аудит без содержимого и
   приватность результатов
+- ADR-022: обучение — треки, JSON roadmap, сессии и AI-тренер
 
 ## Активный агент
 - agent-1: DeepSeek V4.1 Flash Free (OpenCode), ветка master
@@ -411,10 +424,12 @@
 - reviewer A (agent-2, 2026-11-07): повторное ревью stage-04 — **FAIL**
   (2 MAJOR, 3 MINOR, 2 NIT); reviewer B (agent-3, 2026-11-07): **FAIL**
   (3 MAJOR, 3 MINOR, 1 NIT); после объединения — 3 MAJOR, 5 MINOR, 3 NIT.
-  agent-1 (2026-11-16): исправления S04R-001…011 и комментариев S04F; гейты
-  172/172; повторная проверка — **PASS WITH COMMENTS**, stage-05 разблокирован.
+  agent-1 (2026-11-16): stage-04 закрыт PASS WITH COMMENTS; stage-05
+  (обучение) реализован, гейты 185/185, ожидается независимое ревью.
 
 ## Ссылки
+- Отчёт stage-05: [stages/stage-05.md](stages/stage-05.md)
+- ADR-022: [decisions.md](decisions.md) — обучение, JSON roadmap, AI-тренер
 - Отчёт stage-04: [stages/stage-04.md](stages/stage-04.md)
 - Исходное ревью stage-04:
   [reviews/stage-04-review.md](reviews/stage-04-review.md)

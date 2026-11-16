@@ -32,6 +32,7 @@
   "trayMenuQuit": "Выход",
   "actionAdd": "Добавить",
   "actionSave": "Сохранить",
+  "actionClose": "Закрыть",
   "actionCancel": "Отмена",
   "actionDelete": "Удалить",
   "actionEdit": "Изменить",
@@ -202,5 +203,63 @@
   "chatThreadDeleted": "Диалог удалён",
   "chatDeleteThread": "Удалить диалог",
   "chatProviderMissing": "Провайдер диалога удалён. Выберите другого в настройках.",
-  "chatConfigMissing": "Сначала настройте LLM-провайдера."
+  "chatConfigMissing": "Сначала настройте LLM-провайдера.",
+  "learningEmpty": "Треков обучения пока нет",
+  "learningAddTrack": "Новый трек",
+  "learningEditTrack": "Редактировать трек",
+  "learningTrackTitle": "Название трека",
+  "learningGoal": "Цель",
+  "learningPrivate": "Не отправлять трек в LLM",
+  "learningCustomFields": "Дополнительные поля",
+  "learningCustomFieldsHint": "По одному на строку: поле=значение",
+  "learningRoadmap": "Roadmap",
+  "learningNoSteps": "Шагов пока нет",
+  "learningAddStep": "Добавить шаг",
+  "learningStepTitle": "Шаг",
+  "learningStepDescription": "Описание шага",
+  "learningProgress": "Прогресс: {done}/{total}",
+  "@learningProgress": {
+    "placeholders": {
+      "done": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "learningStepTodo": "К выполнению",
+  "learningStepInProgress": "В работе",
+  "learningStepDone": "Готово",
+  "learningSessions": "Сессии",
+  "learningNoSessions": "Сессий пока нет",
+  "learningAddSession": "Добавить сессию",
+  "learningSessionDuration": "Минуты",
+  "learningSessionNotes": "Заметки",
+  "learningSessionDate": "Дата",
+  "learningTotalMinutes": "Всего: {minutes} мин",
+  "@learningTotalMinutes": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "learningAiTrainer": "AI-тренер",
+  "learningGenerateRoadmap": "Сгенерировать roadmap",
+  "learningSuggestMaterials": "Предложить материалы",
+  "learningCheckIn": "Спросить о прогрессе",
+  "learningAiPrivate": "Приватный трек не отправляется в LLM",
+  "learningAiResult": "Ответ тренера",
+  "learningCheckInHint": "Давно не было сессии. Как продвигается обучение?",
+  "learningTrackSaved": "Трек сохранён",
+  "learningTrackSaveError": "Не удалось сохранить трек",
+  "learningTrackDeleted": "Трек удалён",
+  "learningTrackDeleteError": "Не удалось удалить трек",
+  "learningSessionSaved": "Сессия добавлена",
+  "learningSessionSaveError": "Не удалось добавить сессию",
+  "learningSessionDeleted": "Сессия удалена",
+  "learningSessionDeleteError": "Не удалось удалить сессию",
+  "learningRoadmapReplace": "Заменить текущий roadmap сгенерированным?",
+  "learningRoadmapEmptyGoal": "Сначала заполните цель трека."
 }

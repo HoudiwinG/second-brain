@@ -16,11 +16,11 @@ import 'helpers/in_memory_db.dart';
 ///
 /// Нужна, чтобы проверить политику ADR-012: непокрытый переход onUpgrade
 /// обязан падать, а не молча создавать недостающие таблицы.
-final class _AppDatabaseV7 extends AppDatabase {
-  _AppDatabaseV7(super.executor);
+final class _AppDatabaseV8 extends AppDatabase {
+  _AppDatabaseV8(super.executor);
 
   @override
-  int get schemaVersion => 7;
+  int get schemaVersion => 8;
 }
 
 /// База, которая «не понимает» файл v5: нужна для проверки downgrade.
@@ -33,11 +33,11 @@ final class _AppDatabaseV3 extends AppDatabase {
 
 /// Интеграционные тесты миграций drift.
 void main() {
-  group('AppDatabase схема v6', () {
-    test('schemaVersion = 6 (ядро, напоминания, LLM-слой и аудит)', () {
+  group('AppDatabase схема v7', () {
+    test('schemaVersion = 7 (ядро, напоминания, LLM, аудит и обучение)', () {
       final db = InMemoryDbFactory.open();
       addTearDown(db.close);
-      expect(db.schemaVersion, 6);
+      expect(db.schemaVersion, 7);
     });
 
     test('onCreate создаёт app_settings и таблицы ядра', () async {
@@ -70,6 +70,8 @@ void main() {
       expect(await db.select(db.llmProviderConfigs).get(), isEmpty);
       expect(await db.select(db.chatThreads).get(), isEmpty);
       expect(await db.select(db.chatMessages).get(), isEmpty);
+      expect(await db.select(db.learningTracks).get(), isEmpty);
+      expect(await db.select(db.learningSessions).get(), isEmpty);
 
       final fts = await db
           .customSelect(
@@ -123,17 +125,17 @@ void main() {
             );
         await v5.close();
 
-        final v6 = _AppDatabaseV7(NativeDatabase(file));
+        final v8 = _AppDatabaseV8(NativeDatabase(file));
         addTearDown(() async {
           try {
-            await v6.close();
+            await v8.close();
           } on Object {
             // Соединение могло остаться в незавершённой миграции.
           }
         });
 
         await expectLater(
-          () => v6.select(v6.appSettings).get(),
+          () => v8.select(v8.appSettings).get(),
           throwsA(isA<UnsupportedError>()),
         );
       },
@@ -186,7 +188,7 @@ void main() {
       final hits = (await search.search('миграции')).unwrap();
       expect(hits, hasLength(1));
       expect(hits.single.entityId, note.id);
-      expect(db.schemaVersion, 6);
+      expect(db.schemaVersion, 7);
       expect(await db.select(db.llmProviderConfigs).get(), isEmpty);
       expect(await db.select(db.chatThreads).get(), isEmpty);
       expect(await db.select(db.chatMessages).get(), isEmpty);
@@ -195,22 +197,22 @@ void main() {
 
   group('Защита миграций (R02-004)', () {
     test(
-      'v2 → v7 падает до DDL и не оставляет файл в промежуточном виде',
+      'v2 → v8 падает до DDL и не оставляет файл в промежуточном виде',
       () async {
         final dir = await Directory.systemTemp.createTemp('second_brain_db_');
         addTearDown(() async {
           if (dir.existsSync()) await dir.delete(recursive: true);
         });
-        final file = File('${dir.path}/v2_to_v7.sqlite');
+        final file = File('${dir.path}/v2_to_v8.sqlite');
         await _seedV2(file);
 
-        final v6 = _AppDatabaseV7(NativeDatabase(file));
+        final v8 = _AppDatabaseV8(NativeDatabase(file));
         await expectLater(
-          () => v6.select(v6.appSettings).get(),
+          () => v8.select(v8.appSettings).get(),
           throwsA(isA<UnsupportedError>()),
         );
         try {
-          await v6.close();
+          await v8.close();
         } on Object {
           // Соединение могло остаться в незавершённой миграции.
         }
@@ -226,7 +228,7 @@ void main() {
         expect(columns, isNot(contains('reminder_sent_at')));
         expect(version, 2);
 
-        // Файл должен остаться пригодным для штатной миграции v2 → v6.
+        // Файл должен остаться пригодным для штатной миграции v2 → v7.
         final recovered = AppDatabase(NativeDatabase(file));
         addTearDown(recovered.close);
         final task = await recovered.select(recovered.tasks).getSingle();
@@ -314,7 +316,7 @@ void main() {
 
         final db = AppDatabase(NativeDatabase(file));
         addTearDown(db.close);
-        expect(db.schemaVersion, 6);
+        expect(db.schemaVersion, 7);
 
         final task = await db.select(db.tasks).getSingle();
         expect(task.title, 'Напоминание после миграции');
@@ -418,7 +420,7 @@ void main() {
 
       final db = AppDatabase(NativeDatabase(file));
       addTearDown(db.close);
-      expect(db.schemaVersion, 6);
+      expect(db.schemaVersion, 7);
 
       final configColumns = await db
           .customSelect('PRAGMA table_info(llm_provider_configs)')
@@ -462,13 +464,13 @@ void main() {
     });
   });
 
-  group('Миграция v5 → v6', () {
-    test('создаёт tool_audit_log и сохраняет существующие данные', () async {
+  group('Миграция v6 → v7', () {
+    test('создаёт таблицы обучения и сохраняет существующие данные', () async {
       final dir = await Directory.systemTemp.createTemp('second_brain_db_');
       addTearDown(() async {
         if (dir.existsSync()) await dir.delete(recursive: true);
       });
-      final file = File('${dir.path}/v5.sqlite');
+      final file = File('${dir.path}/v6.sqlite');
 
       final seed = AppDatabase(NativeDatabase(file));
       await seed
@@ -476,13 +478,19 @@ void main() {
           .insert(
             AppSettingsCompanion.insert(
               key: 'keep.me',
-              value: 'v5',
+              value: 'v6',
               updatedAt: DateTime.utc(2026, 1, 1),
             ),
           );
-      await seed.customStatement('DROP INDEX IF EXISTS idx_tool_audit_created');
-      await seed.customStatement('DROP TABLE tool_audit_log');
-      await seed.customStatement('PRAGMA user_version = 5');
+      await seed.customStatement(
+        'DROP INDEX IF EXISTS idx_learning_sessions_track_date',
+      );
+      await seed.customStatement(
+        'DROP INDEX IF EXISTS idx_learning_tracks_updated',
+      );
+      await seed.customStatement('DROP TABLE IF EXISTS learning_sessions');
+      await seed.customStatement('DROP TABLE IF EXISTS learning_tracks');
+      await seed.customStatement('PRAGMA user_version = 6');
       await seed.close();
 
       final db = AppDatabase(NativeDatabase(file));
@@ -490,33 +498,101 @@ void main() {
       final setting = await (db.select(
         db.appSettings,
       )..where((t) => t.key.equals('keep.me'))).getSingle();
-      expect(setting.value, 'v5');
+      expect(setting.value, 'v6');
 
-      await db
-          .into(db.toolAuditEntries)
+      final trackId = await db
+          .into(db.learningTracks)
           .insert(
-            ToolAuditEntriesCompanion.insert(
-              toolName: 'create_task',
-              status: 'ok',
-              createdAt: DateTime.utc(2026, 10, 29),
+            LearningTracksCompanion.insert(
+              title: 'После миграции',
+              goal: const Value('Проверить v7'),
+              createdAt: DateTime.utc(2026, 11, 1),
+              updatedAt: DateTime.utc(2026, 11, 1),
             ),
           );
-      final rows = await db.select(db.toolAuditEntries).get();
-      expect(rows, hasLength(1));
-      expect(rows.single.argumentNames, '');
+      await db
+          .into(db.learningSessions)
+          .insert(
+            LearningSessionsCompanion.insert(
+              trackId: trackId,
+              durationMinutes: 30,
+              date: DateTime.utc(2026, 11, 2),
+              createdAt: DateTime.utc(2026, 11, 2),
+            ),
+          );
+      expect(await db.select(db.learningTracks).get(), hasLength(1));
+      expect(await db.select(db.learningSessions).get(), hasLength(1));
 
       final index = await db
           .customSelect(
             "SELECT name FROM sqlite_master WHERE type = 'index' "
-            "AND name = 'idx_tool_audit_created'",
+            "AND name = 'idx_learning_sessions_track_date'",
           )
           .getSingleOrNull();
-      expect(
-        index,
-        isNotNull,
-        reason: 'миграция должна создавать индекс аудита',
-      );
+      expect(index, isNotNull);
     });
+  });
+
+  group('Миграция v5 → v7', () {
+    test(
+      'создаёт tool_audit_log, обучение и сохраняет существующие данные',
+      () async {
+        final dir = await Directory.systemTemp.createTemp('second_brain_db_');
+        addTearDown(() async {
+          if (dir.existsSync()) await dir.delete(recursive: true);
+        });
+        final file = File('${dir.path}/v5.sqlite');
+
+        final seed = AppDatabase(NativeDatabase(file));
+        await seed
+            .into(seed.appSettings)
+            .insert(
+              AppSettingsCompanion.insert(
+                key: 'keep.me',
+                value: 'v5',
+                updatedAt: DateTime.utc(2026, 1, 1),
+              ),
+            );
+        await seed.customStatement(
+          'DROP INDEX IF EXISTS idx_tool_audit_created',
+        );
+        await seed.customStatement('DROP TABLE tool_audit_log');
+        await seed.customStatement('PRAGMA user_version = 5');
+        await seed.close();
+
+        final db = AppDatabase(NativeDatabase(file));
+        addTearDown(db.close);
+        final setting = await (db.select(
+          db.appSettings,
+        )..where((t) => t.key.equals('keep.me'))).getSingle();
+        expect(setting.value, 'v5');
+
+        await db
+            .into(db.toolAuditEntries)
+            .insert(
+              ToolAuditEntriesCompanion.insert(
+                toolName: 'create_task',
+                status: 'ok',
+                createdAt: DateTime.utc(2026, 10, 29),
+              ),
+            );
+        final rows = await db.select(db.toolAuditEntries).get();
+        expect(rows, hasLength(1));
+        expect(rows.single.argumentNames, '');
+
+        final index = await db
+            .customSelect(
+              "SELECT name FROM sqlite_master WHERE type = 'index' "
+              "AND name = 'idx_tool_audit_created'",
+            )
+            .getSingleOrNull();
+        expect(
+          index,
+          isNotNull,
+          reason: 'миграция должна создавать индекс аудита',
+        );
+      },
+    );
   });
 
   group('Миграция v3 → v5', () {
@@ -554,7 +630,7 @@ void main() {
 
       final db = AppDatabase(NativeDatabase(file));
       addTearDown(db.close);
-      expect(db.schemaVersion, 6);
+      expect(db.schemaVersion, 7);
       expect((await db.select(db.tasks).getSingle()).title, 'До LLM-слоя');
       expect(await db.select(db.llmProviderConfigs).get(), isEmpty);
       expect(await db.select(db.chatThreads).get(), isEmpty);
