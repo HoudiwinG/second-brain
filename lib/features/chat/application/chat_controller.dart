@@ -372,6 +372,7 @@ final class ChatController extends AsyncNotifier<ChatState> {
     final chatRepo = await ref.read(chatRepositoryProvider.future);
     if (!_isActive(requestId)) return false;
     ChatMessage? savedUser;
+    var accepted = false;
     if (userText != null) {
       final saved = await chatRepo.appendMessage(
         ChatMessageDraft(
@@ -380,7 +381,6 @@ final class ChatController extends AsyncNotifier<ChatState> {
           content: userText,
         ),
       );
-      if (!_isActive(requestId)) return false;
       savedUser = saved.when<ChatMessage?>(
         success: (message) => message,
         failure: (error) {
@@ -390,6 +390,10 @@ final class ChatController extends AsyncNotifier<ChatState> {
         },
       );
       if (savedUser == null) return false;
+      // Сообщение уже в БД: даже если пользователь успел нажать Stop,
+      // отправка считается принятой и UI не должен дублировать ввод.
+      accepted = true;
+      if (!_isActive(requestId)) return true;
     }
 
     final current = state.value;
@@ -406,7 +410,7 @@ final class ChatController extends AsyncNotifier<ChatState> {
 
     final loader = await ref.read(llmContextLoaderProvider.future);
     final loadedContext = await loader.load(contextRefs);
-    if (!_isActive(requestId)) return false;
+    if (!_isActive(requestId)) return accepted;
     final filtered = PrivacyGuard.filter(loadedContext);
     final contextText = filtered.allowed
         .map((item) => '[${item.entityType}] ${item.title}\n${item.body}')
@@ -417,12 +421,12 @@ final class ChatController extends AsyncNotifier<ChatState> {
     );
     if (requestMessages.isEmpty) {
       _setError('llm_error');
-      return false;
+      return accepted;
     }
 
     final registry = await ref.read(llmToolRegistryProvider.future);
     final audit = await ref.read(toolAuditRepositoryProvider.future);
-    if (!_isActive(requestId)) return false;
+    if (!_isActive(requestId)) return accepted;
     final runner = ToolRunner(registry: registry, audit: audit);
     final request = LlmChatRequest(
       model: _effectiveModel(thread, config),
@@ -741,6 +745,8 @@ final class ChatController extends AsyncNotifier<ChatState> {
       if (_isActive(requestId)) {
         await _refreshMessages(threadId, requestId: requestId);
         _setError(errorCode);
+      } else {
+        await _refreshAfterTerminal(threadId, requestId);
       }
       _clearRequestFlags(requestId);
       if (!completer.isCompleted) completer.complete();
@@ -761,6 +767,8 @@ final class ChatController extends AsyncNotifier<ChatState> {
           ),
         );
       }
+    } else {
+      await _refreshAfterTerminal(threadId, requestId);
     }
     _clearRequestFlags(requestId);
     if (!completer.isCompleted) completer.complete();
@@ -791,9 +799,25 @@ final class ChatController extends AsyncNotifier<ChatState> {
     if (_isActive(requestId)) {
       await _refreshMessages(threadId, requestId: requestId);
       _setError(errorCode);
+    } else {
+      await _refreshAfterTerminal(threadId, requestId);
     }
     _clearRequestFlags(requestId);
     if (!completer.isCompleted) completer.complete();
+  }
+
+  /// После terminal-записи, которую уже отменил пользователь, всё равно
+  /// подтягиваем сохранённое сообщение — но только если тред не сменился и
+  /// новый запрос не стримится (иначе нельзя перетирать его состояние).
+  Future<void> _refreshAfterTerminal(int threadId, int requestId) async {
+    final current = state.value;
+    if (current == null ||
+        current.activeThreadId != threadId ||
+        current.isStreaming ||
+        _isActive(requestId)) {
+      return;
+    }
+    await _refreshMessages(threadId, force: true);
   }
 
   void _clearRequestFlags(int requestId) {

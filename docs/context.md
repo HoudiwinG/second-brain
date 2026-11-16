@@ -5,10 +5,13 @@
   (3 MAJOR: `S04R-001` Anthropic parallel tool_result, `S04R-002` Google
   `functionCall.id`, `S04R-003` retry после mutating tool); все 11 `S04R`
   исправлены, повторная проверка — PASS WITH COMMENTS. Комментарии `S04F`
-  исправлены дополнительным проходом. Analyze 0, test **172/172**, Windows
-  debug build success. **Stage-05 разблокирован; ожидается финальная
-  проверка.** Отчёт: [stages/stage-04.md](stages/stage-04.md), повторное
-  ревью: [reviews/stage-04-repeat-review.md](reviews/stage-04-repeat-review.md),
+  исправлены; финальная проверка — **PASS WITH COMMENTS** (0 MAJOR),
+  комментарии S04Z fixed. Analyze 0, test **172/172**, Windows debug build
+  success. **Stage-05 разблокирован.** Отчёт:
+  [stages/stage-04.md](stages/stage-04.md), повторное ревью:
+  [reviews/stage-04-repeat-review.md](reviews/stage-04-repeat-review.md),
+  финальное ревью:
+  [reviews/stage-04-final-review.md](reviews/stage-04-final-review.md),
   исправления:
   [reviews/stage-04-repeat-fix-results.md](reviews/stage-04-repeat-fix-results.md).
   Схема БД — **v6** (`tool_audit_log`). ADR-021.
@@ -46,8 +49,10 @@
   `S04R-003`. Исходные S04-001…S04-009 закрыты.
 - **Исправления после повторного ревью stage-04:** все 11 находок
   `S04R-001…S04R-011` fixed, повторная проверка — **PASS WITH COMMENTS**;
-  комментарии `S04F` fixed, тесты 172/172 —
-  [stage-04-repeat-fix-results.md](reviews/stage-04-repeat-fix-results.md).
+  комментарии `S04F` fixed, финальная проверка — **PASS WITH COMMENTS**
+  (0 MAJOR), S04Z fixed, тесты 172/172 —
+  [stage-04-repeat-fix-results.md](reviews/stage-04-repeat-fix-results.md),
+  [stage-04-final-review.md](reviews/stage-04-final-review.md).
 - **Последний PASS-ревью:** stage-03 —
   [reviews/stage-03-repeat-review.md](reviews/stage-03-repeat-review.md),
   **PASS** (2026-10-28, 28/28 verified, 0 major). Stage-02 —
@@ -68,15 +73,16 @@
 - **Сборка:** `flutter analyze --fatal-infos` — **No issues found**;
   `flutter test` — **172/172**; `flutter build windows --debug` — **success**
   (2026-11-16, `build\windows\x64\runner\Debug\second_brain.exe`); CI-run
-  `43829840626` (`789a01f`) — success, CI для `S04F` — после push.
+  `43833493988` (`f99b1eb`) — success, включая Windows debug build.
 - **Flutter SDK:** 3.47.7 stable, `C:\src\flutter` (Dart 3.13.5)
 - **Windows-тулчейн:** Visual Studio Build Tools 2022 17.14 (MSVC v143 +
   Windows SDK + ATL/ATLMFC), установлен 2026-10-24; `flutter doctor` — без
   замечаний. Android: cmdline-tools 23.0 + `JAVA_HOME` → Android Studio JBR.
   До 2026-10-24 VS на этой машине отсутствовал: записи о «локальной сборке»
   от 2026-10-22 относились к другому ПК (см. `docs/debug/log.md`).
-- **Ветка:** `master`; код и тесты исправлений S04R — `789a01f`, документация
-  исправлений — `d8b0889`; отчёт повторного ревью — `af023a1`. Базовая
+- **Ветка:** `master`; код и тесты S04R — `789a01f`, документация S04R —
+  `d8b0889`, комментарии S04F/S04Z — `f99b1eb`; отчёт повторного ревью —
+  `af023a1`; финальная документация — текущий HEAD. Базовая
   реализация stage-03 — `0ae0c85`, отчёт stage-03 — `0defdb0`, уточнение
   отчёта — `9fedec7`, независимое ревью — `6906c2d`, исправления S03 —
   `14e63a7`, документация исправлений — `49bc00f` и `3089b79`, повторное
@@ -305,11 +311,10 @@
 
 ## Известные ограничения / принятый техдолг
 - **Stage-04 — PASS WITH COMMENTS (2026-11-16).** Все `S04R-001…S04R-011`
-  fixed; повторная проверка — PASS WITH COMMENTS, комментарии `S04F` fixed:
-  Anthropic parallel results, Google `functionCall.id`, retry safety,
-  приватные create-результаты, тесты смены треда, гонка cancel/terminal,
-  pre-tool текст, документация и NIT. Гейты: analyze 0, test **172/172**,
-  Windows debug build success. Stage-05 разблокирован.
+  fixed; повторная проверка — PASS WITH COMMENTS, комментарии `S04F` fixed;
+  финальная проверка — PASS WITH COMMENTS (0 MAJOR), S04Z fixed. Гейты:
+  analyze 0, test **172/172**, Windows debug build success; CI
+  `43833493988` — success. Stage-05 разблокирован.
 - **Stage-03 — исходное ревью FAIL (2026-10-25) сохранено, повторное — PASS
   (2026-10-28).** Все 28 находок S03-001…S03-028 исправлены в `14e63a7` и
   подтверждены. S03R-001/S03R-002 (MINOR) и S03R-003/S03R-004 (NIT) —
@@ -358,15 +363,9 @@
 ## Ближайшие задачи (stage-05)
 - **Stage-05** — следующий этап по `PROMPT.md`; stage-04 закрыт с
   **PASS WITH COMMENTS**, блокеров нет.
-- Учесть неблокирующие S03R-001…S03R-004 и оставшиеся комментарии S04F, если
-  они будут подтверждены финальной проверкой.
+- Учесть неблокирующие S03R-001…S03R-004 и финальные комментарии S04Z.
 - TD-28 (UI выбора контекста) — триггер stage-05; добавить выбор контекста,
   показывать отфильтрованные сущности без содержимого.
-- RAG: реализация `EmbeddingService`/`VectorStore` и индексация заметок.
-- Решить TD-21 перед финансовой аналитикой/бюджетами.
-- По UX-долгу: file-picker (TD-23), корзина (TD-24), golden-тесты (TD-18).
-- Добавить UI выбора контекста в чат (TD-28), чтобы privacy guard был
-  достижим в пользовательском сценарии.
 - RAG: реализация `EmbeddingService`/`VectorStore` и индексация заметок.
 - Решить TD-21 перед финансовой аналитикой/бюджетами.
 - По UX-долгу: file-picker (TD-23), корзина (TD-24), golden-тесты (TD-18).

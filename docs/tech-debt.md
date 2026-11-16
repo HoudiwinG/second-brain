@@ -74,9 +74,11 @@
 >
 > **Исправления stage-04 после повторного ревью (2026-11-16):** все 11
 > находок S04R-001…S04R-011 fixed; повторная проверка — **PASS WITH
-> COMMENTS** (0 MAJOR), комментарии S04F fixed. Analyze 0, test **172/172**,
+> COMMENTS** (0 MAJOR), комментарии S04F fixed; финальная проверка —
+> **PASS WITH COMMENTS** (0 MAJOR), S04Z fixed. Analyze 0, test **172/172**,
 > Windows debug build success. Доказательства —
-> [reviews/stage-04-repeat-fix-results.md](reviews/stage-04-repeat-fix-results.md).
+> [reviews/stage-04-repeat-fix-results.md](reviews/stage-04-repeat-fix-results.md),
+> [reviews/stage-04-final-review.md](reviews/stage-04-final-review.md).
 > Stage-05 разблокирован.
 
 Проверка после исправлений R02-009…R02-013 (2026-10-24, Flutter 3.47.7):

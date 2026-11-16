@@ -5,18 +5,20 @@
   (0 MAJOR).** Исходное ревью — FAIL; повторное ревью 2026-11-16 — FAIL
   (3 MAJOR), все 11 `S04R` исправлены; повторная проверка — **PASS WITH
   COMMENTS**. Комментарии `S04F` (4 MINOR/3 NIT у A, 3 MINOR/5 NIT у B)
-  исправлены дополнительным проходом. Analyze 0, test **172/172**, Windows
-  debug build success; ожидается финальная проверка. Stage-05 разблокирован.
+  исправлены; финальная проверка — **PASS WITH COMMENTS** (0 MAJOR),
+  комментарии S04Z fixed. Analyze 0, test **172/172**, Windows debug build
+  success; CI `43833493988` (`f99b1eb`) — success. Stage-05 разблокирован.
 - Предыдущий этап: stage-03 (LLM-слой) **закрыт повторным независимым ревью:
   PASS** (2026-10-28). Исходное ревью остаётся **FAIL** (2026-10-25), вердикт
   сохранён. Все 28 находок S03-001…S03-028 исправлены коммитом `14e63a7` и
   подтверждены (28/28 verified). Stage-02 закрыт с вердиктом **PASS WITH
   COMMENTS** (ревью №3); R02-001…R02-013 закрыты, R02-014/R02-015 остаются
   не блокирующими комментариями.
-- Гейты stage-04 после исправлений S04R/S04F (2026-11-16): `flutter analyze
-  --fatal-infos` — **No issues found**, `flutter test` — **172/172**,
-  `flutter build windows --debug` — **success**. CI-run `43829840626`
-  (`789a01f`) — success; CI для коммита с S04F — после push.
+- Гейты stage-04 после исправлений S04R/S04F/S04Z (2026-11-16): `flutter
+  analyze --fatal-infos` — **No issues found**, `flutter test` — **172/172**,
+  `flutter build windows --debug` — **success**; CI-run
+  [43833493988](https://github.com/HoudiwinG/second-brain/actions/runs/43833493988)
+  (`f99b1eb`) — **success**, включая Windows debug build.
 - Локальные гейты stage-03 (2026-10-28): analyze 0, test 132/132, Windows debug
   build; CI `40636764573` (`49bc00f`, включая `14e63a7`) — success.
 - Снимок состояния: [context.md](context.md)
@@ -57,7 +59,10 @@
   закрыты (S04-006 — код исправлен, не хватает regression-теста смены треда).
 - [stage-04-repeat-fix-results](reviews/stage-04-repeat-fix-results.md) —
   self-check исправлений S04R-001…S04R-011 и комментариев S04F: fixed,
-  тесты 172/172, analyze 0, Windows debug build success; не вердикт ревью.
+  тесты 172/172, analyze 0, Windows debug build success.
+- [stage-04-final-review](reviews/stage-04-final-review.md) — финальное
+  ревью (2026-11-16, два прохода): **PASS WITH COMMENTS**, 0 MAJOR; S04F
+  verified, S04Z fixed; stage-05 разблокирован.
 - Исправления stage-04:
   [reviews/stage-04-fix-results.md](reviews/stage-04-fix-results.md) — все 9
   исходных находок закрыты коммитом `821b4f8` (+ docs-коммит).

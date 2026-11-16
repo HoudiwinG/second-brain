@@ -3,18 +3,18 @@
 - **Дата:** 2026-10-29 (начало)
 - **Агент:** agent-1 (OpenCode)
 - **Ветка:** `master`
-- **Статус:** **PASS WITH COMMENTS (0 MAJOR).** Повторное ревью 2026-11-16:
-  все 11 находок `S04R-001…S04R-011` исправлены; повторная проверка дала
-  PASS WITH COMMENTS (4 MINOR/3 NIT у reviewer A, 3 MINOR/5 NIT у reviewer B).
-  Комментарии `S04F` исправлены дополнительным проходом, гейты зелёные;
-  ожидается финальная независимая проверка. Stage-05 разблокирован.
-  Предыдущий этап: stage-03 — повторное ревью PASS
+- **Статус:** **PASS WITH COMMENTS (0 MAJOR).** Исходное ревью — FAIL;
+  повторное ревью после S04R — PASS WITH COMMENTS; финальная проверка —
+  PASS WITH COMMENTS (0 MAJOR), комментарии S04F/S04Z fixed. Гейты зелёные.
+  Stage-05 разблокирован. Предыдущий этап: stage-03 — повторное ревью PASS
   (`docs/reviews/stage-03-repeat-review.md`).
 - **Коммиты:** `f2d9f08` — реализация; `821b4f8` — исправления по исходному
   ревью; `0aa69de` — документация; `af023a1` — отчёт повторного ревью;
-  `789a01f` — исправления S04R и документация; коммит с `S04F` — текущий.
+  `789a01f` — исправления S04R и документация; `f99b1eb` — комментарии
+  S04F/S04Z; финальный docs-коммит — текущий HEAD.
 - **Отчёты:** [повторное ревью](../reviews/stage-04-repeat-review.md),
-  [исправления S04R](../reviews/stage-04-repeat-fix-results.md).
+  [исправления S04R/S04F](../reviews/stage-04-repeat-fix-results.md),
+  [финальное ревью](../reviews/stage-04-final-review.md).
 
 ## Итог повторного ревью (2026-11-16)
 
@@ -105,10 +105,10 @@
 ## Гейты
 
 - `flutter analyze --fatal-infos` — **No issues found**.
-- `flutter test` — **172/172 passed** (после S04R и комментариев S04F).
+- `flutter test` — **172/172 passed** (после S04R/S04F/S04Z).
 - `flutter build windows --debug` — **success** (2026-11-16).
-- CI-run [43829840626](https://github.com/HoudiwinG/second-brain/actions/runs/43829840626)
-  (`789a01f`) — **success**, включая Windows debug build.
+- CI-run [43833493988](https://github.com/HoudiwinG/second-brain/actions/runs/43833493988)
+  (`f99b1eb`) — **success**, включая Windows debug build.
 - `dart run build_runner build` выполнен; `app_database.g.dart` перегенерирован.
 
 ## Ограничения

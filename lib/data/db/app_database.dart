@@ -285,7 +285,8 @@ class ChatMessages extends Table {
 
   IntColumn get completionTokens => integer().nullable()();
 
-  /// Код ошибки провайдера (без текста ответа и секретов).
+  /// Маркер ошибки/отмены: `llm_error`, `tool_side_effect`, `cancelled`
+  /// и другие коды ChatState; null — успешный ответ.
   TextColumn get errorCode => text().nullable()();
 
   /// true — сообщение исключается из контекста следующих LLM-запросов.

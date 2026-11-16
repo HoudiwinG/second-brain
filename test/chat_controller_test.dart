@@ -309,6 +309,11 @@ void main() {
     final state = container.read(chatControllerProvider).value!;
     expect(state.isStreaming, isFalse);
     expect(state.streamingText, isEmpty);
+    expect(
+      state.messages.where((message) => message.role == LlmRole.assistant),
+      hasLength(1),
+      reason: 'сохранённый terminal-ответ должен вернуться в state.messages',
+    );
     final messages = (await DriftChatRepository(
       database,
     ).listMessages(state.activeThreadId!)).unwrap();

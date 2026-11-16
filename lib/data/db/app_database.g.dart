@@ -5486,7 +5486,8 @@ class ChatMessage extends DataClass implements Insertable<ChatMessage> {
   final int? promptTokens;
   final int? completionTokens;
 
-  /// Код ошибки провайдера (без текста ответа и секретов).
+  /// Маркер ошибки/отмены: `llm_error`, `tool_side_effect`, `cancelled`
+  /// и другие коды ChatState; null — успешный ответ.
   final String? errorCode;
 
   /// true — сообщение исключается из контекста следующих LLM-запросов.
