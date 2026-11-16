@@ -226,6 +226,9 @@ void main() {
       await seed.customStatement(
         'DROP INDEX IF EXISTS idx_mail_accounts_provider',
       );
+      await seed.customStatement(
+        'DROP INDEX IF EXISTS idx_mail_accounts_provider_email',
+      );
       await seed.customStatement('DROP TABLE IF EXISTS mail_messages');
       await seed.customStatement('DROP TABLE IF EXISTS mail_accounts');
       await seed.customStatement('PRAGMA user_version = 7');
@@ -267,11 +270,12 @@ void main() {
           .customSelect(
             "SELECT name FROM sqlite_master WHERE type = 'index' "
             "AND name IN ('idx_mail_accounts_provider', "
+            "'idx_mail_accounts_provider_email', "
             "'idx_mail_messages_account_received', "
             "'idx_mail_messages_account_remote')",
           )
           .get();
-      expect(indexes, hasLength(3));
+      expect(indexes, hasLength(4));
 
       await (db.delete(
         db.mailAccounts,

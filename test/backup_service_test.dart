@@ -148,6 +148,8 @@ void main() {
       expect(decoded['learning_sessions'], hasLength(1));
       expect(decoded['mail_accounts'], hasLength(1));
       expect(decoded['mail_messages'], hasLength(1));
+      expect(decoded.toString(), isNot(contains('refresh_token')));
+      expect(decoded.toString(), isNot(contains('access_token')));
 
       // Импорт заменяет содержимое: лишняя запись должна исчезнуть.
       await notes.create(const NoteDraft(title: 'Лишняя'));

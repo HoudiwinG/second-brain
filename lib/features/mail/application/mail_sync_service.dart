@@ -1,3 +1,4 @@
+import '../../../core/error/app_exception.dart';
 import '../../../core/result/result.dart';
 import '../data/mail_provider.dart';
 import '../domain/mail_account.dart';
@@ -7,10 +8,15 @@ import 'mail_oauth.dart';
 
 /// Синхронизация писем: OAuth-токен → официальный API → локальный кэш.
 class MailSyncService {
-  MailSyncService({required this.repository, required this.oauth});
+  MailSyncService({
+    required this.repository,
+    required this.oauth,
+    MailProvider Function(MailAccount account)? providerFactory,
+  }) : _providerFactory = providerFactory ?? createMailProvider;
 
   final MailRepository repository;
   final MailOAuthService oauth;
+  final MailProvider Function(MailAccount account) _providerFactory;
 
   Future<Result<int>> sync(
     MailAccount account, {
@@ -22,13 +28,28 @@ class MailSyncService {
       return Result.failure(tokenResult.error);
     }
     final tokens = (tokenResult as Success<MailTokens>).value;
-    final provider = createMailProvider(account);
-    final fetched = await provider.fetchMessages(
+    final provider = _providerFactory(account);
+    var fetched = await provider.fetchMessages(
       account: account,
       tokens: tokens,
       query: query,
       limit: limit,
     );
+    if (fetched is Failure<List<MailMessageDraft>> &&
+        fetched.error is NetworkException &&
+        (fetched.error as NetworkException).statusCode == 401) {
+      // Access token отозван/просрочен: один раз обновляем и повторяем.
+      final refreshed = await oauth.forceRefresh(account);
+      if (refreshed is Failure<MailTokens>) {
+        return Result.failure(refreshed.error);
+      }
+      fetched = await provider.fetchMessages(
+        account: account,
+        tokens: (refreshed as Success<MailTokens>).value,
+        query: query,
+        limit: limit,
+      );
+    }
     if (fetched is Failure<List<MailMessageDraft>>) {
       return Result.failure(fetched.error);
     }

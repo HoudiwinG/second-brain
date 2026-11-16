@@ -3,9 +3,11 @@
 - **Дата:** 2026-11-16
 - **Агент:** agent-1 (OpenCode)
 - **Ветка:** `master`
-- **Статус:** **done (self-check)**. Независимое ревью ещё не проводилось.
+- **Статус:** **fixes ready**, ожидается повторное независимое ревью.
+  Первое ревью A/B — **FAIL** (см. [reviews/stage-06-review.md](../reviews/stage-06-review.md));
+  все блокеры исправлены (см. [reviews/stage-06-fix-results.md](../reviews/stage-06-fix-results.md)).
   Гейты: `flutter analyze --fatal-infos` — 0 issues, `flutter test` —
-  **210/210**, `flutter build windows --debug` — success.
+  **218/218**, `flutter build windows --debug` — success.
 - **Предыдущий этап:** stage-05 — **PASS WITH COMMENTS**, stage-06
   разблокирован.
 - **Схема БД:** **v8** (`mail_accounts`, `mail_messages`).
@@ -28,11 +30,13 @@
 - [x] OAuth 2.0 Authorization Code + PKCE, loopback callback;
 - [x] токены в secure storage, в БД только `secret_ref`;
 - [x] Gmail API adapter (list/get, MIME-текст);
-- [x] REST-адаптер для Yandex/Mail.ru (требует live-проверки контракта);
-- [x] локальный кэш писем и поиск;
+- [x] Yandex 360 Mail API (официальный REST, scope `mail:messages.read`);
+- [ ] Mail.ru: официального REST-чтения писем нет, IMAP запрещён; провайдер
+  отключён в UI и задокументирован как внешнее ограничение;
+- [x] локальный кэш писем и Unicode-поиск;
 - [x] суммаризация через LLM с privacy fail-closed;
-- [x] создание задачи из письма;
-- [x] UI подключения/синхронизации/просмотра/поиска;
+- [x] создание задачи из письма (тело не копируется, задача private);
+- [x] UI подключения/синхронизации/просмотра/поиска и per-message privacy;
 - [x] схема v8 и миграция v7→v8.
 
 ## Что реализовано
@@ -41,13 +45,19 @@
   endpoints, scopes, redirect URI, API base.
 - `mail_account.dart`, `mail_message.dart`, `mail_repository.dart` — модели и
   контракт.
-- `lib/data/repositories/mail_repository.dart` — аккаунты, upsert писем,
-  поиск, privacy, каскадное удаление, secretRef.
+- `lib/data/repositories/mail_repository.dart` — аккаунты, стабильный upsert,
+  Unicode-поиск, privacy ящика/письма, уникальность ящика, каскадное удаление,
+  secretRef.
 - `lib/features/mail/application/mail_oauth.dart` — PKCE, authorization URL,
-  обмен code, refresh, `MailTokenStore`, loopback callback.
-- `lib/features/mail/data/mail_provider.dart` — Gmail API adapter и
-  REST-адаптер Yandex/Mail.ru.
-- `mail_sync_service.dart` — ensure token → fetch → upsert.
+  обмен code, refresh, optional `client_secret` (только secure storage),
+  timeout, обработка 401/invalid grant, `MailTokenStore`, loopback callback.
+- Запуск браузера на Windows через `rundll32` (без `cmd`), чтобы URL с `&`
+  не обрезался.
+- `lib/features/mail/data/mail_provider.dart` — Gmail API adapter,
+  Yandex 360 Mail API (`folders/1/envelopes` + `messages/{id}/text-parts`),
+  Mail.ru отключён.
+- `mail_sync_service.dart` — ensure token → fetch → upsert; 401 → refresh →
+  один повтор.
 - `mail_summary_service.dart` — суммаризация через default LLM; приватное
   письмо не отправляется.
 - `lib/features/integrations/presentation/integrations_screen.dart` — UI почты.
@@ -59,10 +69,10 @@
 
 ## Контракты и интерфейсы
 
-- `MailRepository`: list/get/create/update/delete аккаунтов; list/get/upsert/
-  delete писем.
+- `MailRepository`: list/get/create/update/delete аккаунтов;
+  list/get/upsert/delete/updateMessagePrivacy писем.
 - `MailOAuthService`: `connect`, `buildAuthorizationUrl`, `exchangeCode`,
-  `refresh`, `ensureToken`, `storeTokens`, `deleteTokens`.
+  `refresh`, `forceRefresh`, `ensureToken`, `storeTokens`, `deleteTokens`.
 - `MailProvider`: `fetchMessages(account, tokens, query, limit)`.
 - `MailSyncService.sync(account)`.
 - `MailSummaryService.summarizeMessage/summarizeMessages`.
@@ -76,6 +86,7 @@
 - `mail_messages`: id, account_id FK cascade, remote_id, thread_id, from,
   subject, snippet, body, received_at, is_private_for_llm, created_at.
 - Индексы: `idx_mail_accounts_provider`,
+  unique `idx_mail_accounts_provider_email(provider_type, email)`,
   `idx_mail_messages_account_received`,
   unique `idx_mail_messages_account_remote(account_id, remote_id)`.
 - Миграция `v7 → v8`: создаёт таблицы/индексы, сохраняет данные. Guard
@@ -89,23 +100,29 @@
 
 - `test/mail_repository_test.dart` — аккаунты, secretRef, upsert/поиск,
   privacy, каскад, валидация.
-- `test/mail_oauth_test.dart` — PKCE URL, обмен code, refresh, token store,
-  отсутствие тела ошибки в результате.
-- `test/mail_provider_test.dart` — Gmail list/get, MIME-декодирование.
+- `test/mail_oauth_test.dart` — PKCE URL, connect/state/PKCE, Windows
+  command, обмен code, client secret, refresh, token store, отсутствие тела
+  ошибки в результате, disabled Mail.ru.
+- `test/mail_provider_test.dart` — Gmail list/get, MIME-декодирование,
+  Yandex envelopes/text-parts, private propagation.
+- `test/mail_sync_service_test.dart` — 401 → refresh → retry.
 - `test/mail_summary_test.dart` — LLM-суммаризация и private fail-closed.
-- `test/integrations_screen_widget_test.dart` — пустое состояние и аккаунт.
-- `test/db_migration_test.dart` — v7→v8, обновлены проверки v1→v8/v2→v8/
-  v3→v8/v4→v8/v5→v8/v6→v8, guard v2→v9.
+- `test/integrations_screen_widget_test.dart` — пустое состояние, аккаунт,
+  поиск с сохранением ввода и фильтрацией.
+- `test/mail_repository_test.dart` — per-message privacy, дубликаты ящика,
+  privacy ящика и кэша.
+- `test/backup_service_test.dart` — почта в v3, отсутствие токенов.
+- `test/db_migration_test.dart` — v7→v8, индексы, guard v2→v9.
 
-Итог: **210/210** тестов, analyze 0, Windows debug build success.
+Итог: **218/218** тестов, analyze 0, Windows debug build success.
 
 ## Известные ограничения и техдолг
 
-- Реальные OAuth-приложения/redirect URI у Gmail, Yandex и Mail.ru не
-  регистрировались; живые запросы и ручной GUI-smoke не выполнялись.
-  Gmail-адаптер реализован по официальному API; Yandex/Mail.ru используют
-  REST-контракт `/messages?limit=&q=`, который требует проверки на живых
-  API.
+- Реальные OAuth-приложения/redirect URI не регистрировались; живые запросы
+  и ручной GUI-smoke не выполнялись. Gmail — по официальному API; Yandex —
+  по официальному Yandex 360 Mail API (нужен тариф 360 и live-smoke).
+- Mail.ru отключён: официальный REST-API чтения писем отсутствует, а IMAP
+  запрещён PROMPT. Это внешнее ограничение, а не заглушка.
 - OAuth callback слушает фиксированный `127.0.0.1:53682`; этот redirect URI
   должен быть зарегистрирован в OAuth-приложении.
 - JSON-бэкап v3 включает обучение и почту, но не включает чат, LLM-конфиги,
@@ -113,7 +130,8 @@
   не входят.
 - Тело письма хранится в локальной БД открыто, как остальные данные;
   шифрование полей — отдельный этап.
-- Поиск по почте локальный (SQL LIKE), без FTS/глобального поиска.
+- Поиск по почте локальный (Unicode-фильтрация по кэшу), без FTS/глобального
+  поиска; Yandex API не имеет серверного поиска, query фильтрует страницу.
 - `summarize_mail_mock` из stage-04 остаётся для tool-сценария; UI
   использует реальный `MailSummaryService`.
 - Создание задачи из письма использует локальные данные; вложения не
@@ -132,11 +150,13 @@ flutter build windows --debug
 ```
 
 В приложении: «Интеграции» → «Подключить ящик» → выбрать провайдера, ввести
-email и OAuth client ID → завершить вход в браузере → синхронизировать →
-открыть письмо → «Суммаризировать» или «Создать задачу».
+email, OAuth client ID (и client secret, если провайдер требует),
+зарегистрировать показанный redirect URI → завершить вход в браузере →
+синхронизировать → открыть письмо → «Суммаризировать» или «Создать задачу».
 
 ## Ссылки
 
 - ADR-023.
-- Ревью: будет добавлено в `docs/reviews/stage-06-review.md` после
-  независимой проверки.
+- Первое ревью A/B: [reviews/stage-06-review.md](../reviews/stage-06-review.md)
+  — **FAIL**.
+- Исправления: [reviews/stage-06-fix-results.md](../reviews/stage-06-fix-results.md).

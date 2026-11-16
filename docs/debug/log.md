@@ -766,19 +766,20 @@ track/date. Гейты: analyze 0, test **185/185**, Windows debug build success
 
 ## Stage-06: почта (2026-11-16)
 
-Реализованы OAuth 2.0 + PKCE, secure tokens, Gmail API adapter, REST-адаптер
-Yandex/Mail.ru, локальный кэш/поиск, суммаризация через LLM и создание задачи
-из письма. Схема v8: `mail_accounts`, `mail_messages`, индексы и unique
-account/remote. Гейты: analyze 0, test **210/210**, Windows debug build
-success. Независимое ревью ещё не проводилось.
+Реализованы OAuth 2.0 + PKCE, secure tokens, Gmail API, официальный Yandex 360
+Mail API, локальный кэш/поиск, per-message privacy, суммаризация через LLM и
+создание задачи из письма; Mail.ru отключён (нет официального REST-чтения).
+Схема v8. Первое ревью A/B — FAIL; блокеры исправлены. Гейты: analyze 0, test
+**218/218**, Windows debug build success. Ожидается повторное ревью.
 
 | Timestamp (UTC) | ID | Действие | Примечание |
 |-----------------|----|----------|------------|
 | 2026-11-16 | — | схема | v7 → v8: почтовые аккаунты/письма, индексы, FK cascade |
 | 2026-11-16 | — | OAuth | PKCE S256, loopback callback, токены в SecretStore, refresh |
-| 2026-11-16 | — | providers | Gmail API list/get; REST-контракт Yandex/Mail.ru |
-| 2026-11-16 | — | privacy | private account/message не уходит в LLM; summary fail-closed |
-| 2026-11-16 | — | UI | подключение/синхронизация/приватность/поиск/просмотр/задача |
-| 2026-11-16 | — | тесты | repository, OAuth, Gmail parser, summary, widget, v7→v8 |
+| 2026-11-16 | — | providers | Gmail API; Yandex 360 Mail API; Mail.ru disabled |
+| 2026-11-16 | — | privacy | account/message private; task-from-mail private без тела |
+| 2026-11-16 | — | UI | подключение/синхронизация/privacy/поиск/просмотр/задача |
+| 2026-11-16 | — | тесты | repository, OAuth connect/PKCE, Yandex, sync 401, widget, v7→v8 |
 | 2026-11-16 | — | backup | JSON v3: mail_accounts/mail_messages, без OAuth-токенов |
-| 2026-11-16 | — | статус | self-check done; ожидается независимое ревью stage-06 |
+| 2026-11-16 | — | review | A/B FAIL: Windows URL, поиск, провайдеры, privacy, OAuth, тесты |
+| 2026-11-16 | — | fixes | rundll32, debounce, Yandex API, per-message privacy, 401-retry, 218/218 |

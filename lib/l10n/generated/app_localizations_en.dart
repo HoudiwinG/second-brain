@@ -757,6 +757,21 @@ class AppLocalizationsEn extends AppLocalizations {
   String get mailClientIdHint => 'Public client ID of your OAuth application';
 
   @override
+  String get mailClientSecret => 'OAuth client secret';
+
+  @override
+  String get mailClientSecretHint =>
+      'Only if the provider requires it; stored in secure storage';
+
+  @override
+  String get mailProviderUnavailable => 'official mail read API unavailable';
+
+  @override
+  String mailRedirectHint(String uri) {
+    return 'Redirect URI for the OAuth application: $uri';
+  }
+
+  @override
   String get mailConnect => 'Connect';
 
   @override

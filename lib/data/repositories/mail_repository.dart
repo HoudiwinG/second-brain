@@ -55,6 +55,18 @@ class DriftMailRepository implements MailRepository {
           'MailRepository: OAuth client id не может быть пустым',
         );
       }
+      final existing =
+          await (_db.select(_db.mailAccounts)..where(
+                (t) =>
+                    t.providerType.equals(draft.provider.dbValue) &
+                    t.email.equals(email),
+              ))
+              .getSingleOrNull();
+      if (existing != null) {
+        throw ValidationException(
+          'MailRepository: ящик ${draft.provider.label}/$email уже подключён',
+        );
+      }
       final now = DateTime.now().toUtc();
       final secretRef = _newSecretRef();
       final id = await _db
@@ -103,13 +115,14 @@ class DriftMailRepository implements MailRepository {
             updatedAt: Value(DateTime.now().toUtc()),
           ),
         );
-        if (isPrivateForLlm != null) {
-          // Флаг ящика применяется к уже закэшированным письмам, иначе
-          // summary мог бы отправить их в LLM.
+        if (isPrivateForLlm == true) {
+          // Включение приватности ящика применяется к уже закэшированным
+          // письмам. Выключение не сбрасывает индивидуальные флаги:
+          // privacy всегда fail-closed.
           await (_db.update(
             _db.mailMessages,
           )..where((m) => m.accountId.equals(id))).write(
-            db.MailMessagesCompanion(isPrivateForLlm: Value(isPrivateForLlm)),
+            const db.MailMessagesCompanion(isPrivateForLlm: Value(true)),
           );
         }
       });
@@ -151,23 +164,27 @@ class DriftMailRepository implements MailRepository {
         q.where((m) => m.isPrivateForLlm.equals(false));
       }
       final text = query?.trim();
-      if (text != null && text.isNotEmpty) {
-        final like = '%${text.replaceAll('%', '\\%').replaceAll('_', '\\_')}%';
-        q.where(
-          (m) =>
-              m.subject.like(like) |
-              m.fromAddress.like(like) |
-              m.snippet.like(like) |
-              m.body.like(like),
-        );
-      }
       q.orderBy([
         (m) => OrderingTerm.desc(m.receivedAt),
         (m) => OrderingTerm.desc(m.id),
       ]);
-      q.limit(limit.clamp(1, 200));
+      // SQLite LIKE не делает Unicode case-folding для кириллицы. Для
+      // корректного поиска берём страницу и фильтруем в Dart.
+      q.limit(text == null || text.isEmpty ? limit.clamp(1, 200) : 500);
       final rows = await q.get();
-      return [for (final row in rows) _toMessage(row)];
+      final filtered = text == null || text.isEmpty
+          ? rows
+          : rows
+                .where((row) {
+                  final haystack =
+                      '${row.subject} ${row.fromAddress} '
+                              '${row.snippet} ${row.body}'
+                          .toLowerCase();
+                  return haystack.contains(text.toLowerCase());
+                })
+                .take(limit.clamp(1, 200))
+                .toList();
+      return [for (final row in filtered) _toMessage(row)];
     });
   }
 
@@ -179,6 +196,29 @@ class DriftMailRepository implements MailRepository {
       )..where((m) => m.id.equals(id))).getSingleOrNull();
       return row == null ? null : _toMessage(row);
     });
+  }
+
+  @override
+  Future<Result<MailMessage>> updateMessagePrivacy(int id, bool isPrivate) {
+    return RepositoryGuard.guard(
+      'MailRepository.updateMessagePrivacy',
+      () async {
+        final message = await (_db.select(
+          _db.mailMessages,
+        )..where((m) => m.id.equals(id))).getSingleOrNull();
+        if (message == null) {
+          throw ValidationException('MailRepository: письмо $id не найдено');
+        }
+        final account = await _findAccount(message.accountId);
+        final effective = isPrivate || (account?.isPrivateForLlm ?? false);
+        await (_db.update(_db.mailMessages)..where((m) => m.id.equals(id)))
+            .write(db.MailMessagesCompanion(isPrivateForLlm: Value(effective)));
+        final updated = await (_db.select(
+          _db.mailMessages,
+        )..where((m) => m.id.equals(id))).getSingle();
+        return _toMessage(updated);
+      },
+    );
   }
 
   @override
@@ -197,23 +237,49 @@ class DriftMailRepository implements MailRepository {
       final now = DateTime.now().toUtc();
       await _db.transaction(() async {
         for (final message in messages) {
-          await _db
-              .into(_db.mailMessages)
-              .insert(
-                db.MailMessagesCompanion.insert(
-                  accountId: accountId,
-                  remoteId: message.remoteId,
-                  threadId: Value(message.threadId),
-                  fromAddress: Value(message.fromAddress),
-                  subject: Value(message.subject),
-                  snippet: Value(message.snippet),
-                  body: Value(message.body),
-                  receivedAt: message.receivedAt.toUtc(),
-                  isPrivateForLlm: Value(isPrivate || message.isPrivateForLlm),
-                  createdAt: now,
+          final effectivePrivate = isPrivate || message.isPrivateForLlm;
+          final existing =
+              await (_db.select(_db.mailMessages)..where(
+                    (m) =>
+                        m.accountId.equals(accountId) &
+                        m.remoteId.equals(message.remoteId),
+                  ))
+                  .getSingleOrNull();
+          if (existing == null) {
+            await _db
+                .into(_db.mailMessages)
+                .insert(
+                  db.MailMessagesCompanion.insert(
+                    accountId: accountId,
+                    remoteId: message.remoteId,
+                    threadId: Value(message.threadId),
+                    fromAddress: Value(message.fromAddress),
+                    subject: Value(message.subject),
+                    snippet: Value(message.snippet),
+                    body: Value(message.body),
+                    receivedAt: message.receivedAt.toUtc(),
+                    isPrivateForLlm: Value(effectivePrivate),
+                    createdAt: now,
+                  ),
+                );
+          } else {
+            // Сохраняем id/created_at, чтобы UI-ссылки и кэш не «мигали».
+            await (_db.update(
+              _db.mailMessages,
+            )..where((m) => m.id.equals(existing.id))).write(
+              db.MailMessagesCompanion(
+                threadId: Value(message.threadId),
+                fromAddress: Value(message.fromAddress),
+                subject: Value(message.subject),
+                snippet: Value(message.snippet),
+                body: Value(message.body),
+                receivedAt: Value(message.receivedAt.toUtc()),
+                isPrivateForLlm: Value(
+                  effectivePrivate || existing.isPrivateForLlm,
                 ),
-                mode: InsertMode.insertOrReplace,
-              );
+              ),
+            );
+          }
         }
       });
       return messages.length;

@@ -1213,15 +1213,22 @@ ADR-021 (tools и аудит)
 - `MailRepository` — аккаунты, upsert писем по `(account_id, remote_id)`,
   поиск по subject/from/snippet/body, privacy-фильтр, каскадное удаление.
 - `MailProvider`: Gmail API (`users.messages.list/get`, MIME-разбор) и
-  REST-адаптер для Yandex/Mail.ru с контрактом `/messages?limit=&q=`.
-  Точные официальные эндпоинты Yandex/Mail.ru требуют живой проверки.
-- `MailSyncService`: ensure token → fetch → upsert.
+  официальный Yandex 360 Mail API (`cloud-api.yandex.net/v1/mail`,
+  `folders/1/envelopes` + `messages/{id}/text-parts`, scope
+  `mail:messages.read`, заголовок `Authorization: OAuth`).
+- Mail.ru отключён: официальный Mail.ru API не предоставляет REST-чтение
+  писем, а IMAP запрещён PROMPT. В UI провайдер помечен как недоступный.
+- `MailSyncService`: ensure token → fetch → upsert; после 401 один
+  принудительный refresh и повтор.
+- Отдельный privacy-флаг письма; task-from-mail не копирует тело и всегда
+  создаётся private.
 - `MailSummaryService`: суммаризация через default LLM; приватное письмо
   fail-closed, тело не уходит.
 - JSON-бэкап **v3** включает аккаунты и кэш писем, но не OAuth-токены.
-- UI интеграций: подключение ящика (provider/email/client ID), список
-  аккаунтов, sync/delete/privacy, поиск писем, просмотр, суммаризация и
-  создание задачи из письма.
+- UI интеграций: подключение ящика (provider/email/client ID, optional
+  client secret только в secure storage), redirect URI, список аккаунтов,
+  sync/delete/privacy, поиск писем, просмотр, per-message privacy,
+  суммаризация и создание задачи из письма.
 
 ### Альтернативы
 - IMAP-универсал: запрещён PROMPT; отвергнуто.
@@ -1234,9 +1241,9 @@ ADR-021 (tools и аудит)
 - Положительные: токены вне БД, офлайн-кэш, единый интерфейс провайдеров,
   приватность на уровне ящика/письма, UI для основных сценариев.
 - Отрицательные/риски: OAuth-приложения и redirect URI нужно зарегистрировать
-  у провайдеров; Yandex/Mail.ru REST-контракт не проверен live; «полный»
-  JSON-бэкап пока не включает почту (как и чат/настройки); персональные
-  письма хранятся локально в открытом виде, как остальные данные.
+  у провайдеров; Yandex 360 API требует тариф и live-smoke; Mail.ru нельзя
+  подключить без IMAP или официального REST; персональные письма хранятся
+  локально в открытом виде, как остальные данные.
 - Совместимость: миграция `v7 → v8` создаёт таблицы/индексы; старые данные
   сохраняются.
 

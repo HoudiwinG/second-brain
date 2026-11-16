@@ -279,6 +279,17 @@
   "mailDisplayName": "Название ящика",
   "mailClientId": "OAuth client ID",
   "mailClientIdHint": "Публичный client ID вашего OAuth-приложения",
+  "mailClientSecret": "OAuth client secret",
+  "mailClientSecretHint": "Только если провайдер требует; хранится в secure storage",
+  "mailProviderUnavailable": "официальный API чтения писем недоступен",
+  "mailRedirectHint": "Redirect URI для OAuth-приложения: {uri}",
+  "@mailRedirectHint": {
+    "placeholders": {
+      "uri": {
+        "type": "String"
+      }
+    }
+  },
   "mailConnect": "Подключить",
   "mailConnecting": "Ожидание OAuth…",
   "mailAccountAdded": "Ящик подключён",

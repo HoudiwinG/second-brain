@@ -285,6 +285,17 @@
   "mailDisplayName": "Mailbox name",
   "mailClientId": "OAuth client ID",
   "mailClientIdHint": "Public client ID of your OAuth application",
+  "mailClientSecret": "OAuth client secret",
+  "mailClientSecretHint": "Only if the provider requires it; stored in secure storage",
+  "mailProviderUnavailable": "official mail read API unavailable",
+  "mailRedirectHint": "Redirect URI for the OAuth application: {uri}",
+  "@mailRedirectHint": {
+    "placeholders": {
+      "uri": {
+        "type": "String"
+      }
+    }
+  },
   "mailConnect": "Connect",
   "mailConnecting": "Waiting for OAuth…",
   "mailAccountAdded": "Mailbox connected",

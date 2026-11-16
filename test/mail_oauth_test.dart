@@ -9,6 +9,24 @@ import 'package:second_brain/features/mail/application/mail_oauth.dart';
 import 'package:second_brain/features/mail/domain/mail_account.dart';
 import 'package:second_brain/features/mail/domain/mail_provider_type.dart';
 
+class _FakeReceiver implements OAuthCallbackReceiver {
+  String? state;
+  var closed = false;
+
+  @override
+  Future<void> start({required String state}) async {
+    this.state = state;
+  }
+
+  @override
+  Future<String> waitForCode() async => 'code';
+
+  @override
+  Future<void> close() async {
+    closed = true;
+  }
+}
+
 void main() {
   late InMemorySecretStore secrets;
   late MailTokenStore tokenStore;
@@ -125,5 +143,73 @@ void main() {
 
     expect(result, isA<Failure<MailTokens>>());
     expect(result.toString(), isNot(contains('provider body')));
+  });
+
+  test('connect: state, PKCE и полный URL без обрезки', () async {
+    final receiver = _FakeReceiver();
+    String? launched;
+    String? verifier;
+    final client = MockClient((request) async {
+      final body = Uri.splitQueryString(request.body);
+      verifier = body['code_verifier'];
+      expect(body['client_secret'], 'secret');
+      return http.Response(
+        jsonEncode({
+          'access_token': 'access',
+          'refresh_token': 'refresh',
+          'expires_in': 3600,
+        }),
+        200,
+      );
+    });
+    final service = MailOAuthService(
+      tokenStore: tokenStore,
+      client: client,
+      browserLauncher: (url) async => launched = url.toString(),
+      receiverFactory: () => receiver,
+    );
+
+    final result = await service.connect(
+      MailProviderType.gmail,
+      clientId: 'client',
+      clientSecret: 'secret',
+    );
+
+    expect(result, isA<Success<MailTokens>>());
+    expect(receiver.closed, isTrue);
+    expect(launched, isNotNull);
+    final url = Uri.parse(launched!);
+    expect(url.queryParameters['state'], receiver.state);
+    expect(url.queryParameters['state'], isNotEmpty);
+    expect(
+      url.queryParameters['code_challenge'],
+      MailOAuthService.pkceChallenge(verifier!),
+    );
+    // Полный URL содержит несколько query-параметров, то есть '&' не потерян.
+    expect(launched, contains('&scope='));
+    expect(launched, contains('&code_challenge_method=S256'));
+  });
+
+  test('Windows launcher передаёт URL одним аргументом без cmd', () {
+    final url = Uri.parse(
+      'https://accounts.google.com/o/oauth2/v2/auth?a=1&b=2&c=3',
+    );
+    final command = MailOAuthService.browserCommand(url, isWindows: true);
+    expect(command.$1, 'rundll32');
+    expect(command.$2, hasLength(2));
+    expect(command.$2.last, url.toString());
+    expect(command.$2.last, contains('&b=2&c=3'));
+  });
+
+  test('недоступный Mail.ru не запускает OAuth', () async {
+    final service = MailOAuthService(
+      tokenStore: tokenStore,
+      browserLauncher: (_) async => fail('browser must not launch'),
+    );
+    final result = await service.connect(
+      MailProviderType.mailru,
+      clientId: 'client',
+    );
+    expect(result, isA<Failure<MailTokens>>());
   });
 }

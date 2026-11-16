@@ -1,10 +1,14 @@
 # Контекст проекта (снимок состояния)
 
-- **Текущий этап:** stage-06 (почта) — **реализация и self-check готовы,
-  независимое ревью ещё не проводилось.** OAuth 2.0 + PKCE, secure tokens,
-  Gmail API, REST-адаптер Yandex/Mail.ru, кэш/поиск, суммаризация и задача из
-  письма. Analyze 0, test **210/210**, Windows debug build success. Отчёт:
-  [stages/stage-06.md](stages/stage-06.md); ADR-023; схема **v8**.
+- **Текущий этап:** stage-06 (почта) — **первое ревью A/B: FAIL; блокеры
+  исправлены, ожидается повторное ревью.** OAuth 2.0 + PKCE, secure tokens,
+  Gmail API, официальный Yandex 360 Mail API, Mail.ru отключён (нет
+  официального REST-чтения), кэш/поиск, per-message privacy, суммаризация и
+  задача; backup v3. Analyze 0, test **218/218**, Windows debug build success.
+  Отчёт: [stages/stage-06.md](stages/stage-06.md); ревью:
+  [reviews/stage-06-review.md](reviews/stage-06-review.md); исправления:
+  [reviews/stage-06-fix-results.md](reviews/stage-06-fix-results.md); ADR-023;
+  схема **v8**.
 - **Предыдущий этап:** stage-05 (обучение) — **PASS WITH COMMENTS (0 MAJOR)**;
   S05-001…011 и S05Z fixed; analyze 0, test 193/193. Stage-04 — **PASS WITH
   COMMENTS**; stage-03 — **PASS** (28/28); stage-02 — **PASS WITH COMMENTS**.
@@ -52,8 +56,8 @@
   R02-009…R02-013 — [reviews/stage-02-fix-results.md](reviews/stage-02-fix-results.md).
 - **Текущий отчёт:** [stages/stage-06.md](stages/stage-06.md)
 - **Открытых CRITICAL:** 0
-- **Stage-06:** self-check, независимое ревью ещё не проводилось.
-  **Stage-05:** PASS WITH COMMENTS (0 MAJOR), S05-001…011 и S05Z fixed.
+- **Stage-06:** первое ревью FAIL; блокеры исправлены, ожидается повторное
+  ревью. **Stage-05:** PASS WITH COMMENTS (0 MAJOR), S05-001…011 и S05Z fixed.
   **Stage-04:** PASS WITH COMMENTS, все S04R/S04F/S04Z fixed. **Открытых
   исходных S03-находок:** 0 (28/28 подтверждены повторным ревью).
   **Не блокирующие комментарии:** S03R-001/S03R-002 (MINOR),
@@ -61,9 +65,9 @@
   TD-28 (нет UI выбора контекста; триггер перенесён на позднюю доработку
   чата). TD-21 — отдельное принятое ограничение `REAL` для финансов.
 - **Сборка:** `flutter analyze --fatal-infos` — **No issues found**;
-  `flutter test` — **210/210**; `flutter build windows --debug` — **success**
+  `flutter test` — **218/218**; `flutter build windows --debug` — **success**
   (2026-11-16, `build\windows\x64\runner\Debug\second_brain.exe`); CI —
-  после push stage-06.
+  после push исправлений stage-06.
 - **Flutter SDK:** 3.47.7 stable, `C:\src\flutter` (Dart 3.13.5)
 - **Windows-тулчейн:** Visual Studio Build Tools 2022 17.14 (MSVC v143 +
   Windows SDK + ATL/ATLMFC), установлен 2026-10-24; `flutter doctor` — без
@@ -181,12 +185,15 @@
   account/remote.
 - OAuth 2.0 Authorization Code + PKCE, loopback callback, токены в
   `SecretStore`; client ID вводит пользователь.
-- Gmail API adapter (list/get, MIME-текст), REST-адаптер Yandex/Mail.ru.
-- Локальный кэш/поиск, суммаризация через default LLM (private fail-closed),
-  создание задачи из письма; JSON-бэкап v3 включает почту (без токенов).
-- UI интеграций: подключение/синхронизация/приватность/список/поиск/просмотр.
-- Тесты: 210/210, analyze 0, Windows debug build success. Независимое ревью
-  stage-06 ещё не проводилось.
+- Gmail API adapter (list/get, MIME-текст); официальный Yandex 360 Mail API;
+  Mail.ru отключён (нет официального REST-чтения).
+- Локальный кэш/Unicode-поиск, суммаризация через default LLM (private
+  fail-closed), задача из письма (тело не копируется, задача private);
+  JSON-бэкап v3 включает почту (без токенов).
+- UI интеграций: подключение/синхронизация/privacy ящика и письма/поиск/
+  просмотр; Windows OAuth-launcher без `cmd`.
+- Тесты: 218/218, analyze 0, Windows debug build success. Первое ревью A/B —
+  FAIL, блокеры исправлены, ожидается повторное ревью.
 
 ## Что сделано на stage-05
 
@@ -386,11 +393,11 @@
   `dashboard_period_test.dart` проверяет календарную семантику границ.
 
 ## Ближайшие задачи (stage-07)
-- Провести независимое ревью stage-06; после PASS — stage-07.
+- Провести повторное независимое ревью stage-06; после PASS — stage-07.
 - **Stage-07 — поиск идей**: статьи через LLM web-search, изображения,
   сохранение результатов в идеи/заметки.
-- Закрыть ограничения stage-06: live OAuth/API smoke, реальные endpoint-ы
-  Yandex/Mail.ru, почта в JSON-бэкапе, при необходимости — шифрование писем.
+- Закрыть ограничения stage-06: live OAuth/API smoke Yandex 360, продуктовое
+  решение по Mail.ru (IMAP запрещён, REST чтения нет), шифрование писем.
 - Учесть неблокирующие S03R/S04Z/S05Z-комментарии.
 - TD-28 (UI выбора контекста) — отдельная поздняя доработка чата.
 - RAG: реализация `EmbeddingService`/`VectorStore` и индексация заметок.
@@ -441,10 +448,13 @@
   (2 MAJOR, 3 MINOR, 2 NIT); reviewer B (agent-3, 2026-11-07): **FAIL**
   (3 MAJOR, 3 MINOR, 1 NIT); после объединения — 3 MAJOR, 5 MINOR, 3 NIT.
   agent-1 (2026-11-16): stage-04 — PASS WITH COMMENTS; stage-05 — PASS WITH
-  COMMENTS, 193/193; stage-06 (почта) реализован, 210/210, ожидается ревью.
+  COMMENTS, 193/193; stage-06 (почта) — ревью FAIL, блокеры исправлены,
+  218/218, ожидается re-review.
 
 ## Ссылки
 - Отчёт stage-06: [stages/stage-06.md](stages/stage-06.md)
+- Ревью stage-06: [reviews/stage-06-review.md](reviews/stage-06-review.md)
+  (**FAIL**) и [reviews/stage-06-fix-results.md](reviews/stage-06-fix-results.md)
 - ADR-023: [decisions.md](decisions.md) — почта, OAuth, secure tokens,
   локальный кэш
 - Отчёт stage-05: [stages/stage-05.md](stages/stage-05.md)

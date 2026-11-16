@@ -80,15 +80,90 @@ void main() {
   test('Gmail: приватный аккаунт помечает письма приватными', () async {
     final client = MockClient((request) async {
       if (request.url.path.endsWith('/messages')) {
-        return http.Response('{"messages":[]}', 200);
+        return http.Response('{"messages":[{"id":"m1"}]}', 200);
       }
-      return http.Response('{}', 200);
+      return http.Response.bytes(
+        utf8.encode(
+          jsonEncode({
+            'id': 'm1',
+            'snippet': 'Кратко',
+            'payload': {
+              'headers': [
+                {'name': 'Subject', 'value': 'Тема'},
+              ],
+            },
+          }),
+        ),
+        200,
+      );
     });
     final provider = GmailMailProvider(client: client, delay: (_) async {});
     final result = await provider.fetchMessages(
       account: _account(private: true),
       tokens: _tokens(),
     );
-    expect((result as Success<List<MailMessageDraft>>).value, isEmpty);
+    final messages = (result as Success<List<MailMessageDraft>>).value;
+    expect(messages.single.isPrivateForLlm, isTrue);
+  });
+
+  test('Yandex: конверты Inbox и text-parts', () async {
+    final client = MockClient((request) async {
+      if (request.url.path.endsWith('/folders/1/envelopes')) {
+        expect(request.headers['Authorization'], 'OAuth access');
+        return http.Response.bytes(
+          utf8.encode(
+            jsonEncode({
+              'items': [
+                {
+                  'message_id': 'm1',
+                  'thread_id': 't1',
+                  'received_at': '2026-11-01T10:00:00+00:00',
+                  'subject': 'Тема',
+                  'firstline': 'Превью',
+                  'from': [
+                    {'local': 'sender', 'domain': 'example.com'},
+                  ],
+                },
+              ],
+            }),
+          ),
+          200,
+        );
+      }
+      expect(request.url.path, '/v1/mail/messages/m1/text-parts');
+      return http.Response.bytes(
+        utf8.encode(
+          jsonEncode({
+            'items': [
+              {'body': '<p>Текст</p><p>письма</p>'},
+            ],
+          }),
+        ),
+        200,
+      );
+    });
+    final account = MailAccount(
+      id: 2,
+      provider: MailProviderType.yandex,
+      email: 'user@yandex.ru',
+      displayName: '',
+      clientId: 'client',
+      secretRef: 'secret',
+      isPrivateForLlm: false,
+      createdAt: DateTime.utc(2026, 1, 1),
+      updatedAt: DateTime.utc(2026, 1, 1),
+    );
+    final provider = YandexMailProvider(client: client, delay: (_) async {});
+
+    final result = await provider.fetchMessages(
+      account: account,
+      tokens: _tokens(),
+    );
+
+    final messages = (result as Success<List<MailMessageDraft>>).value;
+    expect(messages.single.remoteId, 'm1');
+    expect(messages.single.subject, 'Тема');
+    expect(messages.single.fromAddress, 'sender@example.com');
+    expect(messages.single.body, 'Текст письма');
   });
 }

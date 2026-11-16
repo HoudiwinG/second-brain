@@ -19,12 +19,17 @@ class MailTokens {
     this.refreshToken,
     required this.expiresAt,
     this.tokenType = 'Bearer',
+    this.clientSecret,
   });
 
   final String accessToken;
   final String? refreshToken;
   final DateTime expiresAt;
   final String tokenType;
+
+  /// Client secret для провайдеров, которым он нужен при refresh.
+  /// Хранится только вместе с токенами в secure storage.
+  final String? clientSecret;
 
   bool get isExpired => DateTime.now()
       .toUtc()
@@ -35,11 +40,13 @@ class MailTokens {
     String? accessToken,
     String? refreshToken,
     DateTime? expiresAt,
+    String? clientSecret,
   }) => MailTokens(
     accessToken: accessToken ?? this.accessToken,
     refreshToken: refreshToken ?? this.refreshToken,
     expiresAt: expiresAt ?? this.expiresAt,
     tokenType: tokenType,
+    clientSecret: clientSecret ?? this.clientSecret,
   );
 
   Map<String, Object?> toJson() => {
@@ -47,6 +54,7 @@ class MailTokens {
     'refresh_token': refreshToken,
     'expires_at': expiresAt.toUtc().toIso8601String(),
     'token_type': tokenType,
+    'client_secret': clientSecret,
   };
 
   static MailTokens? fromJson(Object? raw) {
@@ -57,6 +65,7 @@ class MailTokens {
     final expiresAt = DateTime.tryParse(expires)?.toUtc();
     if (expiresAt == null) return null;
     final refresh = raw['refresh_token'];
+    final secret = raw['client_secret'];
     return MailTokens(
       accessToken: access,
       refreshToken: refresh is String && refresh.isNotEmpty ? refresh : null,
@@ -64,6 +73,7 @@ class MailTokens {
       tokenType: raw['token_type'] is String
           ? raw['token_type']! as String
           : 'Bearer',
+      clientSecret: secret is String && secret.isNotEmpty ? secret : null,
     );
   }
 }
@@ -223,6 +233,7 @@ class MailOAuthService {
   Future<Result<MailTokens>> connect(
     MailProviderType provider, {
     required String clientId,
+    String? clientSecret,
     String? loginHint,
   }) async {
     if (clientId.trim().isEmpty) {
@@ -230,9 +241,17 @@ class MailOAuthService {
         ValidationException('MailOAuth: client id не может быть пустым'),
       );
     }
+    if (!provider.available) {
+      return Result.failure(
+        ValidationException(
+          'MailOAuth: ${provider.label} не поддерживает чтение писем через '
+          'официальный REST API',
+        ),
+      );
+    }
     final state = _randomString(24);
     final verifier = _randomString(48);
-    final challenge = _codeChallenge(verifier);
+    final challenge = pkceChallenge(verifier);
     final receiver = _receiverFactory();
     try {
       await receiver.start(state: state);
@@ -248,6 +267,7 @@ class MailOAuthService {
       return await exchangeCode(
         provider,
         clientId: clientId,
+        clientSecret: clientSecret,
         code: code,
         codeVerifier: verifier,
       );
@@ -290,22 +310,31 @@ class MailOAuthService {
   Future<Result<MailTokens>> exchangeCode(
     MailProviderType provider, {
     required String clientId,
+    String? clientSecret,
     required String code,
     required String codeVerifier,
   }) async {
     try {
-      final response = await _client.post(
-        Uri.parse(provider.tokenEndpoint),
-        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-        body: {
-          'grant_type': 'authorization_code',
-          'client_id': clientId,
-          'code': code,
-          'code_verifier': codeVerifier,
-          'redirect_uri': MailProviderType.redirectUri,
-        },
+      final response = await _client
+          .post(
+            Uri.parse(provider.tokenEndpoint),
+            headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+            body: {
+              'grant_type': 'authorization_code',
+              'client_id': clientId,
+              if (clientSecret != null && clientSecret.isNotEmpty)
+                'client_secret': clientSecret,
+              'code': code,
+              'code_verifier': codeVerifier,
+              'redirect_uri': MailProviderType.redirectUri,
+            },
+          )
+          .timeout(const Duration(seconds: 20));
+      return _parseTokenResponse(
+        response,
+        allowRefresh: true,
+        clientSecret: clientSecret,
       );
-      return _parseTokenResponse(response, allowRefresh: true);
     } on Object catch (error, stack) {
       return Result.failure(
         NetworkException(
@@ -320,19 +349,28 @@ class MailOAuthService {
   Future<Result<MailTokens>> refresh(
     MailProviderType provider, {
     required String clientId,
+    String? clientSecret,
     required String refreshToken,
   }) async {
     try {
-      final response = await _client.post(
-        Uri.parse(provider.tokenEndpoint),
-        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-        body: {
-          'grant_type': 'refresh_token',
-          'client_id': clientId,
-          'refresh_token': refreshToken,
-        },
+      final response = await _client
+          .post(
+            Uri.parse(provider.tokenEndpoint),
+            headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+            body: {
+              'grant_type': 'refresh_token',
+              'client_id': clientId,
+              if (clientSecret != null && clientSecret.isNotEmpty)
+                'client_secret': clientSecret,
+              'refresh_token': refreshToken,
+            },
+          )
+          .timeout(const Duration(seconds: 20));
+      return _parseTokenResponse(
+        response,
+        allowRefresh: true,
+        clientSecret: clientSecret,
       );
-      return _parseTokenResponse(response, allowRefresh: false);
     } on Object catch (error, stack) {
       return Result.failure(
         NetworkException(
@@ -342,6 +380,34 @@ class MailOAuthService {
         ),
       );
     }
+  }
+
+  /// Принудительно обновляет токен (например, после 401 от API).
+  Future<Result<MailTokens>> forceRefresh(MailAccount account) async {
+    final stored = await tokenStore.read(account.secretRef);
+    if (stored is Failure<MailTokens?>) return Result.failure(stored.error);
+    final current = (stored as Success<MailTokens?>).value;
+    if (current == null || current.refreshToken == null) {
+      return const Result.failure(
+        ValidationException('MailOAuth: требуется повторная авторизация'),
+      );
+    }
+    final refreshed = await refresh(
+      account.provider,
+      clientId: account.clientId,
+      clientSecret: current.clientSecret,
+      refreshToken: current.refreshToken!,
+    );
+    if (refreshed is Failure<MailTokens>) {
+      return Result.failure(refreshed.error);
+    }
+    final tokens = (refreshed as Success<MailTokens>).value;
+    final merged = tokens.refreshToken == null
+        ? tokens.copyWith(refreshToken: current.refreshToken)
+        : tokens;
+    final saved = await tokenStore.write(account.secretRef, merged);
+    if (saved is Failure<void>) return Result.failure(saved.error);
+    return Result.success(merged);
   }
 
   Future<Result<MailTokens>> ensureToken(MailAccount account) async {
@@ -363,6 +429,7 @@ class MailOAuthService {
     final refreshed = await refresh(
       account.provider,
       clientId: account.clientId,
+      clientSecret: current.clientSecret,
       refreshToken: refreshToken,
     );
     if (refreshed is Failure<MailTokens>) {
@@ -386,11 +453,18 @@ class MailOAuthService {
   Result<MailTokens> _parseTokenResponse(
     http.Response response, {
     required bool allowRefresh,
+    String? clientSecret,
   }) {
     if (response.statusCode < 200 || response.statusCode >= 300) {
+      final reauth =
+          response.statusCode == 400 ||
+          response.statusCode == 401 ||
+          response.statusCode == 403;
       return Result.failure(
         NetworkException(
-          'MailOAuth: HTTP ${response.statusCode}',
+          reauth
+              ? 'MailOAuth: требуется повторная авторизация'
+              : 'MailOAuth: HTTP ${response.statusCode}',
           statusCode: response.statusCode,
           retryable: response.statusCode >= 500,
         ),
@@ -422,6 +496,7 @@ class MailOAuthService {
           tokenType: decoded['token_type'] is String
               ? decoded['token_type']! as String
               : 'Bearer',
+          clientSecret: clientSecret,
         ),
       );
     } on FormatException {
@@ -435,17 +510,32 @@ class MailOAuthService {
       .encode(List<int>.generate(bytes, (_) => _random.nextInt(256)))
       .replaceAll('=', '');
 
-  static String _codeChallenge(String verifier) => base64Url
+  /// S256 code challenge (RFC 7636).
+  static String pkceChallenge(String verifier) => base64Url
       .encode(sha256.convert(utf8.encode(verifier)).bytes)
       .replaceAll('=', '');
 
   static Future<void> _defaultBrowserLauncher(Uri url) async {
-    if (Platform.isWindows) {
-      await Process.start('cmd', ['/c', 'start', '', url.toString()]);
-    } else if (Platform.isMacOS) {
-      await Process.start('open', [url.toString()]);
-    } else {
-      await Process.start('xdg-open', [url.toString()]);
+    final command = browserCommand(url);
+    await Process.start(command.$1, command.$2);
+  }
+
+  /// Команда запуска браузера без shell-интерполяции.
+  ///
+  /// На Windows нельзя использовать `cmd /c start`: URL содержит `&`, и cmd
+  /// обрезает его до первого амперсанда. `rundll32` получает URL одним
+  /// аргументом и не интерпретирует `&`.
+  static (String, List<String>) browserCommand(
+    Uri url, {
+    bool? isWindows,
+    bool? isMacOS,
+  }) {
+    final windows = isWindows ?? Platform.isWindows;
+    final macos = isMacOS ?? Platform.isMacOS;
+    if (windows) {
+      return ('rundll32', ['url.dll,FileProtocolHandler', url.toString()]);
     }
+    if (macos) return ('open', [url.toString()]);
+    return ('xdg-open', [url.toString()]);
   }
 }

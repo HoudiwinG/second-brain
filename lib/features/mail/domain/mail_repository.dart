@@ -27,6 +27,8 @@ abstract interface class MailRepository {
 
   Future<Result<MailMessage?>> getMessage(int id);
 
+  Future<Result<MailMessage>> updateMessagePrivacy(int id, bool isPrivate);
+
   /// Upsert писем по (accountId, remoteId); возвращает количество записей.
   Future<Result<int>> upsertMessages(
     int accountId,

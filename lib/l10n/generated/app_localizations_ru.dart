@@ -757,6 +757,22 @@ class AppLocalizationsRu extends AppLocalizations {
   String get mailClientIdHint => 'Публичный client ID вашего OAuth-приложения';
 
   @override
+  String get mailClientSecret => 'OAuth client secret';
+
+  @override
+  String get mailClientSecretHint =>
+      'Только если провайдер требует; хранится в secure storage';
+
+  @override
+  String get mailProviderUnavailable =>
+      'официальный API чтения писем недоступен';
+
+  @override
+  String mailRedirectHint(String uri) {
+    return 'Redirect URI для OAuth-приложения: $uri';
+  }
+
+  @override
   String get mailConnect => 'Подключить';
 
   @override

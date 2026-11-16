@@ -38,46 +38,50 @@ class GmailMailProvider implements MailProvider {
       baseUrl: account.provider.apiBaseUrl,
       maxRetries: 2,
       headersProvider: () => {
-        'Authorization': '${tokens.tokenType} ${tokens.accessToken}',
+        'Authorization': '${account.provider.authScheme} ${tokens.accessToken}',
       },
       client: client,
       delay: delay,
     );
-    final safeLimit = limit.clamp(1, 50);
-    final q = query?.trim();
-    final path =
-        '/users/me/messages?maxResults=$safeLimit'
-        '${q == null || q.isEmpty ? '' : '&q=${Uri.encodeQueryComponent(q)}'}';
-    final list = await api.requestJson<List<String>>(
-      method: 'GET',
-      path: path,
-      parse: (json) {
-        if (json is! Map<String, Object?>) {
-          throw const LlmException('Gmail: некорректный список писем');
-        }
-        final raw = json['messages'];
-        if (raw is! List) return const [];
-        return [
-          for (final item in raw)
-            if (item is Map<String, Object?> && item['id'] is String)
-              item['id']! as String,
-        ];
-      },
-    );
-    final ids = list.when(
-      success: (value) => value,
-      failure: (error) => throw error,
-    );
-    final messages = <MailMessageDraft>[];
-    for (final id in ids) {
-      final message = await api.requestJson<MailMessageDraft>(
+    try {
+      final safeLimit = limit.clamp(1, 50);
+      final q = query?.trim();
+      final path =
+          '/users/me/messages?maxResults=$safeLimit'
+          '${q == null || q.isEmpty ? '' : '&q=${Uri.encodeQueryComponent(q)}'}';
+      final list = await api.requestJson<List<String>>(
         method: 'GET',
-        path: '/users/me/messages/${Uri.encodeComponent(id)}?format=full',
-        parse: (json) => _parseMessage(account, json),
+        path: path,
+        parse: (json) {
+          if (json is! Map<String, Object?>) {
+            throw const LlmException('Gmail: некорректный список писем');
+          }
+          final raw = json['messages'];
+          if (raw is! List) return const [];
+          return [
+            for (final item in raw)
+              if (item is Map<String, Object?> && item['id'] is String)
+                item['id']! as String,
+          ];
+        },
       );
-      message.when(success: messages.add, failure: (error) => throw error);
+      final ids = list.when(
+        success: (value) => value,
+        failure: (error) => throw error,
+      );
+      final messages = <MailMessageDraft>[];
+      for (final id in ids) {
+        final message = await api.requestJson<MailMessageDraft>(
+          method: 'GET',
+          path: '/users/me/messages/${Uri.encodeComponent(id)}?format=full',
+          parse: (json) => _parseMessage(account, json),
+        );
+        message.when(success: messages.add, failure: (error) => throw error);
+      }
+      return Result.success(messages);
+    } finally {
+      api.close();
     }
-    return Result.success(messages);
   }
 
   MailMessageDraft _parseMessage(MailAccount account, Object? json) {
@@ -150,13 +154,14 @@ class GmailMailProvider implements MailProvider {
       raw == null ? null : DateTime.tryParse(raw)?.toUtc();
 }
 
-/// Универсальный REST-адаптер для Yandex/Mail.ru.
+/// Yandex 360 Mail API: папка Inbox (`1`) + текстовые части письма.
 ///
-/// Официальные API отличаются от Gmail; адаптер ожидает контракт
-/// `GET /messages?limit=&q=` → `{messages: [...]}`. Точные эндпоинты
-/// задаются в [MailProviderType]; живые вызовы требуют проверки.
-class RestMailProvider implements MailProvider {
-  RestMailProvider({this.client, this.delay});
+/// Официальный контракт: `GET /folders/1/envelopes` и
+/// `GET /messages/{id}/text-parts` на `https://cloud-api.yandex.net/v1/mail`.
+/// Серверного поиска в API нет, поэтому query фильтрует уже полученную
+/// страницу; локальный кэш ищет по всей сохранённой переписке.
+class YandexMailProvider implements MailProvider {
+  YandexMailProvider({this.client, this.delay});
 
   final http.Client? client;
   final Future<void> Function(Duration)? delay;
@@ -172,50 +177,113 @@ class RestMailProvider implements MailProvider {
       baseUrl: account.provider.apiBaseUrl,
       maxRetries: 2,
       headersProvider: () => {
-        'Authorization': '${tokens.tokenType} ${tokens.accessToken}',
+        'Authorization': '${account.provider.authScheme} ${tokens.accessToken}',
       },
       client: client,
       delay: delay,
     );
-    final q = query?.trim();
-    final path =
-        '/messages?limit=${limit.clamp(1, 50)}'
-        '${q == null || q.isEmpty ? '' : '&q=${Uri.encodeQueryComponent(q)}'}';
-    return api.requestJson<List<MailMessageDraft>>(
-      method: 'GET',
-      path: path,
-      parse: (json) {
-        if (json is! Map<String, Object?>) {
-          throw const LlmException('Mail: некорректный список писем');
+    try {
+      final safeLimit = limit.clamp(1, 50);
+      final envelopes = await api.requestJson<List<Map<String, Object?>>>(
+        method: 'GET',
+        path: '/folders/1/envelopes?limit=$safeLimit&offset=0',
+        parse: (json) {
+          if (json is! Map<String, Object?>) {
+            throw const LlmException('Yandex Mail: некорректный ответ');
+          }
+          final raw = json['items'];
+          if (raw is! List) {
+            throw const LlmException('Yandex Mail: в ответе нет items');
+          }
+          return [
+            for (final item in raw)
+              if (item is Map<String, Object?>) item,
+          ];
+        },
+      );
+      final items = envelopes.when(
+        success: (value) => value,
+        failure: (error) => throw error,
+      );
+      final q = query?.trim().toLowerCase();
+      final messages = <MailMessageDraft>[];
+      for (final item in items) {
+        if (messages.length >= safeLimit) break;
+        final id = item['message_id'];
+        if (id is! String || id.isEmpty) {
+          throw const LlmException('Yandex Mail: нет message_id');
         }
-        final raw = json['messages'];
-        if (raw is! List) return const [];
-        return [
-          for (final item in raw)
-            if (item is Map<String, Object?> && item['id'] is String)
-              MailMessageDraft(
-                remoteId: item['id']! as String,
-                threadId: item['thread_id'] is String
-                    ? item['thread_id']! as String
-                    : null,
-                fromAddress: item['from'] is String
-                    ? item['from']! as String
-                    : '',
-                subject: item['subject'] is String
-                    ? item['subject']! as String
-                    : '',
-                snippet: item['snippet'] is String
-                    ? item['snippet']! as String
-                    : '',
-                body: item['body'] is String ? item['body']! as String : '',
-                receivedAt:
-                    _parseDate(item['received_at']) ?? DateTime.now().toUtc(),
-                isPrivateForLlm: account.isPrivateForLlm,
-              ),
-        ];
-      },
-    );
+        final from = _address(item['from']);
+        final subject = item['subject'] is String
+            ? item['subject']! as String
+            : '';
+        final snippet = item['firstline'] is String
+            ? item['firstline']! as String
+            : '';
+        if (q != null &&
+            q.isNotEmpty &&
+            !'$from $subject $snippet'.toLowerCase().contains(q)) {
+          continue;
+        }
+        final text = await api.requestJson<String>(
+          method: 'GET',
+          path: '/messages/${Uri.encodeComponent(id)}/text-parts',
+          parse: (json) {
+            if (json is! Map<String, Object?>) {
+              throw const LlmException(
+                'Yandex Mail: некорректный текст письма',
+              );
+            }
+            final parts = json['items'];
+            if (parts is! List) return '';
+            return [
+              for (final part in parts)
+                if (part is Map<String, Object?> && part['body'] is String)
+                  part['body']! as String,
+            ].join('\n');
+          },
+        );
+        final body = _plainText(
+          text.when(success: (value) => value, failure: (error) => throw error),
+        );
+        messages.add(
+          MailMessageDraft(
+            remoteId: id,
+            threadId: item['thread_id'] is String
+                ? item['thread_id']! as String
+                : null,
+            fromAddress: from,
+            subject: subject,
+            snippet: snippet,
+            body: body,
+            receivedAt:
+                _parseDate(item['received_at']) ?? DateTime.now().toUtc(),
+            isPrivateForLlm: account.isPrivateForLlm,
+          ),
+        );
+      }
+      return Result.success(messages);
+    } finally {
+      api.close();
+    }
   }
+
+  static String _address(Object? raw) {
+    if (raw is! List || raw.isEmpty) return '';
+    final first = raw.first;
+    if (first is! Map<String, Object?>) return '';
+    final local = first['local'];
+    final domain = first['domain'];
+    if (local is String && domain is String) return '$local@$domain';
+    return first['display_name'] is String
+        ? first['display_name']! as String
+        : '';
+  }
+
+  static String _plainText(String html) => html
+      .replaceAll(RegExp('<[^>]*>'), ' ')
+      .replaceAll(RegExp(r'\s+'), ' ')
+      .trim();
 
   static DateTime? _parseDate(Object? raw) =>
       raw is String ? DateTime.tryParse(raw)?.toUtc() : null;
@@ -228,6 +296,9 @@ MailProvider createMailProvider(
   Future<void> Function(Duration)? delay,
 }) => switch (account.provider) {
   MailProviderType.gmail => GmailMailProvider(client: client, delay: delay),
-  MailProviderType.yandex ||
-  MailProviderType.mailru => RestMailProvider(client: client, delay: delay),
+  MailProviderType.yandex => YandexMailProvider(client: client, delay: delay),
+  MailProviderType.mailru => throw const ValidationException(
+    'Mail.ru не предоставляет официальный REST API чтения писем; '
+    'подключение отключено',
+  ),
 };

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -20,7 +22,9 @@ class IntegrationsScreen extends ConsumerStatefulWidget {
 }
 
 class _IntegrationsScreenState extends ConsumerState<IntegrationsScreen> {
+  final _searchController = TextEditingController();
   Future<_MailData>? _future;
+  Timer? _searchDebounce;
   int? _selectedAccountId;
   String _query = '';
   bool _syncing = false;
@@ -29,6 +33,13 @@ class _IntegrationsScreenState extends ConsumerState<IntegrationsScreen> {
   void initState() {
     super.initState();
     _future = _load();
+  }
+
+  @override
+  void dispose() {
+    _searchDebounce?.cancel();
+    _searchController.dispose();
+    super.dispose();
   }
 
   Future<_MailData> _load() async {
@@ -58,15 +69,17 @@ class _IntegrationsScreenState extends ConsumerState<IntegrationsScreen> {
 
   Future<void> _connect() async {
     final lcm = AppLocalizations.of(context)!;
-    final draft = await showDialog<MailAccountDraft>(
+    final input = await showDialog<_MailConnectInput>(
       context: context,
       builder: (_) => const _MailAccountDialog(),
     );
-    if (draft == null || !mounted) return;
+    if (input == null || !mounted) return;
+    final draft = input.draft;
     final oauth = ref.read(mailOAuthServiceProvider);
     final result = await oauth.connect(
       draft.provider,
       clientId: draft.clientId,
+      clientSecret: input.clientSecret,
       loginHint: draft.email,
     );
     if (!mounted) return;
@@ -144,6 +157,17 @@ class _IntegrationsScreenState extends ConsumerState<IntegrationsScreen> {
     );
   }
 
+  Future<void> _setMessagePrivate(MailMessage message, bool value) async {
+    final lcm = AppLocalizations.of(context)!;
+    final repo = await ref.read(mailRepositoryProvider.future);
+    final result = await repo.updateMessagePrivacy(message.id, value);
+    if (!mounted) return;
+    result.when(
+      success: (_) => _reload(),
+      failure: (error) => showErrorSnackBar(context, lcm, error),
+    );
+  }
+
   Future<void> _summarize(MailMessage message) async {
     final lcm = AppLocalizations.of(context)!;
     final service = await ref.read(mailSummaryServiceProvider.future);
@@ -158,11 +182,19 @@ class _IntegrationsScreenState extends ConsumerState<IntegrationsScreen> {
   Future<void> _createTask(MailMessage message) async {
     final lcm = AppLocalizations.of(context)!;
     final repo = await ref.read(tasksRepositoryProvider.future);
+    if (!mounted) return;
     final result = await repo.create(
       TaskDraft(
         title: message.displayTitle,
-        description: message.body.isEmpty ? message.snippet : message.body,
-        isPrivateForLlm: message.isPrivateForLlm,
+        // Тело письма не копируем: задача не должна «пережить» включение
+        // приватности ящика и утечь в LLM вместе с текстом переписки.
+        description:
+            '${lcm.mailFrom}: ${message.fromAddress}\n'
+            '${lcm.mailReceived}: ${formatDateTime(context, message.receivedAt)}\n'
+            '${message.snippet}',
+        // Задача из почты всегда private: даже если ящик станет приватным
+        // позже, задача не должна уйти в LLM с фрагментом переписки.
+        isPrivateForLlm: true,
       ),
     );
     if (!mounted) return;
@@ -212,15 +244,16 @@ class _IntegrationsScreenState extends ConsumerState<IntegrationsScreen> {
                 SelectableText(
                   message.body.isEmpty ? message.snippet : message.body,
                 ),
-                if (message.isPrivateForLlm) ...[
-                  const SizedBox(height: 12),
-                  Text(
-                    lcm.mailPrivate,
-                    style: TextStyle(
-                      color: Theme.of(context).colorScheme.error,
-                    ),
-                  ),
-                ],
+                const SizedBox(height: 8),
+                SwitchListTile(
+                  contentPadding: EdgeInsets.zero,
+                  title: Text(lcm.mailPrivate),
+                  value: message.isPrivateForLlm,
+                  onChanged: (value) {
+                    Navigator.of(dialogContext).pop();
+                    _setMessagePrivate(message, value);
+                  },
+                ),
               ],
             ),
           ),
@@ -270,112 +303,129 @@ class _IntegrationsScreenState extends ConsumerState<IntegrationsScreen> {
           ),
         ],
       ),
-      body: FutureBuilder<_MailData>(
-        future: _future,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState != ConnectionState.done) {
-            return const Center(child: CircularProgressIndicator());
-          }
-          if (snapshot.hasError || !snapshot.hasData) {
-            return ErrorState(
-              message: lcm.errorUnexpected,
-              retryLabel: lcm.retryAction,
-              onRetry: _reload,
-            );
-          }
-          final data = snapshot.data!;
-          return ListView(
-            padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
-            children: [
-              _MailHeader(lcm: lcm),
-              const SizedBox(height: 12),
-              if (data.accounts.isEmpty)
-                Card(
-                  child: ListTile(
-                    leading: const Icon(Icons.mail_outline),
-                    title: Text(lcm.mailNoAccounts),
-                    trailing: FilledButton(
-                      onPressed: _connect,
-                      child: Text(lcm.mailAddAccount),
-                    ),
-                  ),
-                )
-              else
-                for (final account in data.accounts) ...[
-                  _AccountCard(
-                    account: account,
-                    syncing: _syncing,
-                    selected: account.id == data.selectedAccountId,
-                    onSelect: () {
-                      _selectedAccountId = account.id;
-                      _reload();
-                    },
-                    onSync: () => _sync(account),
-                    onDelete: () => _deleteAccount(account),
-                    onPrivate: (value) => _togglePrivate(account, value),
-                  ),
-                  const SizedBox(height: 8),
-                ],
-              if (data.accounts.isNotEmpty) ...[
-                const SizedBox(height: 16),
-                Row(
+      body: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+            child: TextField(
+              controller: _searchController,
+              decoration: dataFieldDecoration(lcm.mailSearchHint),
+              onChanged: (value) {
+                _searchDebounce?.cancel();
+                _searchDebounce = Timer(const Duration(milliseconds: 300), () {
+                  if (!mounted) return;
+                  _query = value;
+                  _reload();
+                });
+              },
+              onSubmitted: (value) {
+                _searchDebounce?.cancel();
+                _query = value;
+                _reload();
+              },
+            ),
+          ),
+          Expanded(
+            child: FutureBuilder<_MailData>(
+              future: _future,
+              builder: (context, snapshot) {
+                if (snapshot.connectionState != ConnectionState.done) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+                if (snapshot.hasError || !snapshot.hasData) {
+                  return ErrorState(
+                    message: lcm.errorUnexpected,
+                    retryLabel: lcm.retryAction,
+                    onRetry: _reload,
+                  );
+                }
+                final data = snapshot.data!;
+                return ListView(
+                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
                   children: [
-                    Expanded(
-                      child: Text(
-                        lcm.mailMessages,
-                        style: Theme.of(context).textTheme.titleMedium,
+                    _MailHeader(lcm: lcm),
+                    const SizedBox(height: 12),
+                    if (data.accounts.isEmpty)
+                      Card(
+                        child: ListTile(
+                          leading: const Icon(Icons.mail_outline),
+                          title: Text(lcm.mailNoAccounts),
+                          trailing: FilledButton(
+                            onPressed: _connect,
+                            child: Text(lcm.mailAddAccount),
+                          ),
+                        ),
+                      )
+                    else
+                      for (final account in data.accounts) ...[
+                        _AccountCard(
+                          account: account,
+                          syncing: _syncing,
+                          selected: account.id == data.selectedAccountId,
+                          onSelect: () {
+                            _selectedAccountId = account.id;
+                            _reload();
+                          },
+                          onSync: () => _sync(account),
+                          onDelete: () => _deleteAccount(account),
+                          onPrivate: (value) => _togglePrivate(account, value),
+                        ),
+                        const SizedBox(height: 8),
+                      ],
+                    if (data.accounts.isNotEmpty) ...[
+                      const SizedBox(height: 16),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              lcm.mailMessages,
+                              style: Theme.of(context).textTheme.titleMedium,
+                            ),
+                          ),
+                          if (data.selectedAccountId != null)
+                            Text(
+                              '${data.messages.length}',
+                              style: Theme.of(context).textTheme.bodySmall,
+                            ),
+                        ],
                       ),
-                    ),
-                    if (data.selectedAccountId != null)
-                      Text(
-                        '${data.messages.length}',
-                        style: Theme.of(context).textTheme.bodySmall,
-                      ),
+                      if (data.messages.isEmpty)
+                        Card(
+                          child: ListTile(
+                            leading: const Icon(Icons.inbox_outlined),
+                            title: Text(lcm.mailNoMessages),
+                          ),
+                        )
+                      else
+                        for (final message in data.messages)
+                          Card(
+                            child: ListTile(
+                              leading: Icon(
+                                message.isPrivateForLlm
+                                    ? Icons.visibility_off_outlined
+                                    : Icons.mail_outline,
+                              ),
+                              title: Text(message.displayTitle),
+                              subtitle: Text(
+                                '${message.fromAddress}\n${message.snippet}',
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              isThreeLine: true,
+                              trailing: Text(
+                                formatDate(context, message.receivedAt),
+                                style: Theme.of(context).textTheme.bodySmall,
+                              ),
+                              onTap: () => _openMessage(message),
+                            ),
+                          ),
+                    ],
                   ],
-                ),
-                const SizedBox(height: 8),
-                TextField(
-                  decoration: dataFieldDecoration(lcm.mailSearchHint),
-                  onChanged: (value) {
-                    _query = value;
-                    _reload();
-                  },
-                ),
-                const SizedBox(height: 8),
-                if (data.messages.isEmpty)
-                  Card(
-                    child: ListTile(
-                      leading: const Icon(Icons.inbox_outlined),
-                      title: Text(lcm.mailNoMessages),
-                    ),
-                  )
-                else
-                  for (final message in data.messages)
-                    Card(
-                      child: ListTile(
-                        leading: Icon(
-                          message.isPrivateForLlm
-                              ? Icons.visibility_off_outlined
-                              : Icons.mail_outline,
-                        ),
-                        title: Text(message.displayTitle),
-                        subtitle: Text(
-                          '${message.fromAddress}\n${message.snippet}',
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        isThreeLine: true,
-                        trailing: Text(
-                          formatDate(context, message.receivedAt),
-                          style: Theme.of(context).textTheme.bodySmall,
-                        ),
-                        onTap: () => _openMessage(message),
-                      ),
-                    ),
-              ],
-            ],
-          );
-        },
+                );
+              },
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -487,10 +537,18 @@ class _MailAccountDialog extends StatefulWidget {
   State<_MailAccountDialog> createState() => _MailAccountDialogState();
 }
 
+class _MailConnectInput {
+  const _MailConnectInput({required this.draft, this.clientSecret});
+
+  final MailAccountDraft draft;
+  final String? clientSecret;
+}
+
 class _MailAccountDialogState extends State<_MailAccountDialog> {
   final _email = TextEditingController();
   final _displayName = TextEditingController();
   final _clientId = TextEditingController();
+  final _clientSecret = TextEditingController();
   MailProviderType _provider = MailProviderType.gmail;
   bool _private = false;
   String? _error;
@@ -500,6 +558,7 @@ class _MailAccountDialogState extends State<_MailAccountDialog> {
     _email.dispose();
     _displayName.dispose();
     _clientId.dispose();
+    _clientSecret.dispose();
     super.dispose();
   }
 
@@ -510,12 +569,17 @@ class _MailAccountDialogState extends State<_MailAccountDialog> {
       return;
     }
     Navigator.of(context).pop(
-      MailAccountDraft(
-        provider: _provider,
-        email: _email.text,
-        displayName: _displayName.text,
-        clientId: _clientId.text,
-        isPrivateForLlm: _private,
+      _MailConnectInput(
+        draft: MailAccountDraft(
+          provider: _provider,
+          email: _email.text,
+          displayName: _displayName.text,
+          clientId: _clientId.text,
+          isPrivateForLlm: _private,
+        ),
+        clientSecret: _clientSecret.text.trim().isEmpty
+            ? null
+            : _clientSecret.text.trim(),
       ),
     );
   }
@@ -538,7 +602,12 @@ class _MailAccountDialogState extends State<_MailAccountDialog> {
                   for (final provider in MailProviderType.values)
                     DropdownMenuItem(
                       value: provider,
-                      child: Text(provider.label),
+                      enabled: provider.available,
+                      child: Text(
+                        provider.available
+                            ? provider.label
+                            : '${provider.label} — ${lcm.mailProviderUnavailable}',
+                      ),
                     ),
                 ],
                 onChanged: (value) {
@@ -563,12 +632,26 @@ class _MailAccountDialogState extends State<_MailAccountDialog> {
                   hint: lcm.mailClientIdHint,
                 ),
               ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: _clientSecret,
+                obscureText: true,
+                decoration: dataFieldDecoration(
+                  lcm.mailClientSecret,
+                  hint: lcm.mailClientSecretHint,
+                ),
+              ),
               SwitchListTile(
                 contentPadding: EdgeInsets.zero,
                 title: Text(lcm.mailPrivate),
                 value: _private,
                 onChanged: (value) => setState(() => _private = value),
               ),
+              Text(
+                lcm.mailRedirectHint(MailProviderType.redirectUri),
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
+              const SizedBox(height: 4),
               Text(
                 lcm.mailOAuthHint,
                 style: Theme.of(context).textTheme.bodySmall,

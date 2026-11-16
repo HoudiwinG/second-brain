@@ -22,11 +22,14 @@ void main() {
     repo = DriftMailRepository(db, secrets);
   });
 
-  Future<MailAccount> createAccount({bool private = false}) => repo
+  Future<MailAccount> createAccount({
+    bool private = false,
+    String email = 'user@example.com',
+  }) => repo
       .createAccount(
         MailAccountDraft(
           provider: MailProviderType.gmail,
-          email: 'user@example.com',
+          email: email,
           displayName: 'Рабочий',
           clientId: 'client-id',
           isPrivateForLlm: private,
@@ -57,7 +60,10 @@ void main() {
 
   test('upsert писем, поиск и приватность аккаунта', () async {
     final publicAccount = await createAccount();
-    final privateAccount = await createAccount(private: true);
+    final privateAccount = await createAccount(
+      private: true,
+      email: 'private@example.com',
+    );
     await repo.upsertMessages(publicAccount.id, [
       message('1', subject: 'Счёт'),
       message('2', subject: 'Встреча'),
@@ -88,6 +94,36 @@ void main() {
     final stored = (await repo.listMessages()).unwrap().single;
     expect(stored.isPrivateForLlm, isTrue);
     expect((await repo.listMessages(forLlm: true)).unwrap(), isEmpty);
+
+    // Выключение privacy ящика не сбрасывает индивидуальный флаг письма.
+    (await repo.updateAccount(account.id, isPrivateForLlm: false)).unwrap();
+    expect((await repo.listMessages()).unwrap().single.isPrivateForLlm, isTrue);
+  });
+
+  test('нельзя подключить один и тот же ящик дважды', () async {
+    await createAccount();
+    final duplicate = await repo.createAccount(
+      const MailAccountDraft(
+        provider: MailProviderType.gmail,
+        email: 'USER@example.com',
+        clientId: 'other-client',
+      ),
+    );
+    expect(duplicate, isA<Failure<MailAccount>>());
+    expect((await repo.listAccounts()).unwrap(), hasLength(1));
+  });
+
+  test('приватность отдельного письма управляется независимо', () async {
+    final account = await createAccount();
+    await repo.upsertMessages(account.id, [message('1'), message('2')]);
+    final first = (await repo.listMessages()).unwrap().firstWhere(
+      (m) => m.remoteId == '1',
+    );
+
+    final updated = (await repo.updateMessagePrivacy(first.id, true)).unwrap();
+    expect(updated.isPrivateForLlm, isTrue);
+    final visible = (await repo.listMessages(forLlm: true)).unwrap();
+    expect(visible.map((m) => m.remoteId), ['2']);
   });
 
   test('повторный upsert не создаёт дубликаты', () async {

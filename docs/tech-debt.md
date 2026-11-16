@@ -92,11 +92,13 @@
 > ADR-022.
 >
 > **Stage-06 (2026-11-16):** реализованы OAuth 2.0 + PKCE, secure tokens,
-> Gmail API и REST-адаптер Yandex/Mail.ru, локальный кэш/поиск, суммаризация
+> Gmail API и Yandex 360 Mail API, локальный кэш/поиск, суммаризация
 > и задача из письма; схема v8; JSON-бэкап v3 включает почту без токенов.
-> Analyze 0, test **210/210**, Windows debug build success. Независимое
-> ревью ещё не проводилось; live OAuth/API не проверялись. Отчёт —
-> [stages/stage-06.md](stages/stage-06.md), ADR-023.
+> Первое ревью A/B — **FAIL**; блокеры (Windows URL, поиск, провайдеры,
+> privacy, OAuth robustness, тесты) исправлены. Analyze 0, test **218/218**,
+> Windows debug build success; ожидается re-review. Live OAuth/API не
+> проверялись, Mail.ru отключён. Отчёт — [stages/stage-06.md](stages/stage-06.md),
+> ревью — [reviews/stage-06-review.md](reviews/stage-06-review.md), ADR-023.
 
 Проверка после исправлений R02-009…R02-013 (2026-10-24, Flutter 3.47.7):
 `flutter pub get --enforce-lockfile` → OK; `flutter analyze --fatal-infos` →

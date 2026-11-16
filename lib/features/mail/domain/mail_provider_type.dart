@@ -17,8 +17,9 @@ enum MailProviderType {
     label: 'Yandex Mail',
     authEndpoint: 'https://oauth.yandex.ru/authorize',
     tokenEndpoint: 'https://oauth.yandex.ru/token',
-    apiBaseUrl: 'https://mail.yandex.ru/api/v1',
-    scopes: ['mail:imap:read'],
+    apiBaseUrl: 'https://cloud-api.yandex.net/v1/mail',
+    scopes: ['mail:messages.read'],
+    authScheme: 'OAuth',
   ),
   mailru(
     dbValue: 'mailru',
@@ -27,6 +28,7 @@ enum MailProviderType {
     tokenEndpoint: 'https://oauth.mail.ru/token',
     apiBaseUrl: 'https://api.mail.ru',
     scopes: ['mail:read'],
+    available: false,
   );
 
   const MailProviderType({
@@ -36,6 +38,8 @@ enum MailProviderType {
     required this.tokenEndpoint,
     required this.apiBaseUrl,
     required this.scopes,
+    this.authScheme = 'Bearer',
+    this.available = true,
   });
 
   final String dbValue;
@@ -44,6 +48,15 @@ enum MailProviderType {
   final String tokenEndpoint;
   final String apiBaseUrl;
   final List<String> scopes;
+
+  /// Схема Authorization для API провайдера.
+  final String authScheme;
+
+  /// Провайдер можно подключить в текущей реализации.
+  ///
+  /// Mail.ru официально не предоставляет REST API чтения писем, поэтому
+  /// подключение отключено, пока не появится официальный контракт.
+  final bool available;
 
   /// Локальный loopback callback; должен быть зарегистрирован в OAuth-приложении.
   static const String redirectUri = 'http://127.0.0.1:53682/oauth/callback';

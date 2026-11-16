@@ -649,6 +649,10 @@ class AppDatabase extends _$AppDatabase {
       'ON mail_accounts(provider_type)',
     );
     await customStatement(
+      'CREATE UNIQUE INDEX IF NOT EXISTS idx_mail_accounts_provider_email '
+      'ON mail_accounts(provider_type, email)',
+    );
+    await customStatement(
       'CREATE INDEX IF NOT EXISTS idx_mail_messages_account_received '
       'ON mail_messages(account_id, received_at)',
     );

@@ -1526,6 +1526,30 @@ abstract class AppLocalizations {
   /// **'Public client ID of your OAuth application'**
   String get mailClientIdHint;
 
+  /// No description provided for @mailClientSecret.
+  ///
+  /// In en, this message translates to:
+  /// **'OAuth client secret'**
+  String get mailClientSecret;
+
+  /// No description provided for @mailClientSecretHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Only if the provider requires it; stored in secure storage'**
+  String get mailClientSecretHint;
+
+  /// No description provided for @mailProviderUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'official mail read API unavailable'**
+  String get mailProviderUnavailable;
+
+  /// No description provided for @mailRedirectHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Redirect URI for the OAuth application: {uri}'**
+  String mailRedirectHint(String uri);
+
   /// No description provided for @mailConnect.
   ///
   /// In en, this message translates to:
