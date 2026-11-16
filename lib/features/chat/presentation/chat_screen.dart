@@ -419,6 +419,7 @@ class _MessageBubble extends StatelessWidget {
     final theme = Theme.of(context);
     final errorText = switch (errorCode) {
       'cancelled' => lcm.chatCancelled,
+      'tool_side_effect' => lcm.chatToolSideEffect,
       null => null,
       _ => lcm.chatError,
     };
@@ -512,6 +513,7 @@ class _ErrorBanner extends StatelessWidget {
       'no_config' => lcm.chatNoConfig,
       'provider_missing' => lcm.chatProviderMissing,
       'api_key_missing' => lcm.chatApiKeyMissing,
+      'tool_side_effect' => lcm.chatToolSideEffect,
       'cancelled' => lcm.chatCancelled,
       _ => lcm.chatError,
     };

@@ -1,14 +1,16 @@
 # Контекст проекта (снимок состояния)
 
-- **Текущий этап:** stage-04 (инструменты ассистента) — **повторное независимое
-  ревью FAIL** (2026-11-16, два прохода). Реализация `f2d9f08`, исправления
-  `821b4f8`; исходные 9 находок закрыты, но найдены **3 новых MAJOR**:
-  `S04R-001` (Anthropic не группирует параллельные `tool_result`),
-  `S04R-002` (Google теряет `functionCall.id`), `S04R-003` (retry после tool
-  loop дублирует создание). **Stage-05 заблокирован.** Гейты на `0aa69de`:
-  analyze 0, test **160/160**, Windows debug build в CI — success. Отчёт:
+- **Текущий этап:** stage-04 (инструменты ассистента) — **исправления после
+  повторного ревью внесены, гейты зелёные; ожидается повторное независимое
+  ревью.** Повторное ревью 2026-11-16 дало **FAIL** (3 MAJOR:
+  `S04R-001` Anthropic parallel tool_result, `S04R-002` Google
+  `functionCall.id`, `S04R-003` retry после mutating tool); все 11 находок
+  `S04R-001…S04R-011` исправлены. Analyze 0, test **168/168**, Windows debug
+  build success. **Stage-05 заблокирован до PASS.** Отчёт:
   [stages/stage-04.md](stages/stage-04.md), повторное ревью:
-  [reviews/stage-04-repeat-review.md](reviews/stage-04-repeat-review.md).
+  [reviews/stage-04-repeat-review.md](reviews/stage-04-repeat-review.md),
+  исправления:
+  [reviews/stage-04-repeat-fix-results.md](reviews/stage-04-repeat-fix-results.md).
   Схема БД — **v6** (`tool_audit_log`). ADR-021.
 - **Предыдущий этап:** stage-03 (LLM-слой) **закрыт повторным независимым
   ревью: PASS** (2026-10-28). Исходное ревью остаётся **FAIL** (2026-10-25);
@@ -41,8 +43,10 @@
 - **Повторное ревью stage-04:** [reviews/stage-04-repeat-review.md](reviews/stage-04-repeat-review.md)
   — **FAIL** (2026-11-16, два прохода): 0 critical, **3 major**, 5 minor,
   3 nit после объединения дублей. Блокеры: `S04R-001`, `S04R-002`,
-  `S04R-003`. Исходные S04-001…S04-009 закрыты; S04-006 — код исправлен,
-  не хватает regression-теста смены треда.
+  `S04R-003`. Исходные S04-001…S04-009 закрыты.
+- **Исправления после повторного ревью stage-04:** все 11 находок
+  `S04R-001…S04R-011` fixed, тесты 168/168; ожидается повторное ревью —
+  [stage-04-repeat-fix-results.md](reviews/stage-04-repeat-fix-results.md).
 - **Последний PASS-ревью:** stage-03 —
   [reviews/stage-03-repeat-review.md](reviews/stage-03-repeat-review.md),
   **PASS** (2026-10-28, 28/28 verified, 0 major). Stage-02 —
@@ -53,26 +57,25 @@
   R02-009…R02-013 — [reviews/stage-02-fix-results.md](reviews/stage-02-fix-results.md).
 - **Текущий отчёт:** [stages/stage-04.md](stages/stage-04.md)
 - **Открытых CRITICAL:** 0
-- **Открытых MAJOR stage-04:** 3 (`S04R-001`, `S04R-002`, `S04R-003`);
-  **MINOR:** 5 (`S04R-004`…`S04R-008`); **NIT:** 3 (`S04R-009`…`S04R-011`).
-  Исходные S04-001…S04-009 закрыты; S04-006 требует regression-теста смены
-  треда. **Открытых исходных S03-находок:** 0 (28/28 подтверждены повторным
-  ревью). **Не блокирующие комментарии:** S03R-001/S03R-002 (MINOR),
-  S03R-003/S03R-004 (NIT), R02-014 (MINOR), R02-015 (NIT). **Принятый TD:**
-  TD-28 (нет UI выбора контекста). TD-21 — отдельное принятое ограничение
-  `REAL` для финансов.
+- **Открытых MAJOR stage-04:** 0 (S04R-001…003 исправлены, ожидают
+  подтверждения); **MINOR/NIT S04R:** 0 (S04R-004…011 fixed). Исходные
+  S04-001…S04-009 закрыты. **Открытых исходных S03-находок:** 0 (28/28
+  подтверждены повторным ревью). **Не блокирующие комментарии:**
+  S03R-001/S03R-002 (MINOR), S03R-003/S03R-004 (NIT), R02-014 (MINOR),
+  R02-015 (NIT). **Принятый TD:** TD-28 (нет UI выбора контекста; триггер
+  перенесён на stage-05). TD-21 — отдельное принятое ограничение `REAL` для
+  финансов.
 - **Сборка:** `flutter analyze --fatal-infos` — **No issues found**;
-  `flutter test` — **160/160**; `flutter build windows --debug` — **success**
-  (CI `40834088339` для `0aa69de`, 2026-11-07;
-  `build\windows\x64\runner\Debug\second_brain.exe`)
+  `flutter test` — **168/168**; `flutter build windows --debug` — **success**
+  (2026-11-16, `build\windows\x64\runner\Debug\second_brain.exe`)
 - **Flutter SDK:** 3.47.7 stable, `C:\src\flutter` (Dart 3.13.5)
 - **Windows-тулчейн:** Visual Studio Build Tools 2022 17.14 (MSVC v143 +
   Windows SDK + ATL/ATLMFC), установлен 2026-10-24; `flutter doctor` — без
   замечаний. Android: cmdline-tools 23.0 + `JAVA_HOME` → Android Studio JBR.
   До 2026-10-24 VS на этой машине отсутствовал: записи о «локальной сборке»
   от 2026-10-22 относились к другому ПК (см. `docs/debug/log.md`).
-- **Ветка:** `master`; текущий HEAD — `0aa69de` (stage-04: реализация
-  `f2d9f08`, исправления `821b4f8`, документация `0aa69de`). Базовая
+- **Ветка:** `master`; текущий HEAD — `af023a1` (отчёт повторного ревью
+  stage-04); код исправлений S04R — коммит после `af023a1`. Базовая
   реализация stage-03 — `0ae0c85`, отчёт stage-03 — `0defdb0`, уточнение
   отчёта — `9fedec7`, независимое ревью — `6906c2d`, исправления S03 —
   `14e63a7`, документация исправлений — `49bc00f` и `3089b79`, повторное
@@ -182,21 +185,17 @@
 - `ToolRunner`: неизвестный инструмент, битый JSON и ошибка валидации не
   прерывают запрос; модель получает `{"ok": false, "error": ...}`.
 - `ChatController` выполняет tool calls раундами, лимит `maxToolRounds = 3`;
-  при превышении — `llm_error` с сохранением partial-текста. Отмена
-  останавливает следующий раунд, но уже выполненные инструменты не
-  откатываются.
+  при превышении — `llm_error`/`tool_side_effect` с сохранением
+  partial-текста. Отмена останавливает следующий раунд, но уже выполненные
+  инструменты не откатываются.
 - Провайдеры: OpenAI-compatible `tool_calls`/`tool`, Anthropic
-  `tool_use`/`tool_result`, Google `functionCall`/`functionResponse`.
-  Известные дефекты повторного ревью: Anthropic не группирует результаты
-  параллельных вызовов (`S04R-001`), Google теряет `functionCall.id`
-  (`S04R-002`).
+  `tool_use`/`tool_result` с группировкой параллельных результатов, Google
+  `functionCall`/`functionResponse` с сохранением `functionCall.id`.
 - Аудит: схема **v6**, `tool_audit_log` (`ToolAuditEntries`); пишутся имя
   инструмента, статус, имена аргументов без значений, `entity_id`, время.
-- Повторный retry после ошибки следующего раунда может повторно выполнить
-  создающие инструменты (`S04R-003`); это известный блокер, а не штатное
-  поведение.
-- Тесты stage-04: 160/160; CI `40834088339` (`0aa69de`) — success, включая
-  Windows debug build.
+- После успешного mutating-инструмента обычный Retry запрещён
+  (`tool_side_effect`); полностью идемпотентный повтор не реализован.
+- Тесты stage-04: **168/168**; analyze 0; Windows debug build success.
 
 ## Что сделано на stage-02
 
@@ -304,11 +303,12 @@
   после освобождения хоткей зарегистрировался и работает.
 
 ## Известные ограничения / принятый техдолг
-- **Stage-04 — повторное ревью FAIL (2026-11-16).** Открыты `S04R-001`
-  (Anthropic parallel tool results), `S04R-002` (Google `functionCall.id`),
-  `S04R-003` (retry дублирует создающие инструменты); stage-05 заблокирован.
-  Исходные S04-001…S04-009 закрыты, S04-006 требует regression-теста смены
-  треда.
+- **Stage-04 — исправления после повторного ревью (2026-11-16).** Все
+  `S04R-001…S04R-011` fixed: Anthropic parallel results, Google
+  `functionCall.id`, retry safety, приватные create-результаты, тесты смены
+  треда, гонка cancel/terminal, pre-tool текст, документация и NIT. Гейты:
+  analyze 0, test 168/168, Windows debug build success. Ожидается повторное
+  независимое ревью; stage-05 пока заблокирован.
 - **Stage-03 — исходное ревью FAIL (2026-10-25) сохранено, повторное — PASS
   (2026-10-28).** Все 28 находок S03-001…S03-028 исправлены в `14e63a7` и
   подтверждены. S03R-001/S03R-002 (MINOR) и S03R-003/S03R-004 (NIT) —
@@ -320,8 +320,9 @@
   тестами, но обычный пользователь пока не может прикрепить заметку/задачу.
   Триггер stage-04 не выполнен; вопрос перенесён на stage-05.
 - Инструменты исполняются, но tool calls/результаты не сохраняются в
-  `chat_messages`; трассировка — только в `tool_audit_log`. Поэтому retry
-  после ошибки не знает о уже выполненных действиях.
+  `chat_messages`; трассировка — только в `tool_audit_log`. Поэтому после
+  успешного mutating-инструмента обычный Retry запрещён; полная
+  идемпотентность повторного выполнения не реализована.
 - RAG: только интерфейсы `EmbeddingService`/`VectorStore`, индексации нет.
 - Модель вводится вручную; списка моделей от провайдера нет.
 - Retry после начала SSE-потока не выполняется; partial-ответ сохраняется с
@@ -354,14 +355,11 @@
   `dashboard_period_test.dart` проверяет календарную семантику границ.
 
 ## Ближайшие задачи (сначала stage-04, затем stage-05)
-- Исправить блокеры S04R-001…S04R-003 и добавить регрессионные тесты:
-  Anthropic parallel tool results, Google `functionCall.id`, retry после
-  mutating tools.
-- Закрыть S04R-004…S04R-007: приватные результаты create-инструментов,
-  regression-тест смены треда в tool loop, гонка cancel/terminal, pre-tool
-  текст при отмене.
-- Повторное независимое ревью stage-04; после PASS — stage-05.
-- Учесть неблокирующие S03R-001…S03R-004 и S04R-008…S04R-011.
+- **Повторное независимое ревью stage-04** после исправлений S04R-001…011;
+  после PASS — stage-05.
+- Если повторное ревью найдёт остатки — закрыть их; S04R-001…003 были
+  блокерами, S04R-004…011 — неблокирующими.
+- Учесть неблокирующие S03R-001…S03R-004.
 - Добавить UI выбора контекста в чат (TD-28), чтобы privacy guard был
   достижим в пользовательском сценарии.
 - RAG: реализация `EmbeddingService`/`VectorStore` и индексация заметок.
@@ -409,7 +407,8 @@
 - reviewer A (agent-2, 2026-11-07): повторное ревью stage-04 — **FAIL**
   (2 MAJOR, 3 MINOR, 2 NIT); reviewer B (agent-3, 2026-11-07): **FAIL**
   (3 MAJOR, 3 MINOR, 1 NIT); после объединения — 3 MAJOR, 5 MINOR, 3 NIT.
-  Stage-05 заблокирован.
+  agent-1 (2026-11-16): исправления S04R-001…011, гейты 168/168; ожидается
+  повторное ревью. Stage-05 заблокирован.
 
 ## Ссылки
 - Отчёт stage-04: [stages/stage-04.md](stages/stage-04.md)
@@ -417,6 +416,8 @@
   [reviews/stage-04-review.md](reviews/stage-04-review.md)
 - Повторное ревью stage-04:
   [reviews/stage-04-repeat-review.md](reviews/stage-04-repeat-review.md)
+- Исправления после повторного ревью:
+  [reviews/stage-04-repeat-fix-results.md](reviews/stage-04-repeat-fix-results.md)
 - Результаты исправлений stage-04:
   [reviews/stage-04-fix-results.md](reviews/stage-04-fix-results.md)
 - Отчёт stage-03: [stages/stage-03.md](stages/stage-03.md)

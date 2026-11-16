@@ -3,7 +3,8 @@ import '../../../search/domain/search_hit.dart';
 import '../llm_tool_registry.dart';
 import 'tool_args.dart';
 
-/// Поиск по заметкам, задачам и идеям. Приватные записи исключаются всегда.
+/// Поиск по заметкам, задачам, идеям и финансовым операциям.
+/// Приватные записи исключаются всегда.
 final class SearchDataTool extends LlmToolBase {
   SearchDataTool(this._search);
 
@@ -16,8 +17,8 @@ final class SearchDataTool extends LlmToolBase {
 
   @override
   String get description =>
-      'Найти заметки, задачи и идеи пользователя по тексту. Приватные записи '
-      'не возвращаются.';
+      'Найти заметки, задачи, идеи и финансовые операции пользователя по '
+      'тексту. Приватные записи не возвращаются.';
 
   @override
   Map<String, Object?> get parameters => {

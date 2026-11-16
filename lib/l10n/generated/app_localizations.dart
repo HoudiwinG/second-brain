@@ -278,12 +278,6 @@ abstract class AppLocalizations {
   /// **'Quit'**
   String get trayMenuQuit;
 
-  /// No description provided for @hintGlobalHotkey.
-  ///
-  /// In en, this message translates to:
-  /// **'The hotkey opens quick capture from any app. Default: Ctrl+Alt+B.'**
-  String get hintGlobalHotkey;
-
   /// No description provided for @actionAdd.
   ///
   /// In en, this message translates to:
@@ -866,6 +860,12 @@ abstract class AppLocalizations {
   /// **'This month\'s finance'**
   String get dashboardFinanceMonth;
 
+  /// No description provided for @hintGlobalHotkey.
+  ///
+  /// In en, this message translates to:
+  /// **'The hotkey opens quick capture from any app. Default: Ctrl+Alt+B.'**
+  String get hintGlobalHotkey;
+
   /// No description provided for @settingsLlmSection.
   ///
   /// In en, this message translates to:
@@ -1147,6 +1147,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'No API key saved for this provider. Add it in Settings.'**
   String get chatApiKeyMissing;
+
+  /// No description provided for @chatToolSideEffect.
+  ///
+  /// In en, this message translates to:
+  /// **'The tool already performed an action. Check your data; retrying may create a duplicate.'**
+  String get chatToolSideEffect;
 
   /// No description provided for @chatCancelled.
   ///

@@ -101,10 +101,6 @@ class AppLocalizationsRu extends AppLocalizations {
   String get trayMenuQuit => 'Выход';
 
   @override
-  String get hintGlobalHotkey =>
-      'Горячая клавиша открывает быстрый ввод из любого приложения. По умолчанию Ctrl+Alt+B.';
-
-  @override
   String get actionAdd => 'Добавить';
 
   @override
@@ -405,6 +401,10 @@ class AppLocalizationsRu extends AppLocalizations {
   String get dashboardFinanceMonth => 'Финансы за месяц';
 
   @override
+  String get hintGlobalHotkey =>
+      'Горячая клавиша открывает быстрый ввод из любого приложения. По умолчанию Ctrl+Alt+B.';
+
+  @override
   String get settingsLlmSection => 'LLM-провайдеры';
 
   @override
@@ -551,6 +551,10 @@ class AppLocalizationsRu extends AppLocalizations {
   @override
   String get chatApiKeyMissing =>
       'Для провайдера не сохранён API-ключ. Добавьте его в настройках.';
+
+  @override
+  String get chatToolSideEffect =>
+      'Инструмент уже выполнил действие. Проверьте данные; повтор может создать дубликат.';
 
   @override
   String get chatCancelled => 'Ответ остановлен';

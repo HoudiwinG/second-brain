@@ -26,19 +26,30 @@ final class AnthropicProvider extends LlmProvider {
     if (_apiKey != null && _apiKey.isNotEmpty) 'x-api-key': _apiKey,
   };
 
+  static Map<String, Object?> _toolResultBlock(LlmMessage message) => {
+    'type': 'tool_result',
+    'tool_use_id': message.toolCallId,
+    'content': message.content,
+  };
+
+  static bool _isToolResultMessage(Map<String, Object?> message) {
+    if (message['role'] != 'user') return false;
+    final content = message['content'];
+    return content is List &&
+        content.isNotEmpty &&
+        content.every(
+          (block) =>
+              block is Map<String, Object?> && block['type'] == 'tool_result',
+        );
+  }
+
   /// Результат инструмента уходит пользователем с блоком `tool_result`;
   /// вызовы ассистента — блоками `tool_use`, как того требует Messages API.
   static Map<String, Object?> _anthropicMessage(LlmMessage message) {
     if (message.role == LlmRole.tool) {
       return {
         'role': 'user',
-        'content': [
-          {
-            'type': 'tool_result',
-            'tool_use_id': message.toolCallId,
-            'content': message.content,
-          },
-        ],
+        'content': [_toolResultBlock(message)],
       };
     }
     if (message.role == LlmRole.assistant && message.toolCalls.isNotEmpty) {
@@ -71,10 +82,19 @@ final class AnthropicProvider extends LlmProvider {
         .map((message) => message.content)
         .where((content) => content.trim().isNotEmpty)
         .join('\n\n');
-    final messages = [
-      for (final message in request.messages)
-        if (message.role != LlmRole.system) _anthropicMessage(message),
-    ];
+    final messages = <Map<String, Object?>>[];
+    for (final message in request.messages) {
+      if (message.role == LlmRole.system) continue;
+      if (message.role == LlmRole.tool &&
+          messages.isNotEmpty &&
+          _isToolResultMessage(messages.last)) {
+        (messages.last['content']! as List<Object?>).add(
+          _toolResultBlock(message),
+        );
+        continue;
+      }
+      messages.add(_anthropicMessage(message));
+    }
 
     final response = await _client.streamLines(
       method: 'POST',

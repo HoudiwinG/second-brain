@@ -9,6 +9,7 @@ import 'package:second_brain/app/di.dart';
 import 'package:second_brain/core/result/result.dart';
 import 'package:second_brain/core/secrets/in_memory_secret_store.dart';
 import 'package:second_brain/data/db/app_database.dart' hide LlmProviderConfig;
+import 'package:second_brain/data/repositories/chat_repository.dart';
 import 'package:second_brain/data/repositories/llm_config_repository.dart';
 import 'package:second_brain/data/repositories/notes_repository.dart';
 import 'package:second_brain/data/repositories/tool_audit_repository.dart';
@@ -195,6 +196,48 @@ void main() {
     },
   );
 
+  test('после успешного mutating-инструмента retry запрещён', () async {
+    final bodies = <String>[];
+    var calls = 0;
+    final client = MockClient.streaming((request, bodyStream) async {
+      calls++;
+      bodies.add(await bodyStream.transform(utf8.decoder).join());
+      if (calls == 1) {
+        return http.StreamedResponse(
+          Stream.value(utf8.encode(_toolCallSse('Один раз'))),
+          200,
+          request: request,
+        );
+      }
+      return http.StreamedResponse(
+        Stream.value(utf8.encode('provider failure')),
+        500,
+        request: request,
+      );
+    });
+    final c = container(client);
+    await c.read(chatControllerProvider.future);
+    final controller = c.read(chatControllerProvider.notifier);
+
+    await controller.sendMessage('Создай заметку');
+    await controller.waitForIdle();
+
+    final state = c.read(chatControllerProvider).value!;
+    expect(state.errorCode, 'tool_side_effect');
+    expect(state.messages.last.errorCode, 'tool_side_effect');
+    expect(
+      (await DriftNotesRepository(database).list()).unwrap(),
+      hasLength(1),
+    );
+
+    expect(await controller.retryLast(), isFalse);
+    expect(
+      (await DriftNotesRepository(database).list()).unwrap(),
+      hasLength(1),
+      reason: 'retry не должен создавать вторую заметку',
+    );
+  });
+
   test('модель, которая зовёт инструменты бесконечно, получает llm_error '
       'после лимита раундов', () async {
     final bodies = <String>[];
@@ -213,7 +256,7 @@ void main() {
     await controller.waitForIdle();
 
     final state = c.read(chatControllerProvider).value!;
-    expect(state.errorCode, 'llm_error');
+    expect(state.errorCode, 'tool_side_effect');
     expect(state.isStreaming, isFalse);
     expect(bodies, hasLength(maxToolRounds + 1));
 
@@ -278,6 +321,209 @@ void main() {
       'call_1',
       'call_2',
     ]);
+  });
+
+  test('создание нового треда во время выполнения инструмента не запускает '
+      'старый цикл', () async {
+    final bodies = <String>[];
+    final tool = _BlockingTool();
+    final registry = LlmToolRegistry()..register(tool);
+    final c = ProviderContainer(
+      overrides: [
+        appDatabaseProvider.overrideWith((ref) async => database),
+        secretStoreProvider.overrideWithValue(secrets),
+        llmProviderFactoryProvider.overrideWith(
+          (ref) => LlmProviderFactory(
+            client: _scripted([
+              _toolCallsSse([
+                {
+                  'id': 'call_1',
+                  'name': 'blocking_tool',
+                  'args': {'value': 'x'},
+                },
+              ]),
+              _textSse('Не должно выполниться'),
+            ], bodies),
+            retryDelay: (_) async {},
+          ),
+        ),
+        llmToolRegistryProvider.overrideWith((ref) async => registry),
+      ],
+    );
+    addTearDown(c.dispose);
+    await c.read(chatControllerProvider.future);
+    final controller = c.read(chatControllerProvider.notifier);
+
+    await controller.sendMessage('Запусти инструмент');
+    await tool.started.future;
+    final oldThreadId = c.read(chatControllerProvider).value!.activeThreadId!;
+
+    expect(await controller.createThread('Новый'), isTrue);
+    tool.release.complete();
+    await Future<void>.delayed(const Duration(milliseconds: 50));
+
+    expect(bodies, hasLength(1), reason: 'второй раунд не должен стартовать');
+    final state = c.read(chatControllerProvider).value!;
+    expect(state.activeThreadId, isNot(oldThreadId));
+    expect(state.messages, isEmpty);
+    final oldMessages = (await DriftChatRepository(
+      database,
+    ).listMessages(oldThreadId)).unwrap();
+    expect(oldMessages.last.errorCode, 'cancelled');
+  });
+
+  test(
+    'отмена во время tool-раунда не сохраняет pre-tool текст как успешный',
+    () async {
+      final bodies = <String>[];
+      final tool = _BlockingTool();
+      final registry = LlmToolRegistry()..register(tool);
+      final preTool =
+          'data: ${jsonEncode({
+            'choices': [
+              {
+                'delta': {'content': 'Сейчас создам заметку'},
+              },
+            ],
+          })}\n\n${_toolCallsSse([
+            {
+              'id': 'call_1',
+              'name': 'blocking_tool',
+              'args': {'value': 'x'},
+            },
+          ])}';
+      final c = ProviderContainer(
+        overrides: [
+          appDatabaseProvider.overrideWith((ref) async => database),
+          secretStoreProvider.overrideWithValue(secrets),
+          llmProviderFactoryProvider.overrideWith(
+            (ref) => LlmProviderFactory(
+              client: _scripted([
+                preTool,
+                _textSse('не должно выполниться'),
+              ], bodies),
+              retryDelay: (_) async {},
+            ),
+          ),
+          llmToolRegistryProvider.overrideWith((ref) async => registry),
+        ],
+      );
+      addTearDown(c.dispose);
+      await c.read(chatControllerProvider.future);
+      final controller = c.read(chatControllerProvider.notifier);
+
+      await controller.sendMessage('Запусти инструмент');
+      await tool.started.future;
+      await controller.cancel();
+      tool.release.complete();
+      await Future<void>.delayed(const Duration(milliseconds: 50));
+
+      final state = c.read(chatControllerProvider).value!;
+      expect(state.errorCode, 'cancelled');
+      expect(state.messages.last.content, 'Сейчас создам заметку');
+      expect(state.messages.last.errorCode, 'cancelled');
+    },
+  );
+
+  test(
+    'selectThread во время выполнения инструмента не запускает старый цикл',
+    () async {
+      final bodies = <String>[];
+      final tool = _BlockingTool();
+      final registry = LlmToolRegistry()..register(tool);
+      final c = ProviderContainer(
+        overrides: [
+          appDatabaseProvider.overrideWith((ref) async => database),
+          secretStoreProvider.overrideWithValue(secrets),
+          llmProviderFactoryProvider.overrideWith(
+            (ref) => LlmProviderFactory(
+              client: _scripted([
+                _toolCallsSse([
+                  {
+                    'id': 'call_1',
+                    'name': 'blocking_tool',
+                    'args': {'value': 'x'},
+                  },
+                ]),
+                _textSse('Не должно выполниться'),
+              ], bodies),
+              retryDelay: (_) async {},
+            ),
+          ),
+          llmToolRegistryProvider.overrideWith((ref) async => registry),
+        ],
+      );
+      addTearDown(c.dispose);
+      await c.read(chatControllerProvider.future);
+      final controller = c.read(chatControllerProvider.notifier);
+
+      expect(await controller.createThread('Первый'), isTrue);
+      final firstId = c.read(chatControllerProvider).value!.activeThreadId!;
+      expect(await controller.createThread('Второй'), isTrue);
+      final secondId = c.read(chatControllerProvider).value!.activeThreadId!;
+      await controller.selectThread(firstId);
+
+      await controller.sendMessage('Запусти инструмент');
+      await tool.started.future;
+      await controller.selectThread(secondId);
+      tool.release.complete();
+      await Future<void>.delayed(const Duration(milliseconds: 50));
+
+      expect(bodies, hasLength(1), reason: 'второй раунд не должен стартовать');
+      final state = c.read(chatControllerProvider).value!;
+      expect(state.activeThreadId, secondId);
+      expect(state.messages, isEmpty);
+      final oldMessages = (await DriftChatRepository(
+        database,
+      ).listMessages(firstId)).unwrap();
+      expect(oldMessages.last.errorCode, 'cancelled');
+    },
+  );
+
+  test('удаление активного треда во время выполнения инструмента останавливает '
+      'цикл', () async {
+    final bodies = <String>[];
+    final tool = _BlockingTool();
+    final registry = LlmToolRegistry()..register(tool);
+    final c = ProviderContainer(
+      overrides: [
+        appDatabaseProvider.overrideWith((ref) async => database),
+        secretStoreProvider.overrideWithValue(secrets),
+        llmProviderFactoryProvider.overrideWith(
+          (ref) => LlmProviderFactory(
+            client: _scripted([
+              _toolCallsSse([
+                {
+                  'id': 'call_1',
+                  'name': 'blocking_tool',
+                  'args': {'value': 'x'},
+                },
+              ]),
+              _textSse('Не должно выполниться'),
+            ], bodies),
+            retryDelay: (_) async {},
+          ),
+        ),
+        llmToolRegistryProvider.overrideWith((ref) async => registry),
+      ],
+    );
+    addTearDown(c.dispose);
+    await c.read(chatControllerProvider.future);
+    final controller = c.read(chatControllerProvider.notifier);
+
+    expect(await controller.createThread('Удаляемый'), isTrue);
+    final threadId = c.read(chatControllerProvider).value!.activeThreadId!;
+    await controller.sendMessage('Запусти инструмент');
+    await tool.started.future;
+    expect(await controller.deleteThread(threadId), isTrue);
+    tool.release.complete();
+    await Future<void>.delayed(const Duration(milliseconds: 50));
+
+    expect(bodies, hasLength(1), reason: 'второй раунд не должен стартовать');
+    final state = c.read(chatControllerProvider).value!;
+    expect(state.threads, isEmpty);
+    expect(state.activeThreadId, isNull);
+    expect(state.messages, isEmpty);
   });
 
   test('отмена во время выполнения инструмента не запускает следующий раунд '

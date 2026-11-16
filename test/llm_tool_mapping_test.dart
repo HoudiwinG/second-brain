@@ -95,6 +95,86 @@ void main() {
     expect(toolResult['tool_use_id'], 'toolu_1');
   });
 
+  test(
+    'Anthropic: результаты параллельных вызовов идут одним user-content',
+    () async {
+      String? capturedBody;
+      final client = MockClient.streaming((request, bodyStream) async {
+        capturedBody = await bodyStream.transform(utf8.decoder).join();
+        return http.StreamedResponse(
+          Stream.value(utf8.encode('data: {"type":"message_stop"}\n\n')),
+          200,
+          request: request,
+        );
+      });
+      final provider = AnthropicProvider(
+        _config(LlmProviderType.anthropic),
+        client: _api(_config(LlmProviderType.anthropic).baseUrl, client),
+        apiKey: 'key',
+      );
+
+      await provider.complete(
+        const LlmChatRequest(
+          model: 'test-model',
+          messages: [
+            LlmMessage(role: LlmRole.user, content: 'Заметку и задачу'),
+            LlmMessage(
+              role: LlmRole.assistant,
+              content: '',
+              toolCalls: [
+                LlmToolCall(
+                  id: 'toolu_1',
+                  name: 'create_note',
+                  argumentsJson: '{"title":"X"}',
+                ),
+                LlmToolCall(
+                  id: 'toolu_2',
+                  name: 'create_task',
+                  argumentsJson: '{"title":"Y"}',
+                ),
+              ],
+            ),
+            LlmMessage(
+              role: LlmRole.tool,
+              name: 'create_note',
+              toolCallId: 'toolu_1',
+              content: '{"ok":true}',
+            ),
+            LlmMessage(
+              role: LlmRole.tool,
+              name: 'create_task',
+              toolCallId: 'toolu_2',
+              content: '{"ok":true}',
+            ),
+          ],
+        ),
+      );
+
+      final messages =
+          (jsonDecode(capturedBody!) as Map<String, Object?>)['messages']!
+              as List<Object?>;
+      expect(
+        messages,
+        hasLength(3),
+        reason: 'два tool_result не должны давать два user-сообщения',
+      );
+      final result = messages[2] as Map<String, Object?>;
+      expect(result['role'], 'user');
+      final blocks = result['content']! as List<Object?>;
+      expect(blocks, hasLength(2));
+      expect(
+        blocks.map((block) => (block! as Map<String, Object?>)['tool_use_id']),
+        ['toolu_1', 'toolu_2'],
+      );
+      expect(
+        blocks.every(
+          (block) => (block! as Map<String, Object?>)['type'] == 'tool_result',
+        ),
+        isTrue,
+      );
+    },
+  );
+
   test('Google: functionCall и functionResponse в contents', () async {
     String? capturedBody;
     final client = MockClient.streaming((request, bodyStream) async {
@@ -127,17 +207,16 @@ void main() {
     expect(model['role'], 'model');
     final call =
         (model['parts']! as List<Object?>).single as Map<String, Object?>;
-    expect((call['functionCall']! as Map<String, Object?>)['args'], {
-      'title': 'X',
-    });
+    final functionCall = call['functionCall']! as Map<String, Object?>;
+    expect(functionCall['args'], {'title': 'X'});
+    expect(functionCall['id'], 'toolu_1');
 
     final response = contents[2] as Map<String, Object?>;
     final part =
         (response['parts']! as List<Object?>).single as Map<String, Object?>;
-    expect(
-      (part['functionResponse']! as Map<String, Object?>)['name'],
-      'create_note',
-    );
+    final functionResponse = part['functionResponse']! as Map<String, Object?>;
+    expect(functionResponse['name'], 'create_note');
+    expect(functionResponse['id'], 'toolu_1');
   });
 
   test(
@@ -208,6 +287,16 @@ void main() {
         'model',
         'user',
       ]);
+      final modelParts =
+          (contents[1]! as Map<String, Object?>)['parts']! as List<Object?>;
+      expect(
+        modelParts.map(
+          (part) =>
+              ((part! as Map<String, Object?>)['functionCall']!
+                  as Map<String, Object?>)['id'],
+        ),
+        ['call_1', 'call_2'],
+      );
       final results =
           (contents[2]! as Map<String, Object?>)['parts']! as List<Object?>;
       expect(results, hasLength(2));
@@ -219,15 +308,23 @@ void main() {
         ),
         ['create_note', 'create_task'],
       );
+      expect(
+        results.map(
+          (part) =>
+              ((part! as Map<String, Object?>)['functionResponse']!
+                  as Map<String, Object?>)['id'],
+        ),
+        ['call_1', 'call_2'],
+      );
     },
   );
 
-  test('Google: functionCall из ответа становится LlmToolCall', () async {
+  test('Google: functionCall из ответа сохраняет реальный id', () async {
     final client = MockClient.streaming((request, bodyStream) async {
       await bodyStream.drain<void>();
       const body =
           'data: {"candidates":[{"content":{"parts":[{"functionCall":'
-          '{"name":"create_note","args":{"title":"Y"}}}]},'
+          '{"id":"fc-42","name":"create_note","args":{"title":"Y"}}}]},'
           '"finishReason":"STOP"}]}\n\n';
       return http.StreamedResponse(
         Stream.value(utf8.encode(body)),
@@ -247,6 +344,7 @@ void main() {
 
     final response = (result as Success<LlmResponse>).value;
     expect(response.toolCalls, hasLength(1));
+    expect(response.toolCalls.single.id, 'fc-42');
     expect(response.toolCalls.single.name, 'create_note');
     expect(jsonDecode(response.toolCalls.single.argumentsJson), {'title': 'Y'});
   });

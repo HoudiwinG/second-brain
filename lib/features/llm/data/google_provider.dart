@@ -34,6 +34,8 @@ final class GoogleProvider extends LlmProvider {
   static Map<String, Object?> _functionResponsePart(LlmMessage message) => {
     'functionResponse': {
       'name': message.name ?? '',
+      if (message.toolCallId != null && message.toolCallId!.isNotEmpty)
+        'id': message.toolCallId,
       'response': {'result': message.content},
     },
   };
@@ -51,7 +53,8 @@ final class GoogleProvider extends LlmProvider {
         );
   }
 
-  /// Gemini не выдаёт id вызовов: результат связывается с вызовом по имени.
+  /// Gemini может вернуть `functionCall.id`; если он есть, сохраняем его и
+  /// возвращаем в `functionResponse`. Синтетический id — только fallback.
   static Map<String, Object?> _googleContent(LlmMessage message) {
     if (message.role == LlmRole.tool) {
       return {
@@ -68,6 +71,7 @@ final class GoogleProvider extends LlmProvider {
           {
             'functionCall': {
               'name': call.name,
+              if (call.id.isNotEmpty) 'id': call.id,
               'args': decodeToolArguments(call.argumentsJson),
             },
           },
@@ -175,10 +179,13 @@ final class GoogleProvider extends LlmProvider {
               final call = part['functionCall'];
               if (call is Map<String, Object?> && call['name'] is String) {
                 // Gemini отдаёт вызов целиком, поэтому один чанк на вызов.
+                final providerId = call['id'];
                 toolDeltas.add(
                   LlmToolCallDelta(
                     index: toolIndex,
-                    id: 'google_call_$toolIndex',
+                    id: providerId is String && providerId.isNotEmpty
+                        ? providerId
+                        : 'google_call_$toolIndex',
                     name: call['name'] as String,
                     argumentsJson: jsonEncode(call['args'] ?? const {}),
                   ),

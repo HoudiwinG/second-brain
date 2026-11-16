@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:second_brain/data/db/app_database.dart' show AppDatabase;
 import 'package:second_brain/data/repositories/notes_repository.dart';
 import 'package:second_brain/data/repositories/tool_audit_repository.dart';
 import 'package:second_brain/features/llm/application/tool_runner.dart';
@@ -12,12 +13,14 @@ import 'package:second_brain/features/llm/tools/llm_tool_registry.dart';
 import 'helpers/in_memory_db.dart';
 
 void main() {
+  late AppDatabase db;
   late LlmToolRegistry registry;
   late DriftToolAuditRepository audit;
   late ToolRunner runner;
 
   setUp(() {
-    final db = InMemoryDbFactory.open();
+    db = InMemoryDbFactory.open();
+    addTearDown(db.close);
     registry = LlmToolRegistry()
       ..register(CreateNoteTool(DriftNotesRepository(db)));
     audit = DriftToolAuditRepository(db);

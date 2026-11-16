@@ -3,14 +3,16 @@
 - **Дата:** 2026-10-29 (начало)
 - **Агент:** agent-1 (OpenCode)
 - **Ветка:** `master`
-- **Статус:** **повторное независимое ревью — FAIL (2026-11-16).**
-  Реализация и исправления исходных 9 находок готовы, гейты зелёные, но
-  открыты **3 новых MAJOR**: `S04R-001`, `S04R-002`, `S04R-003`. Stage-05
-  заблокирован. Предыдущий этап: stage-03 — повторное ревью PASS
-  (`docs/reviews/stage-03-repeat-review.md`).
+- **Статус:** **исправления после повторного ревью внесены, гейты зелёные;
+  ожидается повторное независимое ревью.** Повторное ревью 2026-11-16 дало
+  **FAIL** (3 MAJOR), все 11 находок `S04R-001…S04R-011` исправлены; Stage-05
+  остаётся заблокированным до подтверждения. Предыдущий этап: stage-03 —
+  повторное ревью PASS (`docs/reviews/stage-03-repeat-review.md`).
 - **Коммиты:** `f2d9f08` — реализация; `821b4f8` — исправления по исходному
-  ревью; `0aa69de` — документация исправлений. Повторное ревью:
-  [reviews/stage-04-repeat-review.md](../reviews/stage-04-repeat-review.md).
+  ревью; `0aa69de` — документация; `af023a1` — отчёт повторного ревью; код
+  исправлений S04R — текущий коммит.
+- **Отчёты:** [повторное ревью](../reviews/stage-04-repeat-review.md),
+  [исправления S04R](../reviews/stage-04-repeat-fix-results.md).
 
 ## Итог повторного ревью (2026-11-16)
 
@@ -32,6 +34,27 @@
 успешный (`S04R-007`), устаревший `context.md` (`S04R-008`). Полный список —
 в отчёте повторного ревью.
 
+### Исправления после повторного ревью (2026-11-16)
+
+- **S04R-001:** Anthropic группирует параллельные `tool_result` в одном
+  `user`-content; contract-тест на два вызова.
+- **S04R-002:** Google сохраняет `functionCall.id` и возвращает его в
+  `functionResponse`; ADR-021 исправлен.
+- **S04R-003:** mutating-инструменты помечены `MutatingLlmTool`; после
+  успешного вызова ошибка получает `tool_side_effect`, Retry скрыт,
+  `retryLast()` запрещён.
+- **S04R-004:** приватные create-инструменты возвращают только `id`/`private`.
+- **S04R-005:** regression-тесты `createThread`/`selectThread`/`deleteThread`
+  во время блокирующего инструмента.
+- **S04R-006:** терминальный guard и единый `cancelFuture` против двойного
+  сохранения.
+- **S04R-007:** pre-tool текст при отмене сохраняется с `cancelled`.
+- **S04R-008…011:** документация, TD-28, комментарий схемы, teardown БД,
+  дубль ARB.
+
+Подробности и доказательства — в
+[stage-04-repeat-fix-results.md](../reviews/stage-04-repeat-fix-results.md).
+
 ## Реализовано
 
 - `LlmToolCallAccumulator` (`lib/features/llm/domain/llm_provider.dart`) —
@@ -49,13 +72,14 @@
   аргументов (без значений), `entity_id`, время.
 - Цикл в `ChatController`: `_streamRound` → при tool calls `_runTools` →
   следующий раунд. Лимит `maxToolRounds = 3` раундов инструментов; сверх
-  лимита запрос завершается `llm_error` с сохранением partial-текста.
-- Провайдеры: Anthropic отправляет `tool_use`/`tool_result`; Google отправляет
-  `functionCall`/`functionResponse` и разбирает `functionCall` из ответа.
+  лимита запрос завершается `llm_error`/`tool_side_effect` (если уже были
+  mutating-вызовы) с сохранением partial-текста.
+- Провайдеры: Anthropic отправляет `tool_use`/`tool_result` и группирует
+  параллельные результаты; Google отправляет `functionCall`/`functionResponse`,
+  сохраняет `functionCall.id` и возвращает его в `functionResponse`.
   OpenAI-compatible уже сериализовал `tool`/`tool_calls`.
-  **Известные дефекты:** Anthropic не группирует результаты параллельных
-  вызовов (`S04R-001`), Google всегда использует синтетический
-  `google_call_N` и не возвращает реальный `functionCall.id` (`S04R-002`).
+- **Retry safety:** после успешного mutating-инструмента обычный Retry
+  запрещён; UI показывает `tool_side_effect` с просьбой проверить данные.
 - DI: `llmToolRegistryProvider` стал `FutureProvider` и регистрирует все
   инструменты; `toolAuditRepositoryProvider` — журнал аудита.
 
@@ -66,21 +90,21 @@
   без значений, ошибка валидации.
 - `test/chat_tool_loop_test.dart` — tool call → заметка → финальный ответ;
   несколько вызовов в одном ответе; лимит раундов; отмена во время выполнения
-  инструмента (следующий раунд не стартует).
+  инструмента; retry после mutating tool; смена/создание/удаление треда во
+  время блокирующего инструмента; pre-tool текст при отмене.
 - `test/llm_tool_mapping_test.dart` — тела запросов Anthropic/Google, разбор
-  `functionCall` Gemini, группировка нескольких `functionResponse` в один
-  `user`-content.
+  `functionCall` Gemini с реальным id, группировка нескольких
+  `tool_result`/`functionResponse` в один `user`-content.
+- `test/chat_controller_test.dart` — гонка cancel/terminal с задержанным
+  репозиторием.
 - `test/db_migration_test.dart` — v6, миграция v5 → v6 с сохранением данных и
   проверкой индекса `idx_tool_audit_created`.
 
 ## Гейты
 
 - `flutter analyze --fatal-infos` — **No issues found**.
-- `flutter test` — **160/160 passed** (после исправлений; до ревью — 154/154).
-- `flutter build windows --debug` — **success** (2026-10-29). Первая попытка
-  упала с `LNK1168`: `second_brain.exe` был занят запущенным процессом, его
-  остановили вручную; повторная сборка прошла. После исправлений сборка
-  повторена — success.
+- `flutter test` — **168/168 passed** (после исправлений S04R; до них — 160/160).
+- `flutter build windows --debug` — **success** (2026-11-16).
 - `dart run build_runner build` выполнен; `app_database.g.dart` перегенерирован.
 
 ## Ограничения
@@ -89,12 +113,13 @@
   инструменты не откатываются (создание задачи/заметки остаётся в БД).
 - Tool-сообщения и вызовы не сохраняются в `chat_messages`: в истории только
   user/assistant, трассировка — в `tool_audit_log`.
-- **S04R-003:** из-за отсутствия tool-истории retry после ошибки следующего
-  раунда может повторно выполнить создающие инструменты и создать дубликаты.
-- **S04R-004:** приватные create-инструменты возвращают title/remind_at в
-  tool result; общей фильтрации результатов через PrivacyGuard нет.
-- **S04R-006/S04R-007:** возможны гонка cancel/terminal и сохранение
-  pre-tool текста как успешного ответа.
+- **S04R-003 fixed:** после mutating-инструмента обычный Retry запрещён;
+  полноценная идемпотентность повторного выполнения не реализована.
+- **S04R-004 fixed:** приватные create-инструменты возвращают только `id` и
+  `private`; аргументы вызова (title) остаются в истории модели как её
+  собственный ввод, но не повторяются в результате.
+- **S04R-006/S04R-007 fixed:** терминальный guard и `cancelled`-маркер для
+  pre-tool текста; покрыты тестами.
 - UI подтверждения действий не реализован (инструменты не удаляют данных).
 - `summarize_mail_mock` не подключён к реальной почте (stage-06).
 - Живые запросы к API с tool calls не выполнялись: проверено через `MockClient`.
@@ -118,7 +143,8 @@
   - `create_task` — задача, опционально с `remind_at` (напоминание = задача с
     `remindAt`, отдельной сущности нет);
   - `create_note` — заметка;
-  - `search_data` — поиск по заметкам/задачам/идеям через `SearchRepository`;
+  - `search_data` — поиск по заметкам/задачам/идеям и финансовым операциям
+    через `SearchRepository`;
   - `update_task_status` — обновление статуса задачи (трекер);
   - `summarize_mail_mock` — суммирование писем из фиксированного мок-набора
     (реальной почты на этом этапе нет, OAuth — stage-06);

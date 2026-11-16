@@ -1,24 +1,23 @@
 # INDEX — карта документации
 
 ## Состояние
-- Текущий этап: stage-04 (инструменты ассистента) — **повторное независимое
-  ревью FAIL** (2026-11-16, два прохода). Реализация `f2d9f08`, исправления
-  `821b4f8`; исходные 9 находок закрыты, но найдены **3 новых MAJOR**:
-  `S04R-001` (Anthropic не группирует параллельные tool_result), `S04R-002`
-  (Google теряет `functionCall.id`), `S04R-003` (retry после tool loop
-  дублирует создание). Stage-05 **заблокирован**.
+- Текущий этап: stage-04 (инструменты ассистента) — **исправления после
+  повторного ревью внесены, гейты зелёные; ожидается повторное независимое
+  ревью.** Повторное ревью 2026-11-16 дало **FAIL** (3 MAJOR:
+  `S04R-001` Anthropic parallel tool_result, `S04R-002` Google
+  `functionCall.id`, `S04R-003` retry после mutating tool); все 11 находок
+  `S04R-001…S04R-011` исправлены, analyze 0, test **168/168**, Windows debug
+  build success. Stage-05 **заблокирован** до PASS.
 - Предыдущий этап: stage-03 (LLM-слой) **закрыт повторным независимым ревью:
   PASS** (2026-10-28). Исходное ревью остаётся **FAIL** (2026-10-25), вердикт
   сохранён. Все 28 находок S03-001…S03-028 исправлены коммитом `14e63a7` и
   подтверждены (28/28 verified). Stage-02 закрыт с вердиктом **PASS WITH
   COMMENTS** (ревью №3); R02-001…R02-013 закрыты, R02-014/R02-015 остаются
   не блокирующими комментариями.
-- Гейты stage-04 на `0aa69de` (2026-11-07): `flutter analyze --fatal-infos` —
-  **No issues found**, `flutter test` — **160/160**, Windows debug build в CI —
-  **success**; CI-run
-  [40834088339](https://github.com/HoudiwinG/second-brain/actions/runs/40834088339)
-  для `0aa69de` — success. Локальный `flutter build windows --debug` на
-  `821b4f8` — success (2026-10-29).
+- Гейты stage-04 после исправлений S04R (2026-11-16): `flutter analyze
+  --fatal-infos` — **No issues found**, `flutter test` — **168/168**,
+  `flutter build windows --debug` — **success**. CI будет проверен после push;
+  предыдущий CI `40834088339` для `0aa69de` — success.
 - Локальные гейты stage-03 (2026-10-28): analyze 0, test 132/132, Windows debug
   build; CI `40636764573` (`49bc00f`, включая `14e63a7`) — success.
 - Снимок состояния: [context.md](context.md)
@@ -57,11 +56,16 @@
   **FAIL**, critical 0, major 3, minor 5, nit 3 после объединения дублей.
   Блокеры: `S04R-001`, `S04R-002`, `S04R-003`. Исходные S04-001…S04-009
   закрыты (S04-006 — код исправлен, не хватает regression-теста смены треда).
+- [stage-04-repeat-fix-results](reviews/stage-04-repeat-fix-results.md) —
+  self-check исправлений S04R-001…S04R-011: все fixed, тесты 168/168,
+  analyze 0, Windows debug build success; не вердикт ревью.
 - Исправления stage-04:
   [reviews/stage-04-fix-results.md](reviews/stage-04-fix-results.md) — все 9
-  исходных находок закрыты коммитом `821b4f8` (+ docs-коммит); analyze 0,
-  test 160/160, Windows debug build success. Повторное ревью нашло новые
-  дефекты; stage-04 не закрыт.
+  исходных находок закрыты коммитом `821b4f8` (+ docs-коммит).
+- Исправления после повторного ревью stage-04:
+  [reviews/stage-04-repeat-fix-results.md](reviews/stage-04-repeat-fix-results.md)
+  — все 11 находок `S04R-001…S04R-011` fixed; analyze 0, test 168/168,
+  Windows debug build success; ожидается повторное ревью.
 
 ## Процесс
 - Исходные промпты (в корне репозитория): PROMPT.md (ТЗ), STAGE_ONE.md (этап 0),
@@ -85,8 +89,8 @@
   build, CI `40636764573` success; stage-04 разблокирован)
 - [stage-04](stages/stage-04.md) — инструменты ассистента (реализация `f2d9f08`,
   исправления по ревью `821b4f8`; исходное ревью **FAIL**, 9/9 fixed;
-  повторное ревью **FAIL**, 3 MAJOR `S04R-001…003`; analyze 0, 160/160,
-  Windows debug build success, CI `40834088339`; ADR-021; схема v6;
+  повторное ревью **FAIL**, 11/11 S04R fixed; analyze 0, test 168/168,
+  Windows debug build success; ADR-021; схема v6; ожидается повторное ревью;
   stage-05 заблокирован)
 
 ## Шаблоны

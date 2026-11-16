@@ -1,10 +1,11 @@
 import '../../../../core/result/result.dart';
 import '../../../notes/domain/note.dart';
+import '../../domain/llm_tool.dart';
 import '../llm_tool_registry.dart';
 import 'tool_args.dart';
 
 /// Создание заметки.
-final class CreateNoteTool extends LlmToolBase {
+final class CreateNoteTool extends LlmToolBase implements MutatingLlmTool {
   CreateNoteTool(this._notes);
 
   final NotesRepository _notes;
@@ -45,7 +46,11 @@ final class CreateNoteTool extends LlmToolBase {
         isPrivateForLlm: ToolArgs.optionalBool(arguments, 'is_private'),
       );
       final created = (await _notes.create(draft)).unwrap();
-      return Result.success({'id': created.id, 'title': created.title});
+      return Result.success({
+        'id': created.id,
+        if (!draft.isPrivateForLlm) 'title': created.title,
+        if (draft.isPrivateForLlm) 'private': true,
+      });
     } catch (error) {
       return Result.failure(toToolException(error));
     }

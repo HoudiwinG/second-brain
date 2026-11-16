@@ -1,11 +1,13 @@
 import '../../../../core/error/app_exception.dart';
 import '../../../../core/result/result.dart';
 import '../../../tasks/domain/task_item.dart';
+import '../../domain/llm_tool.dart';
 import '../llm_tool_registry.dart';
 import 'tool_args.dart';
 
 /// Обновление статуса задачи в трекере. Приватные задачи недоступны.
-final class UpdateTaskStatusTool extends LlmToolBase {
+final class UpdateTaskStatusTool extends LlmToolBase
+    implements MutatingLlmTool {
   UpdateTaskStatusTool(this._tasks);
 
   final TasksRepository _tasks;

@@ -12,7 +12,8 @@
 - **Повторное ревью (2026-11-16):** **FAIL**, 3 новых MAJOR; исходные
   S04-001…S04-009 закрыты, S04-006 подтверждён частично (код исправлен, нет
   regression-теста смены треда). См.
-  [stage-04-repeat-review.md](stage-04-repeat-review.md).
+  [stage-04-repeat-review.md](stage-04-repeat-review.md). Исправления новых
+  находок — [stage-04-repeat-fix-results.md](stage-04-repeat-fix-results.md).
 
 ## Сводка
 

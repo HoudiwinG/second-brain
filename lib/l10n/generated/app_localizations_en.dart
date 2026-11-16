@@ -101,10 +101,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get trayMenuQuit => 'Quit';
 
   @override
-  String get hintGlobalHotkey =>
-      'The hotkey opens quick capture from any app. Default: Ctrl+Alt+B.';
-
-  @override
   String get actionAdd => 'Add';
 
   @override
@@ -405,6 +401,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get dashboardFinanceMonth => 'This month\'s finance';
 
   @override
+  String get hintGlobalHotkey =>
+      'The hotkey opens quick capture from any app. Default: Ctrl+Alt+B.';
+
+  @override
   String get settingsLlmSection => 'LLM providers';
 
   @override
@@ -551,6 +551,10 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get chatApiKeyMissing =>
       'No API key saved for this provider. Add it in Settings.';
+
+  @override
+  String get chatToolSideEffect =>
+      'The tool already performed an action. Check your data; retrying may create a duplicate.';
 
   @override
   String get chatCancelled => 'Response stopped';

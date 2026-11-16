@@ -6,15 +6,20 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 import 'package:second_brain/app/di.dart';
+import 'package:second_brain/core/result/result.dart';
 import 'package:second_brain/core/secrets/in_memory_secret_store.dart';
-import 'package:second_brain/data/db/app_database.dart' hide LlmProviderConfig;
+import 'package:second_brain/data/db/app_database.dart'
+    hide ChatMessage, ChatThread, LlmProviderConfig;
 import 'package:second_brain/data/repositories/chat_repository.dart';
 import 'package:second_brain/data/repositories/llm_config_repository.dart';
 import 'package:second_brain/data/repositories/notes_repository.dart';
 import 'package:second_brain/features/chat/application/chat_controller.dart';
+import 'package:second_brain/features/chat/domain/chat_message.dart';
+import 'package:second_brain/features/chat/domain/chat_thread.dart';
 import 'package:second_brain/features/llm/application/llm_config_controller.dart';
 import 'package:second_brain/features/llm/application/llm_context_loader.dart';
 import 'package:second_brain/features/llm/data/llm_provider_factory.dart';
+import 'package:second_brain/features/llm/domain/llm_message.dart';
 import 'package:second_brain/features/llm/domain/llm_provider_config.dart';
 import 'package:second_brain/features/llm/domain/llm_provider_type.dart';
 import 'package:second_brain/features/notes/domain/note.dart';
@@ -33,6 +38,7 @@ ProviderContainer _container({
   required AppDatabase database,
   required InMemorySecretStore secrets,
   required http.Client client,
+  ChatRepository? chatRepository,
 }) => ProviderContainer(
   overrides: [
     appDatabaseProvider.overrideWith((ref) async => database),
@@ -40,8 +46,56 @@ ProviderContainer _container({
     llmProviderFactoryProvider.overrideWith(
       (ref) => LlmProviderFactory(client: client, retryDelay: (_) async {}),
     ),
+    if (chatRepository != null)
+      chatRepositoryProvider.overrideWith((ref) async => chatRepository),
   ],
 );
+
+/// Обёртка, задерживающая сохранение assistant-сообщения.
+final class _DelayedChatRepository implements ChatRepository {
+  _DelayedChatRepository(this._inner);
+
+  final ChatRepository _inner;
+  final assistantSaveStarted = Completer<void>();
+  final releaseAssistant = Completer<void>();
+  bool delayAssistant = false;
+
+  @override
+  Future<Result<ChatMessage>> appendMessage(ChatMessageDraft draft) async {
+    if (delayAssistant && draft.role == LlmRole.assistant) {
+      if (!assistantSaveStarted.isCompleted) assistantSaveStarted.complete();
+      await releaseAssistant.future;
+    }
+    return _inner.appendMessage(draft);
+  }
+
+  @override
+  Future<Result<ChatThread>> createThread(ChatThreadDraft draft) =>
+      _inner.createThread(draft);
+
+  @override
+  Future<Result<void>> deleteThread(int id) => _inner.deleteThread(id);
+
+  @override
+  Future<Result<ChatThread?>> getThread(int id) => _inner.getThread(id);
+
+  @override
+  Future<Result<List<ChatMessage>>> listMessages(int threadId) =>
+      _inner.listMessages(threadId);
+
+  @override
+  Future<Result<List<ChatThread>>> listThreads({
+    bool includeArchived = false,
+  }) => _inner.listThreads(includeArchived: includeArchived);
+
+  @override
+  Future<Result<ChatThread>> renameThread(int id, String title) =>
+      _inner.renameThread(id, title);
+
+  @override
+  Future<Result<void>> setMessagePrivate(int id, bool isPrivate) =>
+      _inner.setMessagePrivate(id, isPrivate);
+}
 
 http.Client _successClient(List<String> bodies) =>
     MockClient.streaming((request, bodyStream) async {
@@ -215,6 +269,54 @@ void main() {
     expect(state.streamingText, isEmpty);
     expect(state.messages.last.content, 'partial');
     expect(state.messages.last.errorCode, isNull);
+  });
+
+  test('cancel во время terminal-сохранения не дублирует assistant', () async {
+    final delayed = _DelayedChatRepository(DriftChatRepository(database))
+      ..delayAssistant = true;
+    final bodyController = StreamController<List<int>>();
+    addTearDown(() async {
+      if (!bodyController.isClosed) await bodyController.close();
+    });
+    final client = MockClient.streaming((request, bodyStream) async {
+      await bodyStream.drain<void>();
+      return http.StreamedResponse(
+        bodyController.stream,
+        200,
+        request: request,
+      );
+    });
+    final container = _container(
+      database: database,
+      secrets: secrets,
+      client: client,
+      chatRepository: delayed,
+    );
+    addTearDown(container.dispose);
+    await container.read(chatControllerProvider.future);
+    final controller = container.read(chatControllerProvider.notifier);
+
+    expect(await controller.sendMessage('Долгий ответ'), isTrue);
+    bodyController.add(utf8.encode(_ssePartial));
+    await bodyController.close();
+    await delayed.assistantSaveStarted.future;
+
+    final cancel = controller.cancel();
+    delayed.releaseAssistant.complete();
+    await cancel;
+    await Future<void>.delayed(const Duration(milliseconds: 100));
+
+    final state = container.read(chatControllerProvider).value!;
+    final messages = (await DriftChatRepository(
+      database,
+    ).listMessages(state.activeThreadId!)).unwrap();
+    expect(
+      messages.where((message) => message.role == LlmRole.assistant),
+      hasLength(1),
+      reason: 'cancel и onDone не должны сохранить два ответа',
+    );
+    expect(messages.last.content, 'partial');
+    expect(messages.last.errorCode, isNull);
   });
 
   test('ошибка провайдера сохраняет маркер и не блокирует отправку', () async {

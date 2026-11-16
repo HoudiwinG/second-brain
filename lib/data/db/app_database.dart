@@ -309,7 +309,8 @@ class ToolAuditEntries extends Table {
   /// ok | error | unknown_tool | invalid_args.
   TextColumn get status => text().withLength(min: 1, max: 40)();
 
-  /// Имена аргументов через запятую, без значений.
+  /// JSON-массив имён аргументов, без значений. Чтение старого CSV-формата
+  /// поддерживает репозиторий аудита.
   TextColumn get argumentNames => text().withDefault(const Constant(''))();
 
   IntColumn get entityId => integer().nullable()();

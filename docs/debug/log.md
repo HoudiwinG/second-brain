@@ -706,3 +706,21 @@ regression-теста смены треда.
 | 2026-11-07 | S04R-011 | открыто | дубли `hintGlobalHotkey` в RU/EN ARB |
 | 2026-11-07 | — | гейты | analyze 0; test 160/160 (reviewer A); CI `40834088339` — success (reviewer B) |
 | 2026-11-16 | — | статус | **FAIL**; stage-05 заблокирован до исправления S04R-001…003 |
+
+### Исправления после повторного ревью stage-04 (2026-11-16)
+
+| Timestamp (UTC) | ID | Действие | Примечание |
+|-----------------|----|----------|------------|
+| 2026-11-16 | S04R-001 | fixed | Anthropic: подряд идущие `tool_result` → один `user`-content; contract-тест на два вызова |
+| 2026-11-16 | S04R-002 | fixed | Google: `functionCall.id` сохраняется и возвращается в `functionResponse`; ADR-021 исправлен |
+| 2026-11-16 | S04R-003 | fixed | `MutatingLlmTool` + `tool_side_effect`: Retry скрыт и `retryLast()` запрещён после создания сущности |
+| 2026-11-16 | S04R-004 | fixed | приватные create-инструменты возвращают только `id`/`private` |
+| 2026-11-16 | S04R-005 | fixed | тесты create/select/delete треда во время блокирующего инструмента |
+| 2026-11-16 | S04R-006 | fixed | `_terminalRequestId` + `_cancelFuture`; тест с задержанным репозиторием |
+| 2026-11-16 | S04R-007 | fixed | pre-tool текст при отмене → `cancelled`, исключается из контекста |
+| 2026-11-16 | S04R-008 | fixed | обновлены `context.md`, TD-28, ADR-021, описание `search_data` |
+| 2026-11-16 | S04R-009 | fixed | комментарий схемы аудита: JSON-массив + legacy CSV |
+| 2026-11-16 | S04R-010 | fixed | `llm_tools_test`/`tool_runner_test` закрывают in-memory БД |
+| 2026-11-16 | S04R-011 | fixed | удалён дубль `hintGlobalHotkey`; `gen-l10n` выполнен |
+| 2026-11-16 | — | гейты | analyze 0; test **168/168**; Windows debug build success |
+| 2026-11-16 | — | статус | S04R-001…011 fixed; ожидается повторное независимое ревью |

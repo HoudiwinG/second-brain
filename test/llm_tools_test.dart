@@ -2,7 +2,7 @@ import 'package:drift/drift.dart' show Value;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:second_brain/core/result/result.dart';
 import 'package:second_brain/data/db/app_database.dart'
-    show ToolAuditEntriesCompanion;
+    show AppDatabase, ToolAuditEntriesCompanion;
 import 'package:second_brain/data/repositories/notes_repository.dart';
 import 'package:second_brain/data/repositories/search_repository.dart';
 import 'package:second_brain/data/repositories/tasks_repository.dart';
@@ -19,12 +19,14 @@ import 'package:second_brain/features/tasks/domain/task_item.dart';
 import 'helpers/in_memory_db.dart';
 
 void main() {
+  late AppDatabase db;
   late TasksRepository tasks;
   late NotesRepository notes;
   late SearchRepository search;
 
   setUp(() {
-    final db = InMemoryDbFactory.open();
+    db = InMemoryDbFactory.open();
+    addTearDown(db.close);
     tasks = DriftTasksRepository(db);
     notes = DriftNotesRepository(db);
     search = DriftSearchRepository(db);
@@ -48,6 +50,22 @@ void main() {
       expect(saved.priority, TaskPriority.high);
       expect(saved.tags, ['дом']);
       expect(saved.isPrivateForLlm, isFalse);
+    });
+
+    test('не возвращает поля приватной задачи в tool result', () async {
+      final tool = CreateTaskTool(tasks);
+
+      final data = (await tool.execute({
+        'title': 'Секрет',
+        'remind_at': '2026-11-01T09:00:00',
+        'is_private': true,
+      })).unwrap();
+
+      expect(data.containsKey('title'), isFalse);
+      expect(data.containsKey('remind_at'), isFalse);
+      expect(data['private'], isTrue);
+      final saved = (await tasks.getById(data['id'] as int)).unwrap()!;
+      expect(saved.isPrivateForLlm, isTrue);
     });
 
     test('без title и с неверным приоритетом возвращает ошибку', () async {
@@ -89,6 +107,8 @@ void main() {
       final saved = (await notes.getById(data['id'] as int)).unwrap()!;
       expect(saved.body, 'Текст');
       expect(saved.isPrivateForLlm, isTrue);
+      expect(data.containsKey('title'), isFalse);
+      expect(data['private'], isTrue);
     });
   });
 
@@ -183,7 +203,7 @@ void main() {
 
   group('tool_audit_log', () {
     test('хранит имена аргументов и не хранит их значения', () async {
-      final audit = DriftToolAuditRepository(InMemoryDbFactory.open());
+      final audit = DriftToolAuditRepository(db);
       final createdAt = DateTime.utc(2026, 10, 29, 10);
 
       await audit.record(
@@ -204,8 +224,6 @@ void main() {
     });
 
     test('не ломает имя аргумента с запятой', () async {
-      final db = InMemoryDbFactory.open();
-      addTearDown(db.close);
       final audit = DriftToolAuditRepository(db);
 
       await audit.record(
@@ -222,8 +240,6 @@ void main() {
     });
 
     test('читает старый формат имён через запятую', () async {
-      final db = InMemoryDbFactory.open();
-      addTearDown(db.close);
       final audit = DriftToolAuditRepository(db);
       await db
           .into(db.toolAuditEntries)
@@ -241,7 +257,7 @@ void main() {
     });
 
     test('сортирует от новых к старым', () async {
-      final audit = DriftToolAuditRepository(InMemoryDbFactory.open());
+      final audit = DriftToolAuditRepository(db);
       for (var i = 0; i < 3; i++) {
         await audit.record(
           ToolAuditDraft(

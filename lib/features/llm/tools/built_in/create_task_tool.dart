@@ -1,10 +1,11 @@
 import '../../../../core/result/result.dart';
 import '../../../tasks/domain/task_item.dart';
+import '../../domain/llm_tool.dart';
 import '../llm_tool_registry.dart';
 import 'tool_args.dart';
 
 /// Создание задачи. Напоминание — это задача с `remind_at`.
-final class CreateTaskTool extends LlmToolBase {
+final class CreateTaskTool extends LlmToolBase implements MutatingLlmTool {
   CreateTaskTool(this._tasks);
 
   final TasksRepository _tasks;
@@ -60,8 +61,10 @@ final class CreateTaskTool extends LlmToolBase {
       final created = (await _tasks.create(draft)).unwrap();
       return Result.success({
         'id': created.id,
-        'title': created.title,
-        'remind_at': created.remindAt?.toIso8601String(),
+        if (!draft.isPrivateForLlm) 'title': created.title,
+        if (!draft.isPrivateForLlm)
+          'remind_at': created.remindAt?.toIso8601String(),
+        if (draft.isPrivateForLlm) 'private': true,
       });
     } catch (error) {
       return Result.failure(toToolException(error));
