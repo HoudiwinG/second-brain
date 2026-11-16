@@ -5,7 +5,7 @@
 - **Ветка:** `master`
 - **Статус:** **done (self-check)**. Независимое ревью ещё не проводилось.
   Гейты: `flutter analyze --fatal-infos` — 0 issues, `flutter test` —
-  **209/209**, `flutter build windows --debug` — success.
+  **210/210**, `flutter build windows --debug` — success.
 - **Предыдущий этап:** stage-05 — **PASS WITH COMMENTS**, stage-06
   разблокирован.
 - **Схема БД:** **v8** (`mail_accounts`, `mail_messages`).
@@ -20,6 +20,7 @@
 - просмотр, поиск, суммаризация письма/треда через LLM;
 - создание задачи из письма;
 - флаг приватности на уровне ящика/письма; приватные письма не уходят в LLM;
+  переключение приватности ящика применяется к уже сохранённым письмам;
 - refresh-токены только в secure storage.
 
 Критерии self-check:
@@ -96,7 +97,7 @@
 - `test/db_migration_test.dart` — v7→v8, обновлены проверки v1→v8/v2→v8/
   v3→v8/v4→v8/v5→v8/v6→v8, guard v2→v9.
 
-Итог: **209/209** тестов, analyze 0, Windows debug build success.
+Итог: **210/210** тестов, analyze 0, Windows debug build success.
 
 ## Известные ограничения и техдолг
 

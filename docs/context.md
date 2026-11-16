@@ -3,7 +3,7 @@
 - **Текущий этап:** stage-06 (почта) — **реализация и self-check готовы,
   независимое ревью ещё не проводилось.** OAuth 2.0 + PKCE, secure tokens,
   Gmail API, REST-адаптер Yandex/Mail.ru, кэш/поиск, суммаризация и задача из
-  письма. Analyze 0, test **209/209**, Windows debug build success. Отчёт:
+  письма. Analyze 0, test **210/210**, Windows debug build success. Отчёт:
   [stages/stage-06.md](stages/stage-06.md); ADR-023; схема **v8**.
 - **Предыдущий этап:** stage-05 (обучение) — **PASS WITH COMMENTS (0 MAJOR)**;
   S05-001…011 и S05Z fixed; analyze 0, test 193/193. Stage-04 — **PASS WITH
@@ -61,7 +61,7 @@
   TD-28 (нет UI выбора контекста; триггер перенесён на позднюю доработку
   чата). TD-21 — отдельное принятое ограничение `REAL` для финансов.
 - **Сборка:** `flutter analyze --fatal-infos` — **No issues found**;
-  `flutter test` — **209/209**; `flutter build windows --debug` — **success**
+  `flutter test` — **210/210**; `flutter build windows --debug` — **success**
   (2026-11-16, `build\windows\x64\runner\Debug\second_brain.exe`); CI —
   после push stage-06.
 - **Flutter SDK:** 3.47.7 stable, `C:\src\flutter` (Dart 3.13.5)
@@ -185,7 +185,7 @@
 - Локальный кэш/поиск, суммаризация через default LLM (private fail-closed),
   создание задачи из письма; JSON-бэкап v3 включает почту (без токенов).
 - UI интеграций: подключение/синхронизация/приватность/список/поиск/просмотр.
-- Тесты: 209/209, analyze 0, Windows debug build success. Независимое ревью
+- Тесты: 210/210, analyze 0, Windows debug build success. Независимое ревью
   stage-06 ещё не проводилось.
 
 ## Что сделано на stage-05
@@ -441,7 +441,7 @@
   (2 MAJOR, 3 MINOR, 2 NIT); reviewer B (agent-3, 2026-11-07): **FAIL**
   (3 MAJOR, 3 MINOR, 1 NIT); после объединения — 3 MAJOR, 5 MINOR, 3 NIT.
   agent-1 (2026-11-16): stage-04 — PASS WITH COMMENTS; stage-05 — PASS WITH
-  COMMENTS, 193/193; stage-06 (почта) реализован, 209/209, ожидается ревью.
+  COMMENTS, 193/193; stage-06 (почта) реализован, 210/210, ожидается ревью.
 
 ## Ссылки
 - Отчёт stage-06: [stages/stage-06.md](stages/stage-06.md)

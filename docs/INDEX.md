@@ -4,14 +4,14 @@
 - Текущий этап: stage-06 (почта) — **реализация и self-check готовы,
   независимое ревью ещё не проводилось.** OAuth 2.0 + PKCE, токены в secure
   storage, Gmail API и REST-адаптер Yandex/Mail.ru, локальный кэш/поиск,
-  суммаризация и создание задачи; схема **v8**. Analyze 0, test **209/209**,
+  суммаризация и создание задачи; схема **v8**. Analyze 0, test **210/210**,
   Windows debug build success.
 - Предыдущий этап: stage-05 (обучение) — **PASS WITH COMMENTS (0 MAJOR)**;
   S05-001…011 и S05Z fixed; analyze 0, test 193/193, CI
   `43901179307` (`82f49d5`) — success. Stage-04 — **PASS WITH COMMENTS**;
   stage-03 — **PASS**; stage-02 — **PASS WITH COMMENTS**.
 - Гейты stage-06 (2026-11-16): `flutter analyze --fatal-infos` — **No issues
-  found**, `flutter test` — **209/209**, `flutter build windows --debug` —
+  found**, `flutter test` — **210/210**, `flutter build windows --debug` —
   **success**; CI — после push.
 - Локальные гейты stage-03 (2026-10-28): analyze 0, test 132/132, Windows debug
   build; CI `40636764573` (`49bc00f`, включая `14e63a7`) — success.
@@ -109,7 +109,7 @@
   Windows debug build success)
 - [stage-06](stages/stage-06.md) — почта (OAuth 2.0 + PKCE, secure tokens,
   Gmail API, Yandex/Mail.ru REST, кэш/поиск, суммаризация, задача из письма;
-  ADR-023; схема v8; analyze 0, test 209/209, Windows debug build success;
+  ADR-023; схема v8; analyze 0, test 210/210, Windows debug build success;
   независимое ревью ожидается)
 
 ## Шаблоны

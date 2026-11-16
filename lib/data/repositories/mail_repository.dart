@@ -89,17 +89,30 @@ class DriftMailRepository implements MailRepository {
       if (current == null) {
         throw ValidationException('MailRepository: аккаунт $id не найден');
       }
-      await (_db.update(_db.mailAccounts)..where((t) => t.id.equals(id))).write(
-        db.MailAccountsCompanion(
-          displayName: displayName == null
-              ? const Value.absent()
-              : Value(displayName.trim()),
-          isPrivateForLlm: isPrivateForLlm == null
-              ? const Value.absent()
-              : Value(isPrivateForLlm),
-          updatedAt: Value(DateTime.now().toUtc()),
-        ),
-      );
+      await _db.transaction(() async {
+        await (_db.update(
+          _db.mailAccounts,
+        )..where((t) => t.id.equals(id))).write(
+          db.MailAccountsCompanion(
+            displayName: displayName == null
+                ? const Value.absent()
+                : Value(displayName.trim()),
+            isPrivateForLlm: isPrivateForLlm == null
+                ? const Value.absent()
+                : Value(isPrivateForLlm),
+            updatedAt: Value(DateTime.now().toUtc()),
+          ),
+        );
+        if (isPrivateForLlm != null) {
+          // Флаг ящика применяется к уже закэшированным письмам, иначе
+          // summary мог бы отправить их в LLM.
+          await (_db.update(
+            _db.mailMessages,
+          )..where((m) => m.accountId.equals(id))).write(
+            db.MailMessagesCompanion(isPrivateForLlm: Value(isPrivateForLlm)),
+          );
+        }
+      });
       final row = await _findAccount(id);
       return _toAccount(row!);
     });

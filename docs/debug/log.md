@@ -769,7 +769,7 @@ track/date. Гейты: analyze 0, test **185/185**, Windows debug build success
 Реализованы OAuth 2.0 + PKCE, secure tokens, Gmail API adapter, REST-адаптер
 Yandex/Mail.ru, локальный кэш/поиск, суммаризация через LLM и создание задачи
 из письма. Схема v8: `mail_accounts`, `mail_messages`, индексы и unique
-account/remote. Гейты: analyze 0, test **209/209**, Windows debug build
+account/remote. Гейты: analyze 0, test **210/210**, Windows debug build
 success. Независимое ревью ещё не проводилось.
 
 | Timestamp (UTC) | ID | Действие | Примечание |

@@ -78,6 +78,18 @@ void main() {
     expect(privateFound.single.isPrivateForLlm, isTrue);
   });
 
+  test('приватность ящика применяется к уже сохранённым письмам', () async {
+    final account = await createAccount();
+    await repo.upsertMessages(account.id, [message('1')]);
+    expect((await repo.listMessages(forLlm: true)).unwrap(), hasLength(1));
+
+    (await repo.updateAccount(account.id, isPrivateForLlm: true)).unwrap();
+
+    final stored = (await repo.listMessages()).unwrap().single;
+    expect(stored.isPrivateForLlm, isTrue);
+    expect((await repo.listMessages(forLlm: true)).unwrap(), isEmpty);
+  });
+
   test('повторный upsert не создаёт дубликаты', () async {
     final account = await createAccount();
     await repo.upsertMessages(account.id, [message('1')]);
