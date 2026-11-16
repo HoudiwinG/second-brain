@@ -68,8 +68,9 @@
   исходных находок закрыты коммитом `821b4f8` (+ docs-коммит).
 - Исправления после повторного ревью stage-04:
   [reviews/stage-04-repeat-fix-results.md](reviews/stage-04-repeat-fix-results.md)
-  — все 11 находок `S04R-001…S04R-011` fixed; analyze 0, test 168/168,
-  Windows debug build success; ожидается повторное ревью.
+  — все 11 находок `S04R-001…S04R-011` и комментарии S04F fixed; analyze 0,
+  test 172/172, Windows debug build success; финальная проверка — PASS WITH
+  COMMENTS (0 MAJOR).
 
 ## Процесс
 - Исходные промпты (в корне репозитория): PROMPT.md (ТЗ), STAGE_ONE.md (этап 0),
