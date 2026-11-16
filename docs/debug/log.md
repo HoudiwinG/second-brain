@@ -747,3 +747,16 @@ track/date. Гейты: analyze 0, test **185/185**, Windows debug build success
 | 2026-11-16 | — | тесты | repository, trainer, widget, миграция v6→v7; всего 185/185 |
 | 2026-11-16 | — | CI | `43892374452` (`9b96f58`) — success, оба job'а |
 | 2026-11-16 | — | статус | self-check done; ожидается независимое ревью stage-05 |
+
+### Ревью stage-05 (2026-11-16)
+
+| Timestamp (UTC) | ID | Действие | Примечание |
+|-----------------|----|----------|------------|
+| 2026-11-16 | S05-001 | открыто | reviewer A MAJOR: JSON-бэкап не содержит learning_tracks/learning_sessions; reviewer B отметил тот же риск |
+| 2026-11-16 | S05-002…011 | открыто | privacy roadmap, async save, repository integrity, дата сессии, edit/delete шагов, тесты, l10n, TD/ADR |
+| 2026-11-16 | S05-001 | fixed | BackupService v2: learning в export/import/clear; v1 совместим; round-trip-тест |
+| 2026-11-16 | S05-002 | fixed | generateRoadmap(LearningTrack) fail-closed для private |
+| 2026-11-16 | S05-003…005 | fixed | await save, транзакции, идемпотентный soft-delete, календарная дата, stable id |
+| 2026-11-16 | S05-006…011 | fixed | edit/delete шагов, тесты, локализация минут/ошибок, balanced JSON, индексы, TD-22/ADR-022 |
+| 2026-11-16 | — | гейты | analyze 0; test **191/191**; Windows debug build success |
+| 2026-11-16 | — | статус | исправления внесены; ожидается повторное ревью stage-05 |

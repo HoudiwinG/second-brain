@@ -3,14 +3,19 @@
 - **Дата:** 2026-11-16
 - **Агент:** agent-1 (OpenCode)
 - **Ветка:** `master`
-- **Статус:** **done (self-check)**. Независимое ревью ещё не проводилось.
-  Гейты: `flutter analyze --fatal-infos` — 0 issues, `flutter test` —
-  **185/185**, `flutter build windows --debug` — success; CI-run
-  `43892374452` (`9b96f58`) — success.
+- **Статус:** **self-check + исправления после первого ревью; ожидается
+  повторное независимое ревью.** Первое ревью: reviewer A — **FAIL**
+  (1 major: JSON-бэкап), reviewer B — **PASS WITH COMMENTS**; все находки
+  S05-001…S05-011 исправлены. Гейты: `flutter analyze --fatal-infos` — 0
+  issues, `flutter test` — **191/191**, `flutter build windows --debug` —
+  success.
 - **Предыдущий этап:** stage-04 — **PASS WITH COMMENTS** (0 MAJOR), stage-05
   разблокирован.
 - **Схема БД:** **v7** (`learning_tracks`, `learning_sessions`).
 - **ADR:** ADR-022.
+- **Ревью:** [stage-05-review.md](../reviews/stage-05-review.md) — FAIL
+  (S05-001); исправления —
+  [stage-05-fix-results.md](../reviews/stage-05-fix-results.md).
 
 ## Цель и критерии приёмки
 
@@ -103,15 +108,21 @@ secure storage.
 - `test/db_migration_test.dart` — v6→v7, обновлены проверки v1→v7/v2→v7/
   v4→v7/v5→v7, guard v2→v8.
 
-Итог: **185/185** тестов, analyze 0, Windows debug build success.
+Итог: **191/191** тестов, analyze 0, Windows debug build success. Добавлены
+тесты на битый JSON, отсутствующий ключ, приватный roadmap, backup v1/v2,
+updateTrack, дубли id, транзакции, даты и усиленные миграции v5→v7/v6→v7.
 
 ## Известные ограничения и техдолг
 
 - Живые запросы AI-тренера к OpenAI/Anthropic/Google с реальными ключами не
-  выполнялись; проверено на `MockClient`. Roadmap-парсер ожидает JSON-массив
-  и ограничивает шаги 20.
+  выполнялись; проверено на `MockClient`. Roadmap-парсер ожидает JSON-массив,
+  по умолчанию просит 6 шагов и ограничивает результат 20.
 - AI-тренер использует только default-провайдера; выбора модели для обучения
-  пока нет.
+  пока нет. Промпты и application-ошибки на русском; UI-подписи локализованы.
+- JSON-бэкап теперь включает обучение (версия 2), старые файлы версии 1
+  импортируются без learning-секций.
+- В UI нельзя переупорядочивать шаги (edit/delete есть); custom fields
+  вводятся как `key=value` без многострочных значений.
 - Нет глобального поиска по трекам (stage-08) и синхронизации.
 - Заметки сессий не отправляются в LLM; в контекст тренера идут только
   заголовки/описания шагов и агрегированный прогресс.

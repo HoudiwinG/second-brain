@@ -8,11 +8,14 @@ import 'package:second_brain/data/db/app_database.dart';
 import 'package:second_brain/data/repositories/categories_repository.dart';
 import 'package:second_brain/data/repositories/finance_repository.dart';
 import 'package:second_brain/data/repositories/ideas_repository.dart';
+import 'package:second_brain/data/repositories/learning_repository.dart';
 import 'package:second_brain/data/repositories/notes_repository.dart';
 import 'package:second_brain/data/repositories/search_repository.dart';
 import 'package:second_brain/data/repositories/tasks_repository.dart';
 import 'package:second_brain/features/finance/domain/finance_transaction.dart';
 import 'package:second_brain/features/ideas/domain/idea_entry.dart';
+import 'package:second_brain/features/learning/domain/learning_session.dart';
+import 'package:second_brain/features/learning/domain/learning_track.dart';
 import 'package:second_brain/features/notes/domain/note.dart';
 import 'package:second_brain/features/tasks/domain/task_item.dart';
 
@@ -83,6 +86,30 @@ void main() {
           isPrivateForLlm: true,
         ),
       )).unwrap();
+      final learning = DriftLearningRepository(db);
+      final track = (await learning.createTrack(
+        const LearningTrackDraft(
+          title: 'Dart',
+          goal: 'Писать приложения',
+          steps: [
+            LearningStep(
+              id: 's1',
+              title: 'Основы',
+              status: LearningStepStatus.inProgress,
+            ),
+          ],
+          customFields: {'hours': '10'},
+          isPrivateForLlm: true,
+        ),
+      )).unwrap();
+      final session = (await learning.addSession(
+        LearningSessionDraft(
+          trackId: track.id,
+          durationMinutes: 45,
+          notes: 'Практика',
+          date: DateTime.utc(2026, 10, 5),
+        ),
+      )).unwrap();
 
       final file = File('${temp.path}/backup.json');
       await backup.exportJson(file).then((r) => r.unwrap());
@@ -92,6 +119,8 @@ void main() {
       expect(decoded['format'], BackupService.format);
       expect(decoded['version'], BackupService.version);
       expect(decoded['notes'], hasLength(1));
+      expect(decoded['learning_tracks'], hasLength(1));
+      expect(decoded['learning_sessions'], hasLength(1));
 
       // Импорт заменяет содержимое: лишняя запись должна исчезнуть.
       await notes.create(const NoteDraft(title: 'Лишняя'));
@@ -135,11 +164,47 @@ void main() {
         root.id,
       );
 
+      final restoredTracks = (await learning.listTracks()).unwrap();
+      expect(restoredTracks, hasLength(1));
+      expect(restoredTracks.single.id, track.id);
+      expect(restoredTracks.single.title, 'Dart');
+      expect(restoredTracks.single.goal, 'Писать приложения');
+      expect(restoredTracks.single.steps.single.title, 'Основы');
+      expect(restoredTracks.single.customFields['hours'], '10');
+      expect(restoredTracks.single.isPrivateForLlm, isTrue);
+      final restoredSessions = (await learning.listSessions(track.id)).unwrap();
+      expect(restoredSessions, hasLength(1));
+      expect(restoredSessions.single.id, session.id);
+      expect(restoredSessions.single.durationMinutes, 45);
+      expect(restoredSessions.single.notes, 'Практика');
+
       // После импорта FTS-индекс должен работать.
       final search = DriftSearchRepository(db);
       expect((await search.search('бэкап')).unwrap(), isNotEmpty);
     },
   );
+
+  test('JSON v1 без обучения импортируется как совместимый', () async {
+    final file = File('${temp.path}/v1.json');
+    await file.writeAsString(
+      jsonEncode({
+        'format': BackupService.format,
+        'version': 1,
+        'exported_at': DateTime.utc(2026, 11, 1).toIso8601String(),
+        'categories': [],
+        'tags': [],
+        'notes': [],
+        'tasks': [],
+        'ideas': [],
+        'finance': [],
+      }),
+    );
+
+    final result = await backup.importJson(file);
+
+    expect(result, isA<Success<void>>());
+    expect(await db.select(db.learningTracks).get(), isEmpty);
+  });
 
   test('JSON: неизвестный формат не очищает данные', () async {
     final notes = DriftNotesRepository(db);

@@ -659,6 +659,15 @@ class AppLocalizationsRu extends AppLocalizations {
   String get learningSessionDuration => 'Минуты';
 
   @override
+  String learningSessionMinutes(int minutes) {
+    return '$minutes мин';
+  }
+
+  @override
+  String get learningDurationRange =>
+      'Длительность должна быть от 1 до 1440 минут.';
+
+  @override
   String get learningSessionNotes => 'Заметки';
 
   @override
@@ -695,29 +704,23 @@ class AppLocalizationsRu extends AppLocalizations {
   String get learningTrackSaved => 'Трек сохранён';
 
   @override
-  String get learningTrackSaveError => 'Не удалось сохранить трек';
-
-  @override
   String get learningTrackDeleted => 'Трек удалён';
-
-  @override
-  String get learningTrackDeleteError => 'Не удалось удалить трек';
 
   @override
   String get learningSessionSaved => 'Сессия добавлена';
 
   @override
-  String get learningSessionSaveError => 'Не удалось добавить сессию';
-
-  @override
   String get learningSessionDeleted => 'Сессия удалена';
-
-  @override
-  String get learningSessionDeleteError => 'Не удалось удалить сессию';
 
   @override
   String get learningRoadmapReplace =>
       'Заменить текущий roadmap сгенерированным?';
+
+  @override
+  String get learningReplace => 'Заменить';
+
+  @override
+  String get learningChangeStepStatus => 'Изменить статус шага';
 
   @override
   String get learningRoadmapEmptyGoal => 'Сначала заполните цель трека.';

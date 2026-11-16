@@ -13,6 +13,10 @@ String formatDate(BuildContext context, DateTime? value) {
   return MaterialLocalizations.of(context).formatShortDate(value.toLocal());
 }
 
+/// Календарная дата без пересчёта часового пояса.
+String formatCalendarDate(BuildContext context, DateTime value) =>
+    MaterialLocalizations.of(context).formatShortDate(value);
+
 String formatDateTime(BuildContext context, DateTime value) {
   final local = value.toLocal();
   final date = MaterialLocalizations.of(context).formatShortDate(local);

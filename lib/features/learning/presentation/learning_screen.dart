@@ -472,6 +472,43 @@ class _LearningTrackScreenState extends ConsumerState<LearningTrackScreen> {
     );
   }
 
+  Future<void> _editStep(LearningTrack track, LearningStep step) async {
+    final lcm = AppLocalizations.of(context)!;
+    final draft = await showDialog<({String title, String description})>(
+      context: context,
+      builder: (_) => _StepDialog(step: step),
+    );
+    if (draft == null || !mounted) return;
+    final repo = await ref.read(learningRepositoryProvider.future);
+    final result = await repo.setSteps(track.id, [
+      for (final item in track.steps)
+        if (item.id == step.id)
+          item.copyWith(title: draft.title, description: draft.description)
+        else
+          item,
+    ]);
+    if (!mounted) return;
+    result.when(
+      success: (_) => _reload(),
+      failure: (error) => showErrorSnackBar(context, lcm, error),
+    );
+  }
+
+  Future<void> _deleteStep(LearningTrack track, LearningStep step) async {
+    final lcm = AppLocalizations.of(context)!;
+    if (!await confirmDelete(context, lcm) || !mounted) return;
+    final repo = await ref.read(learningRepositoryProvider.future);
+    final result = await repo.setSteps(track.id, [
+      for (final item in track.steps)
+        if (item.id != step.id) item,
+    ]);
+    if (!mounted) return;
+    result.when(
+      success: (_) => _reload(),
+      failure: (error) => showErrorSnackBar(context, lcm, error),
+    );
+  }
+
   Future<void> _addSession(LearningTrack track) async {
     final lcm = AppLocalizations.of(context)!;
     final draft = await showDialog<LearningSessionDraft>(
@@ -525,7 +562,7 @@ class _LearningTrackScreenState extends ConsumerState<LearningTrackScreen> {
             ),
             FilledButton(
               onPressed: () => Navigator.of(context).pop(true),
-              child: Text(lcm.actionSave),
+              child: Text(lcm.learningReplace),
             ),
           ],
         ),
@@ -535,9 +572,9 @@ class _LearningTrackScreenState extends ConsumerState<LearningTrackScreen> {
     setState(() => _aiBusy = true);
     try {
       final trainer = await ref.read(learningTrainerProvider.future);
-      final result = await trainer.generateRoadmap(track.goal);
+      final result = await trainer.generateRoadmap(track);
       if (!mounted) return;
-      result.when(
+      await result.when(
         success: (steps) async {
           final repo = await ref.read(learningRepositoryProvider.future);
           final saved = await repo.setSteps(track.id, steps);
@@ -547,8 +584,10 @@ class _LearningTrackScreenState extends ConsumerState<LearningTrackScreen> {
             failure: (error) => showErrorSnackBar(context, lcm, error),
           );
         },
-        failure: (error) => showErrorSnackBar(context, lcm, error),
+        failure: (error) async => showErrorSnackBar(context, lcm, error),
       );
+    } on Object {
+      if (mounted) showMessageSnackBar(context, lcm.errorUnexpected);
     } finally {
       if (mounted) setState(() => _aiBusy = false);
     }
@@ -565,6 +604,8 @@ class _LearningTrackScreenState extends ConsumerState<LearningTrackScreen> {
         success: (text) => _showTrainerText(lcm, text),
         failure: (error) => showErrorSnackBar(context, lcm, error),
       );
+    } on Object {
+      if (mounted) showMessageSnackBar(context, lcm.errorUnexpected);
     } finally {
       if (mounted) setState(() => _aiBusy = false);
     }
@@ -581,6 +622,8 @@ class _LearningTrackScreenState extends ConsumerState<LearningTrackScreen> {
         success: (text) => _showTrainerText(lcm, text),
         failure: (error) => showErrorSnackBar(context, lcm, error),
       );
+    } on Object {
+      if (mounted) showMessageSnackBar(context, lcm.errorUnexpected);
     } finally {
       if (mounted) setState(() => _aiBusy = false);
     }
@@ -635,12 +678,12 @@ class _LearningTrackScreenState extends ConsumerState<LearningTrackScreen> {
             actions: [
               IconButton(
                 tooltip: lcm.actionEdit,
-                onPressed: () => _edit(track),
+                onPressed: _aiBusy ? null : () => _edit(track),
                 icon: const Icon(Icons.edit_outlined),
               ),
               IconButton(
                 tooltip: lcm.actionDelete,
-                onPressed: () => _deleteTrack(track),
+                onPressed: _aiBusy ? null : () => _deleteTrack(track),
                 icon: const Icon(Icons.delete_outline),
               ),
             ],
@@ -664,6 +707,8 @@ class _LearningTrackScreenState extends ConsumerState<LearningTrackScreen> {
                 onAddStep: () => _addStep(track),
                 onSetStatus: (step, status) =>
                     _setStepStatus(track, step, status),
+                onEditStep: (step) => _editStep(track, step),
+                onDeleteStep: (step) => _deleteStep(track, step),
               ),
               const SizedBox(height: 12),
               _SessionsCard(
@@ -825,11 +870,15 @@ class _RoadmapCard extends StatelessWidget {
     required this.track,
     required this.onAddStep,
     required this.onSetStatus,
+    required this.onEditStep,
+    required this.onDeleteStep,
   });
 
   final LearningTrack track;
   final VoidCallback onAddStep;
   final void Function(LearningStep, LearningStepStatus) onSetStatus;
+  final ValueChanged<LearningStep> onEditStep;
+  final ValueChanged<LearningStep> onDeleteStep;
 
   @override
   Widget build(BuildContext context) {
@@ -865,7 +914,7 @@ class _RoadmapCard extends StatelessWidget {
                 ListTile(
                   contentPadding: EdgeInsets.zero,
                   leading: PopupMenuButton<LearningStepStatus>(
-                    tooltip: lcm.learningStepTitle,
+                    tooltip: lcm.learningChangeStepStatus,
                     initialValue: step.status,
                     onSelected: (status) => onSetStatus(step, status),
                     itemBuilder: (context) => [
@@ -890,6 +939,21 @@ class _RoadmapCard extends StatelessWidget {
                         ? _stepStatusLabel(lcm, step.status)
                         : '${_stepStatusLabel(lcm, step.status)} · '
                               '${step.description}',
+                  ),
+                  trailing: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      IconButton(
+                        tooltip: lcm.actionEdit,
+                        onPressed: () => onEditStep(step),
+                        icon: const Icon(Icons.edit_outlined, size: 18),
+                      ),
+                      IconButton(
+                        tooltip: lcm.actionDelete,
+                        onPressed: () => onDeleteStep(step),
+                        icon: const Icon(Icons.delete_outline, size: 18),
+                      ),
+                    ],
                   ),
                 ),
           ],
@@ -947,8 +1011,8 @@ class _SessionsCard extends StatelessWidget {
                   contentPadding: EdgeInsets.zero,
                   leading: const Icon(Icons.timer_outlined),
                   title: Text(
-                    '${formatDate(context, session.date)} · '
-                    '${session.durationMinutes} ${lcm.learningSessionDuration}',
+                    '${formatCalendarDate(context, session.date.toUtc())} · '
+                    '${lcm.learningSessionMinutes(session.durationMinutes)}',
                   ),
                   subtitle: session.notes.isEmpty ? null : Text(session.notes),
                   trailing: IconButton(
@@ -965,16 +1029,25 @@ class _SessionsCard extends StatelessWidget {
 }
 
 class _StepDialog extends StatefulWidget {
-  const _StepDialog();
+  const _StepDialog({this.step});
+
+  final LearningStep? step;
 
   @override
   State<_StepDialog> createState() => _StepDialogState();
 }
 
 class _StepDialogState extends State<_StepDialog> {
-  final _title = TextEditingController();
-  final _description = TextEditingController();
+  late final TextEditingController _title;
+  late final TextEditingController _description;
   String? _error;
+
+  @override
+  void initState() {
+    super.initState();
+    _title = TextEditingController(text: widget.step?.title ?? '');
+    _description = TextEditingController(text: widget.step?.description ?? '');
+  }
 
   @override
   void dispose() {
@@ -1071,7 +1144,7 @@ class _SessionDialogState extends State<_SessionDialog> {
     final lcm = AppLocalizations.of(context)!;
     final duration = int.tryParse(_duration.text.trim());
     if (duration == null || duration < 1 || duration > 1440) {
-      setState(() => _error = lcm.quickCaptureRequired);
+      setState(() => _error = lcm.learningDurationRange);
       return;
     }
     Navigator.of(context).pop(
@@ -1103,7 +1176,7 @@ class _SessionDialogState extends State<_SessionDialog> {
             ListTile(
               contentPadding: EdgeInsets.zero,
               title: Text(lcm.learningSessionDate),
-              subtitle: Text(formatDate(context, _date)),
+              subtitle: Text(formatCalendarDate(context, _date)),
               trailing: const Icon(Icons.calendar_today_outlined),
               onTap: _pickDate,
             ),

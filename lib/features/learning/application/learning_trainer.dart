@@ -25,10 +25,15 @@ final class LearningTrainer {
   final LlmProviderFactory factory;
 
   Future<Result<List<LearningStep>>> generateRoadmap(
-    String goal, {
+    LearningTrack track, {
     int stepCount = 6,
   }) async {
-    final normalized = goal.trim();
+    if (track.isPrivateForLlm) {
+      return const Result.failure(
+        ValidationException('Learning: приватный трек не отправляется в LLM'),
+      );
+    }
+    final normalized = track.goal.trim();
     if (normalized.isEmpty) {
       return const Result.failure(
         ValidationException('Learning: цель не может быть пустой'),
@@ -168,15 +173,14 @@ final class LearningTrainer {
       text = firstNewline >= 0 ? text.substring(firstNewline + 1) : text;
       if (text.endsWith('```')) text = text.substring(0, text.length - 3);
     }
-    final start = text.indexOf('[');
-    final end = text.lastIndexOf(']');
-    if (start < 0 || end <= start) {
+    final jsonArray = _extractJsonArray(text);
+    if (jsonArray == null) {
       return const Result.failure(
         LlmException('Learning: тренер вернул roadmap без JSON-массива'),
       );
     }
     try {
-      final decoded = jsonDecode(text.substring(start, end + 1));
+      final decoded = jsonDecode(jsonArray);
       if (decoded is! List) {
         return const Result.failure(
           LlmException('Learning: некорректный roadmap'),
@@ -200,6 +204,38 @@ final class LearningTrainer {
         LlmException('Learning: некорректный JSON roadmap'),
       );
     }
+  }
+
+  /// Извлекает первый сбалансированный JSON-массив, не захватывая `]` из
+  /// пояснений после него.
+  static String? _extractJsonArray(String text) {
+    final start = text.indexOf('[');
+    if (start < 0) return null;
+    var depth = 0;
+    var inString = false;
+    var escaped = false;
+    for (var index = start; index < text.length; index++) {
+      final char = text[index];
+      if (inString) {
+        if (escaped) {
+          escaped = false;
+        } else if (char == '\\') {
+          escaped = true;
+        } else if (char == '"') {
+          inString = false;
+        }
+        continue;
+      }
+      if (char == '"') {
+        inString = true;
+      } else if (char == '[') {
+        depth++;
+      } else if (char == ']') {
+        depth--;
+        if (depth == 0) return text.substring(start, index + 1);
+      }
+    }
+    return null;
   }
 
   static String _trackContext(LearningTrack track) {

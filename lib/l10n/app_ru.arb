@@ -235,6 +235,15 @@
   "learningNoSessions": "Сессий пока нет",
   "learningAddSession": "Добавить сессию",
   "learningSessionDuration": "Минуты",
+  "learningSessionMinutes": "{minutes} мин",
+  "@learningSessionMinutes": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "learningDurationRange": "Длительность должна быть от 1 до 1440 минут.",
   "learningSessionNotes": "Заметки",
   "learningSessionDate": "Дата",
   "learningTotalMinutes": "Всего: {minutes} мин",
@@ -253,13 +262,11 @@
   "learningAiResult": "Ответ тренера",
   "learningCheckInHint": "Давно не было сессии. Как продвигается обучение?",
   "learningTrackSaved": "Трек сохранён",
-  "learningTrackSaveError": "Не удалось сохранить трек",
   "learningTrackDeleted": "Трек удалён",
-  "learningTrackDeleteError": "Не удалось удалить трек",
   "learningSessionSaved": "Сессия добавлена",
-  "learningSessionSaveError": "Не удалось добавить сессию",
   "learningSessionDeleted": "Сессия удалена",
-  "learningSessionDeleteError": "Не удалось удалить сессию",
   "learningRoadmapReplace": "Заменить текущий roadmap сгенерированным?",
+  "learningReplace": "Заменить",
+  "learningChangeStepStatus": "Изменить статус шага",
   "learningRoadmapEmptyGoal": "Сначала заполните цель трека."
 }

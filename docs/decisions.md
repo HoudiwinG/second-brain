@@ -1134,8 +1134,8 @@ ADR-018 (схема), ADR-019 (транспорт), ADR-020 (контракт LL
 
 ### Решение
 - Схема **v7**: таблицы `learning_tracks` и `learning_sessions`.
-  `roadmap_steps[]` и `custom_fields` хранятся JSON-полями внутри трека;
-  отдельная таблица шагов для MVP не вводится.
+  `roadmap_json` (массив шагов) и `custom_fields_json` хранятся JSON-полями
+  внутри трека; отдельная таблица шагов для MVP не вводится.
 - `LearningTrack` — заголовок, цель, шаги (`LearningStep`), пользовательские
   поля, флаг `is_private_for_llm`, timestamps и soft-delete.
   `LearningSession` — трек, длительность в минутах, заметки, дата.
@@ -1143,6 +1143,8 @@ ADR-018 (схема), ADR-019 (транспорт), ADR-020 (контракт LL
   отдельное поле прогресса не хранится.
 - `LearningRepository` — CRUD треков, замена шагов, смена статуса шага,
   сессии; все операции возвращают `Result` и используют `RepositoryGuard`.
+- JSON-бэкап формата **v2** включает `learning_tracks`/`learning_sessions`;
+  файлы v1 без этих секций импортируются как совместимые.
 - `LearningTrainer` использует текущий default-провайдер LLM и
   `LlmProviderFactory.complete`:
   - `generateRoadmap(goal)` просит строгий JSON-массив шагов и валидирует его;

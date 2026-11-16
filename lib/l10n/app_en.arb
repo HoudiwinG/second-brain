@@ -241,6 +241,15 @@
   "learningNoSessions": "No sessions yet",
   "learningAddSession": "Add session",
   "learningSessionDuration": "Minutes",
+  "learningSessionMinutes": "{minutes} min",
+  "@learningSessionMinutes": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "learningDurationRange": "Duration must be between 1 and 1440 minutes.",
   "learningSessionNotes": "Notes",
   "learningSessionDate": "Date",
   "learningTotalMinutes": "Total: {minutes} min",
@@ -259,13 +268,11 @@
   "learningAiResult": "Trainer response",
   "learningCheckInHint": "No sessions recently. How is your learning going?",
   "learningTrackSaved": "Track saved",
-  "learningTrackSaveError": "Could not save the track",
   "learningTrackDeleted": "Track deleted",
-  "learningTrackDeleteError": "Could not delete the track",
   "learningSessionSaved": "Session added",
-  "learningSessionSaveError": "Could not add the session",
   "learningSessionDeleted": "Session deleted",
-  "learningSessionDeleteError": "Could not delete the session",
   "learningRoadmapReplace": "Replace the current roadmap with the generated one?",
+  "learningReplace": "Replace",
+  "learningChangeStepStatus": "Change step status",
   "learningRoadmapEmptyGoal": "Fill in the track goal first."
 }

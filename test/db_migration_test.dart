@@ -523,13 +523,20 @@ void main() {
       expect(await db.select(db.learningTracks).get(), hasLength(1));
       expect(await db.select(db.learningSessions).get(), hasLength(1));
 
-      final index = await db
+      final indexes = await db
           .customSelect(
             "SELECT name FROM sqlite_master WHERE type = 'index' "
-            "AND name = 'idx_learning_sessions_track_date'",
+            "AND name IN ('idx_learning_tracks_updated', "
+            "'idx_learning_tracks_deleted', "
+            "'idx_learning_sessions_track_date')",
           )
-          .getSingleOrNull();
-      expect(index, isNotNull);
+          .get();
+      expect(indexes, hasLength(3));
+
+      await (db.delete(
+        db.learningTracks,
+      )..where((t) => t.id.equals(trackId))).go();
+      expect(await db.select(db.learningSessions).get(), isEmpty);
     });
   });
 
@@ -557,6 +564,17 @@ void main() {
           'DROP INDEX IF EXISTS idx_tool_audit_created',
         );
         await seed.customStatement('DROP TABLE tool_audit_log');
+        await seed.customStatement(
+          'DROP INDEX IF EXISTS idx_learning_sessions_track_date',
+        );
+        await seed.customStatement(
+          'DROP INDEX IF EXISTS idx_learning_tracks_deleted',
+        );
+        await seed.customStatement(
+          'DROP INDEX IF EXISTS idx_learning_tracks_updated',
+        );
+        await seed.customStatement('DROP TABLE IF EXISTS learning_sessions');
+        await seed.customStatement('DROP TABLE IF EXISTS learning_tracks');
         await seed.customStatement('PRAGMA user_version = 5');
         await seed.close();
 
@@ -591,6 +609,33 @@ void main() {
           isNotNull,
           reason: 'миграция должна создавать индекс аудита',
         );
+
+        for (final table in ['learning_tracks', 'learning_sessions']) {
+          final created = await db
+              .customSelect(
+                "SELECT name FROM sqlite_master WHERE type = 'table' "
+                "AND name = '$table'",
+              )
+              .getSingleOrNull();
+          expect(created, isNotNull, reason: 'миграция должна создать $table');
+        }
+        for (final indexName in [
+          'idx_learning_tracks_updated',
+          'idx_learning_tracks_deleted',
+          'idx_learning_sessions_track_date',
+        ]) {
+          final created = await db
+              .customSelect(
+                "SELECT name FROM sqlite_master WHERE type = 'index' "
+                "AND name = '$indexName'",
+              )
+              .getSingleOrNull();
+          expect(
+            created,
+            isNotNull,
+            reason: 'миграция должна создать $indexName',
+          );
+        }
       },
     );
   });

@@ -121,36 +121,40 @@ class DriftLearningRepository implements LearningRepository {
     LearningStepStatus status,
   ) {
     return RepositoryGuard.guard('LearningRepository.setStepStatus', () async {
-      final current = await _findTrack(trackId);
-      if (current == null) {
-        throw ValidationException(
-          'LearningRepository: трек $trackId не найден',
-        );
-      }
-      final track = _toTrack(current);
-      var found = false;
-      final steps = <LearningStep>[];
-      for (final step in track.steps) {
-        if (step.id == stepId) {
-          found = true;
-          steps.add(step.copyWith(status: status));
-        } else {
-          steps.add(step);
+      return _db.transaction(() async {
+        final current = await _findTrack(trackId);
+        if (current == null) {
+          throw ValidationException(
+            'LearningRepository: трек $trackId не найден',
+          );
         }
-      }
-      if (!found) {
-        throw ValidationException('LearningRepository: шаг $stepId не найден');
-      }
-      await (_db.update(
-        _db.learningTracks,
-      )..where((t) => t.id.equals(trackId))).write(
-        db.LearningTracksCompanion(
-          roadmapJson: Value(_encodeSteps(steps)),
-          updatedAt: Value(DateTime.now().toUtc()),
-        ),
-      );
-      final row = await _findTrack(trackId);
-      return _toTrack(row!);
+        final track = _toTrack(current);
+        var found = false;
+        final steps = <LearningStep>[];
+        for (final step in track.steps) {
+          if (step.id == stepId) {
+            found = true;
+            steps.add(step.copyWith(status: status));
+          } else {
+            steps.add(step);
+          }
+        }
+        if (!found) {
+          throw ValidationException(
+            'LearningRepository: шаг $stepId не найден',
+          );
+        }
+        await (_db.update(
+          _db.learningTracks,
+        )..where((t) => t.id.equals(trackId))).write(
+          db.LearningTracksCompanion(
+            roadmapJson: Value(_encodeSteps(steps)),
+            updatedAt: Value(DateTime.now().toUtc()),
+          ),
+        );
+        final row = await _findTrack(trackId);
+        return _toTrack(row!);
+      });
     });
   }
 
@@ -159,10 +163,11 @@ class DriftLearningRepository implements LearningRepository {
     return RepositoryGuard.guard(
       'LearningRepository.softDeleteTrack',
       () async {
-        final current = await _findTrack(id);
+        final current = await _findTrack(id, includeDeleted: true);
         if (current == null) {
           throw ValidationException('LearningRepository: трек $id не найден');
         }
+        if (current.deletedAt != null) return;
         final now = DateTime.now().toUtc();
         await (_db.update(
           _db.learningTracks,
@@ -206,6 +211,12 @@ class DriftLearningRepository implements LearningRepository {
         );
       }
       final now = DateTime.now().toUtc();
+      // Сессия — календарная дата, а не момент времени: храним UTC-полночь.
+      final date = DateTime.utc(
+        draft.date.year,
+        draft.date.month,
+        draft.date.day,
+      );
       final id = await _db.transaction(() async {
         final id = await _db
             .into(_db.learningSessions)
@@ -214,7 +225,7 @@ class DriftLearningRepository implements LearningRepository {
                 trackId: draft.trackId,
                 durationMinutes: draft.durationMinutes,
                 notes: Value(draft.notes.trim()),
-                date: draft.date.toUtc(),
+                date: date,
                 createdAt: now,
               ),
             );
@@ -233,9 +244,24 @@ class DriftLearningRepository implements LearningRepository {
   @override
   Future<Result<void>> deleteSession(int id) {
     return RepositoryGuard.guard('LearningRepository.deleteSession', () async {
-      await (_db.delete(
-        _db.learningSessions,
-      )..where((s) => s.id.equals(id))).go();
+      await _db.transaction(() async {
+        final row = await (_db.select(
+          _db.learningSessions,
+        )..where((s) => s.id.equals(id))).getSingleOrNull();
+        if (row == null) {
+          throw ValidationException(
+            'LearningRepository: сессия $id не найдена',
+          );
+        }
+        await (_db.delete(
+          _db.learningSessions,
+        )..where((s) => s.id.equals(id))).go();
+        await (_db.update(
+          _db.learningTracks,
+        )..where((t) => t.id.equals(row.trackId))).write(
+          db.LearningTracksCompanion(updatedAt: Value(DateTime.now().toUtc())),
+        );
+      });
     });
   }
 
@@ -307,8 +333,11 @@ class DriftLearningRepository implements LearningRepository {
         );
       }
       var id = step.id.trim();
-      if (id.isEmpty || !ids.add(id)) {
-        id = newLearningStepId();
+      if (id.isEmpty || ids.contains(id)) {
+        do {
+          id = newLearningStepId();
+        } while (!ids.add(id));
+      } else {
         ids.add(id);
       }
       result.add(
@@ -333,8 +362,11 @@ class DriftLearningRepository implements LearningRepository {
     try {
       final decoded = jsonDecode(row.roadmapJson);
       if (decoded is List) {
-        for (final item in decoded) {
-          final step = LearningStep.fromJson(item);
+        for (var index = 0; index < decoded.length; index++) {
+          final step = LearningStep.fromJson(
+            decoded[index],
+            fallbackId: 'legacy_${row.id}_$index',
+          );
           if (step != null) steps.add(step);
         }
       }

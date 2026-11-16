@@ -1,11 +1,13 @@
 # Контекст проекта (снимок состояния)
 
-- **Текущий этап:** stage-05 (обучение) — **реализация и self-check готовы,
-  независимое ревью ещё не проводилось.** Треки, roadmap-шаги, сессии,
-  AI-тренер (roadmap/материалы/check-in), приватный трек не уходит в LLM.
-  Analyze 0, test **185/185**, Windows debug build success. Отчёт:
-  [stages/stage-05.md](stages/stage-05.md); ADR-022; схема **v7**
-  (`learning_tracks`, `learning_sessions`).
+- **Текущий этап:** stage-05 (обучение) — **первое ревью FAIL (1 MAJOR:
+  JSON-бэкап), исправления S05-001…S05-011 внесены, ожидается повторное
+  ревью.** Треки, roadmap, сессии, AI-тренер, приватный трек, backup v2.
+  Analyze 0, test **191/191**, Windows debug build success. Отчёт:
+  [stages/stage-05.md](stages/stage-05.md), ревью:
+  [reviews/stage-05-review.md](reviews/stage-05-review.md), исправления:
+  [reviews/stage-05-fix-results.md](reviews/stage-05-fix-results.md);
+  ADR-022; схема **v7**.
 - **Предыдущий этап:** stage-04 (инструменты ассистента) — **PASS WITH
   COMMENTS (0 MAJOR)**. Все S04R/S04F/S04Z fixed; analyze 0, test 172/172,
   Windows debug build success. Отчёт: [stages/stage-04.md](stages/stage-04.md),
@@ -56,16 +58,16 @@
   R02-009…R02-013 — [reviews/stage-02-fix-results.md](reviews/stage-02-fix-results.md).
 - **Текущий отчёт:** [stages/stage-05.md](stages/stage-05.md)
 - **Открытых CRITICAL:** 0
-- **Stage-05:** реализация и self-check готовы, независимое ревью ещё не
-  проводилось; блокеров нет. **Stage-04:** PASS WITH COMMENTS, все S04R/
-  S04F/S04Z fixed. **Открытых исходных S03-находок:** 0 (28/28 подтверждены
-  повторным ревью). **Не блокирующие комментарии:** S03R-001/S03R-002
-  (MINOR), S03R-003/S03R-004 (NIT), R02-014 (MINOR), R02-015 (NIT).
-  **Принятый TD:** TD-28 (нет UI выбора контекста; триггер перенесён на
-  позднюю доработку чата). TD-21 — отдельное принятое ограничение `REAL` для
-  финансов.
+- **Stage-05:** первое ревью FAIL (1 MAJOR — JSON-бэкап), S05-001…011
+  исправлены, ожидается повторное ревью. **Stage-04:** PASS WITH COMMENTS,
+  все S04R/S04F/S04Z fixed. **Открытых исходных S03-находок:** 0 (28/28
+  подтверждены повторным ревью). **Не блокирующие комментарии:**
+  S03R-001/S03R-002 (MINOR), S03R-003/S03R-004 (NIT), R02-014 (MINOR),
+  R02-015 (NIT). **Принятый TD:** TD-28 (нет UI выбора контекста; триггер
+  перенесён на позднюю доработку чата). TD-21 — отдельное принятое
+  ограничение `REAL` для финансов.
 - **Сборка:** `flutter analyze --fatal-infos` — **No issues found**;
-  `flutter test` — **185/185**; `flutter build windows --debug` — **success**
+  `flutter test` — **191/191**; `flutter build windows --debug` — **success**
   (2026-11-16, `build\windows\x64\runner\Debug\second_brain.exe`); CI-run
   `43892374452` (`9b96f58`) — success, включая Windows debug build.
 - **Flutter SDK:** 3.47.7 stable, `C:\src\flutter` (Dart 3.13.5)
@@ -188,8 +190,11 @@
   и check-in; приватный трек не отправляется, ключи — из secure storage.
 - UI: список треков, редактор, детали с roadmap/сессиями, AI-панель,
   check-in баннер при отсутствии сессии более 3 дней.
-- Тесты: 185/185, analyze 0, Windows debug build success. Независимое ревью
-  stage-05 ещё не проводилось.
+- JSON-бэкап v2 включает треки/сессии; приватный roadmap fail-closed в
+  сервисе; сессия хранится как календарная дата; добавлены edit/delete шага.
+- Тесты: **191/191**, analyze 0, Windows debug build success. Первое ревью
+  stage-05 — FAIL (JSON-бэкап), исправления внесены; ожидается повторное
+  ревью.
 
 ## Что сделано на stage-04
 
@@ -317,10 +322,11 @@
   после освобождения хоткей зарегистрировался и работает.
 
 ## Известные ограничения / принятый техдолг
-- **Stage-05 — self-check (2026-11-16).** Треки, roadmap, сессии, AI-тренер
-  и схема v7 готовы; analyze 0, test 185/185, Windows debug build success.
-  Независимое ревью ещё не проводилось. Живые LLM-вызовы тренера не
-  выполнялись; roadmap-парсер ограничен JSON-массивом и 20 шагами.
+- **Stage-05 — исправления после первого ревью (2026-11-16).** Треки,
+  roadmap, сессии, AI-тренер, backup v2 и схема v7 готовы; все S05-001…011
+  fixed; analyze 0, test **191/191**, Windows debug build success. Ожидается
+  повторное ревью. Живые LLM-вызовы тренера не выполнялись; roadmap-парсер
+  просит 6 шагов и ограничивает 20; AI-промпты на русском.
 - **Stage-04 — PASS WITH COMMENTS (2026-11-16).** Все `S04R-001…S04R-011`
   fixed; повторная проверка — PASS WITH COMMENTS, комментарии `S04F`/`S04Z`
   fixed. Гейты: analyze 0, test **172/172**, Windows debug build success; CI

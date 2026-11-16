@@ -75,7 +75,19 @@ void main() {
       );
     });
 
-    final result = await trainer(client).generateRoadmap('Dart');
+    final result = await trainer(client).generateRoadmap(
+      LearningTrack(
+        id: 1,
+        title: 'Dart',
+        goal: 'Dart',
+        steps: const [],
+        customFields: const {},
+        isPrivateForLlm: false,
+        createdAt: DateTime.utc(2026, 1, 1),
+        updatedAt: DateTime.utc(2026, 1, 1),
+        deletedAt: null,
+      ),
+    );
 
     final steps = (result as Success<List<LearningStep>>).value;
     expect(steps, hasLength(2));
@@ -103,8 +115,12 @@ void main() {
     );
 
     final result = await trainer(client).suggestMaterials(track);
+    final roadmap = await trainer(client).generateRoadmap(track);
+    final checkIn = await trainer(client).checkIn(track);
 
     expect(result, isA<Failure<String>>());
+    expect(roadmap, isA<Failure<List<LearningStep>>>());
+    expect(checkIn, isA<Failure<String>>());
     expect(called, isFalse);
   });
 
@@ -113,12 +129,109 @@ void main() {
       fail('сеть не должна вызываться');
     });
 
-    final result = await trainer(
-      client,
-      configs: const [],
-    ).generateRoadmap('Цель');
+    final result = await trainer(client, configs: const []).generateRoadmap(
+      LearningTrack(
+        id: 1,
+        title: 'Цель',
+        goal: 'Цель',
+        steps: const [],
+        customFields: const {},
+        isPrivateForLlm: false,
+        createdAt: DateTime.utc(2026, 1, 1),
+        updatedAt: DateTime.utc(2026, 1, 1),
+        deletedAt: null,
+      ),
+    );
 
     expect(result, isA<Failure<List<LearningStep>>>());
+  });
+
+  test('не захватывает ] из пояснения после roadmap', () async {
+    final client = MockClient.streaming((request, bodyStream) async {
+      await bodyStream.drain<void>();
+      return http.StreamedResponse(
+        Stream.value(utf8.encode(_sseText('[{"title":"A"}]\nNote: [x]'))),
+        200,
+        request: request,
+      );
+    });
+    final track = LearningTrack(
+      id: 1,
+      title: 'Dart',
+      goal: 'Dart',
+      steps: const [],
+      customFields: const {},
+      isPrivateForLlm: false,
+      createdAt: DateTime.utc(2026, 1, 1),
+      updatedAt: DateTime.utc(2026, 1, 1),
+      deletedAt: null,
+    );
+
+    final result = await trainer(client).generateRoadmap(track);
+
+    expect(result, isA<Success<List<LearningStep>>>());
+    expect((result as Success<List<LearningStep>>).value.single.title, 'A');
+  });
+
+  test('невалидный JSON roadmap возвращает ошибку', () async {
+    final client = MockClient.streaming((request, bodyStream) async {
+      await bodyStream.drain<void>();
+      return http.StreamedResponse(
+        Stream.value(utf8.encode(_sseText('не json'))),
+        200,
+        request: request,
+      );
+    });
+    final track = LearningTrack(
+      id: 1,
+      title: 'Dart',
+      goal: 'Dart',
+      steps: const [],
+      customFields: const {},
+      isPrivateForLlm: false,
+      createdAt: DateTime.utc(2026, 1, 1),
+      updatedAt: DateTime.utc(2026, 1, 1),
+      deletedAt: null,
+    );
+
+    final result = await trainer(client).generateRoadmap(track);
+
+    expect(result, isA<Failure<List<LearningStep>>>());
+  });
+
+  test('без API-ключа возвращает ошибку без сети', () async {
+    final noKey = (await DriftLlmConfigRepository(db, secrets).create(
+      const LlmConfigDraft(
+        type: LlmProviderType.openai,
+        displayName: 'No key',
+        baseUrl: 'https://api.test/v1',
+        model: 'test-model',
+      ),
+    )).unwrap();
+    var called = false;
+    final client = MockClient((request) async {
+      called = true;
+      return http.Response('{}', 500);
+    });
+    final track = LearningTrack(
+      id: 1,
+      title: 'Dart',
+      goal: 'Dart',
+      steps: const [],
+      customFields: const {},
+      isPrivateForLlm: false,
+      createdAt: DateTime.utc(2026, 1, 1),
+      updatedAt: DateTime.utc(2026, 1, 1),
+      deletedAt: null,
+    );
+
+    final result = await trainer(
+      client,
+      configs: [noKey],
+    ).generateRoadmap(track);
+
+    expect(result, isA<Failure<List<LearningStep>>>());
+    expect(called, isFalse);
   });
 
   test('предлагает материалы и задаёт вопросы', () async {

@@ -82,9 +82,13 @@
 > Stage-05 разблокирован.
 >
 > **Stage-05 (2026-11-16):** реализованы треки, roadmap, сессии и
-> AI-тренер; схема v7. Analyze 0, test **185/185**, Windows debug build
-> success. Независимое ревью ещё не проводилось; новых TD не заведено.
-> Отчёт — [stages/stage-05.md](stages/stage-05.md), ADR-022.
+> AI-тренер; схема v7; JSON-бэкап v2 включает обучение. Первое ревью —
+> FAIL (S05-001, JSON-бэкап), все S05-001…011 fixed; analyze 0, test
+> **191/191**, Windows debug build success. Ожидается повторное ревью.
+> Отчёт — [stages/stage-05.md](stages/stage-05.md), ревью —
+> [reviews/stage-05-review.md](reviews/stage-05-review.md), исправления —
+> [reviews/stage-05-fix-results.md](reviews/stage-05-fix-results.md),
+> ADR-022.
 
 Проверка после исправлений R02-009…R02-013 (2026-10-24, Flutter 3.47.7):
 `flutter pub get --enforce-lockfile` → OK; `flutter analyze --fatal-infos` →
@@ -476,18 +480,19 @@ test **132/132**, Windows debug build **success**, коммит `14e63a7`. CI-ru
 - **Триггер пересмотра:** бюджеты/аналитика (stage-04+) или появление
   многовалютных отчётов.
 
-### TD-22 — Нет `User`, вложений и learning-таблиц
+### TD-22 — Нет `User` и вложений
 - **Критичность:** MINOR, **статус:** accepted
 - **Область:** схема данных
 - **Причина:** stage-01 закрывает локальное ядро; `User` нужен для
-  мультиаккаунта, вложения — для файлового хранилища, learning — для
-  последующих этапов. Таблицы-заготовки без репозиториев и UI создавали бы
-  ложное ощущение готовности.
+  мультиаккаунта, вложения — для файлового хранилища. Таблицы-заготовки без
+  репозиториев и UI создавали бы ложное ощущение готовности.
 - **Обновление stage-03:** chat-таблицы больше не входят в долг — схема v5
   содержит `llm_provider_configs`, `chat_threads`, `chat_messages`, а также
-  `embedding_model` и `is_private_for_llm` (ADR-018). Остаются `User`,
-  вложения и learning-трекеры.
-- **Триггер:** этапы по `PROMPT.md` (пользователи/вложения/обучение).
+  `embedding_model` и `is_private_for_llm` (ADR-018).
+- **Обновление stage-05:** learning-таблицы закрыты схемой v7 —
+  `learning_tracks`, `learning_sessions`, репозиторий и UI (ADR-022).
+  Остаются `User` и вложения.
+- **Триггер:** этапы по `PROMPT.md` (пользователи/вложения).
 
 ### TD-23 — Экспорт/импорт по вводу пути вместо file-picker
 - **Критичность:** MINOR, **статус:** accepted

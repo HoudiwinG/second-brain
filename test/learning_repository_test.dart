@@ -48,6 +48,54 @@ void main() {
     expect(loaded.customFields['level'], 'middle');
   });
 
+  test('updateTrack меняет поля и roadmap', () async {
+    final track = (await repo.createTrack(
+      const LearningTrackDraft(title: 'Old', goal: 'Old goal'),
+    )).unwrap();
+
+    final updated = (await repo.updateTrack(
+      track.id,
+      const LearningTrackDraft(
+        title: 'New',
+        goal: 'New goal',
+        steps: [LearningStep(id: 's1', title: 'Новый шаг')],
+        customFields: {'level': 'advanced'},
+      ),
+    )).unwrap();
+
+    expect(updated.title, 'New');
+    expect(updated.goal, 'New goal');
+    expect(updated.steps.single.title, 'Новый шаг');
+    expect(updated.customFields['level'], 'advanced');
+  });
+
+  test('нормализует дубли id и сохраняет стабильный fallback id', () async {
+    final track = (await repo.createTrack(
+      const LearningTrackDraft(
+        title: 'Dup',
+        steps: [
+          LearningStep(id: 'same', title: 'A'),
+          LearningStep(id: 'same', title: 'B'),
+        ],
+      ),
+    )).unwrap();
+    expect(track.steps.map((step) => step.id).toSet(), hasLength(2));
+
+    await db.customStatement(
+      "UPDATE learning_tracks SET roadmap_json = "
+      "'[{\"title\":\"Legacy\"}]' WHERE id = ${track.id}",
+    );
+    final loaded = (await repo.getTrack(track.id)).unwrap()!;
+    final fallbackId = loaded.steps.single.id;
+    expect(fallbackId, 'legacy_${track.id}_0');
+    final changed = (await repo.setStepStatus(
+      track.id,
+      fallbackId,
+      LearningStepStatus.done,
+    )).unwrap();
+    expect(changed.completedSteps, 1);
+  });
+
   test('обновляет шаг и считает прогресс', () async {
     final track = (await repo.createTrack(
       const LearningTrackDraft(
@@ -85,9 +133,10 @@ void main() {
         trackId: track.id,
         durationMinutes: 40,
         notes: 'Present Simple',
-        date: DateTime.utc(2026, 11, 1),
+        date: DateTime(2026, 11, 1, 18, 30),
       ),
     )).unwrap();
+    expect(first.date.toUtc(), DateTime.utc(2026, 11, 1));
     await repo.addSession(
       LearningSessionDraft(
         trackId: track.id,
@@ -103,6 +152,7 @@ void main() {
 
     (await repo.deleteSession(first.id)).unwrap();
     expect((await repo.listSessions(track.id)).unwrap(), hasLength(1));
+    expect(await repo.deleteSession(999999), isA<Failure<void>>());
   });
 
   test('forLlm исключает приватные треки', () async {
@@ -156,6 +206,7 @@ void main() {
       ),
     );
 
+    (await repo.softDeleteTrack(track.id)).unwrap();
     (await repo.softDeleteTrack(track.id)).unwrap();
 
     expect((await repo.listTracks()).unwrap(), isEmpty);

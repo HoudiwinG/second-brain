@@ -1,10 +1,10 @@
 # INDEX — карта документации
 
 ## Состояние
-- Текущий этап: stage-05 (обучение) — **реализация и self-check готовы,
-  независимое ревью ещё не проводилось.** Треки, roadmap-шаги, сессии,
-  AI-тренер (roadmap/материалы/check-in), приватный трек не уходит в LLM,
-  схема **v7**. Analyze 0, test **185/185**, Windows debug build success;
+- Текущий этап: stage-05 (обучение) — **первое ревью FAIL (1 MAJOR:
+  JSON-бэкап), исправления S05-001…S05-011 внесены, ожидается повторное
+  ревью.** Треки, roadmap, сессии, AI-тренер, приватный трек, backup v2,
+  схема **v7**. Analyze 0, test **191/191**, Windows debug build success;
   CI `43892374452` (`9b96f58`) — success.
 - Предыдущий этап: stage-04 (инструменты ассистента) — **PASS WITH COMMENTS
   (0 MAJOR)**. Исходное ревью — FAIL; повторное ревью — FAIL (3 MAJOR), все
@@ -15,8 +15,9 @@
   verified. Stage-02 — **PASS WITH COMMENTS** (ревью №3); R02-014/R02-015
   остаются неблокирующими комментариями.
 - Гейты stage-05 (2026-11-16): `flutter analyze --fatal-infos` — **No issues
-  found**, `flutter test` — **185/185**, `flutter build windows --debug` —
-  **success**; CI-run `43892374452` (`9b96f58`) — **success**.
+  found**, `flutter test` — **191/191** (после исправлений ревью),
+  `flutter build windows --debug` — **success**; CI-run
+  `43892374452` (`9b96f58`) — success.
 - Локальные гейты stage-03 (2026-10-28): analyze 0, test 132/132, Windows debug
   build; CI `40636764573` (`49bc00f`, включая `14e63a7`) — success.
 - Снимок состояния: [context.md](context.md)
@@ -62,8 +63,12 @@
 - [stage-04-final-review](reviews/stage-04-final-review.md) — финальное
   ревью (2026-11-16, два прохода): **PASS WITH COMMENTS**, 0 MAJOR; S04F
   verified, S04Z fixed; stage-05 разблокирован.
-- Ревью stage-05 — не проводилось (self-check; независимая проверка
-  запланирована после реализации).
+- [stage-05-review](reviews/stage-05-review.md) — первое ревью (2026-11-16,
+  два прохода): reviewer A **FAIL** (1 MAJOR — JSON-бэкап), reviewer B
+  **PASS WITH COMMENTS**; объединённый **FAIL**.
+- [stage-05-fix-results](reviews/stage-05-fix-results.md) — self-check
+  исправлений S05-001…S05-011: fixed, test 191/191, analyze 0, Windows debug
+  build success; ожидается повторное ревью.
 - Исправления stage-04:
   [reviews/stage-04-fix-results.md](reviews/stage-04-fix-results.md) — все 9
   исходных находок закрыты коммитом `821b4f8` (+ docs-коммит).
@@ -98,8 +103,9 @@
   S04R, 11/11 fixed; S04F/S04Z fixed; analyze 0, test 172/172, Windows debug
   build success; ADR-021; схема v6; stage-05 разблокирован)
 - [stage-05](stages/stage-05.md) — обучение (треки, roadmap, сессии,
-  AI-тренер; ADR-022; схема v7; analyze 0, test 185/185, Windows debug build
-  success; независимое ревью ожидается)
+  AI-тренер, backup v2; ADR-022; схема v7; первое ревью **FAIL** по
+  S05-001, исправления S05-001…011 внесены; analyze 0, test 191/191,
+  Windows debug build success; ожидается повторное ревью)
 
 ## Шаблоны
 - [decisions.template.md](decisions.template.md) — формат ADR

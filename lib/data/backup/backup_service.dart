@@ -14,14 +14,14 @@ import '../search/search_index.dart';
 /// Экспорт/импорт данных stage-01.
 ///
 /// JSON — полный бэкап всех сущностей (категории, теги, заметки, задачи,
-/// идеи, финансы). CSV — финансы (RFC 4180), совместим с таблицами.
+/// идеи, финансы, треки и сессии обучения). CSV — финансы (RFC 4180).
 /// Импорт JSON заменяет локальные данные целиком; импорт CSV добавляет
 /// операции. FTS-индекс перестраивается после импорта.
 class BackupService {
   BackupService(this._db);
 
   static const String format = 'second-brain.backup';
-  static const int version = 1;
+  static const int version = 2;
 
   final db.AppDatabase _db;
 
@@ -193,6 +193,19 @@ class BackupService {
       includeDeleted,
       (row) => row.deletedAt,
     );
+    final learningTracks = _visible(
+      await _db.select(_db.learningTracks).get(),
+      includeDeleted,
+      (row) => row.deletedAt,
+    );
+    final trackIds = {for (final track in learningTracks) track.id};
+    final learningSessions = includeDeleted
+        ? await _db.select(_db.learningSessions).get()
+        : trackIds.isEmpty
+        ? <db.LearningSession>[]
+        : await (_db.select(
+            _db.learningSessions,
+          )..where((s) => s.trackId.isIn(trackIds))).get();
 
     return {
       'format': format,
@@ -277,6 +290,31 @@ class BackupService {
             'deleted_at': _iso(row.deletedAt),
           },
       ],
+      'learning_tracks': [
+        for (final row in learningTracks)
+          {
+            'id': row.id,
+            'title': row.title,
+            'goal': row.goal,
+            'roadmap_json': row.roadmapJson,
+            'custom_fields_json': row.customFieldsJson,
+            'is_private_for_llm': row.isPrivateForLlm,
+            'created_at': _iso(row.createdAt),
+            'updated_at': _iso(row.updatedAt),
+            'deleted_at': _iso(row.deletedAt),
+          },
+      ],
+      'learning_sessions': [
+        for (final row in learningSessions)
+          {
+            'id': row.id,
+            'track_id': row.trackId,
+            'duration_minutes': row.durationMinutes,
+            'notes': row.notes,
+            'date': _iso(row.date),
+            'created_at': _iso(row.createdAt),
+          },
+      ],
     };
   }
 
@@ -324,6 +362,14 @@ class BackupService {
         throw ValidationException('BackupService: нет массива "$key"');
       }
     }
+    // Версия 1 не знала об обучении; версия 2 обязана содержать оба массива.
+    if (fileVersion >= 2) {
+      for (final key in ['learning_tracks', 'learning_sessions']) {
+        if (data[key] is! List) {
+          throw ValidationException('BackupService: нет массива "$key"');
+        }
+      }
+    }
   }
 
   Future<void> _clearAll() async {
@@ -334,6 +380,8 @@ class BackupService {
     await _db.delete(_db.tasks).go();
     await _db.delete(_db.ideaEntries).go();
     await _db.delete(_db.financeTransactions).go();
+    await _db.delete(_db.learningSessions).go();
+    await _db.delete(_db.learningTracks).go();
     await _db.delete(_db.notes).go();
     await _db.delete(_db.tags).go();
     await _db.delete(_db.categories).go();
@@ -532,6 +580,61 @@ class BackupService {
               deletedAt: Value(_dateOrNull(transaction['deleted_at'])),
             ),
           );
+    }
+
+    final learningTracks = data['learning_tracks'];
+    final trackIds = <int>{};
+    if (learningTracks is List) {
+      for (final item in learningTracks) {
+        final track = _map(item, 'learningTrack');
+        final id = _requiredInt(track, 'id');
+        await _db
+            .into(_db.learningTracks)
+            .insert(
+              db.LearningTracksCompanion.insert(
+                id: Value(id),
+                title: _requiredString(track, 'title'),
+                goal: Value(_string(track['goal'])),
+                roadmapJson: Value(_stringOr(track['roadmap_json'], '[]')),
+                customFieldsJson: Value(
+                  _stringOr(track['custom_fields_json'], '{}'),
+                ),
+                isPrivateForLlm: Value(_bool(track['is_private_for_llm'])),
+                createdAt: _requiredDate(track, 'created_at'),
+                updatedAt: _requiredDate(track, 'updated_at'),
+                deletedAt: Value(_dateOrNull(track['deleted_at'])),
+              ),
+            );
+        trackIds.add(id);
+      }
+    }
+
+    final learningSessions = data['learning_sessions'];
+    if (learningSessions is List) {
+      for (final item in learningSessions) {
+        final session = _map(item, 'learningSession');
+        final trackId = _requiredInt(session, 'track_id');
+        if (!trackIds.contains(trackId)) continue;
+        final duration = _requiredInt(session, 'duration_minutes');
+        if (duration < 1 || duration > 1440) {
+          throw const ValidationException(
+            'BackupService: некорректная длительность сессии',
+          );
+        }
+        final rawDate = _requiredDate(session, 'date');
+        await _db
+            .into(_db.learningSessions)
+            .insert(
+              db.LearningSessionsCompanion.insert(
+                id: Value(_requiredInt(session, 'id')),
+                trackId: trackId,
+                durationMinutes: duration,
+                notes: Value(_string(session['notes'])),
+                date: DateTime.utc(rawDate.year, rawDate.month, rawDate.day),
+                createdAt: _requiredDate(session, 'created_at'),
+              ),
+            );
+      }
     }
   }
 

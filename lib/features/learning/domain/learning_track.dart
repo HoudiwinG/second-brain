@@ -47,13 +47,15 @@ class LearningStep {
     'status': status.dbValue,
   };
 
-  static LearningStep? fromJson(Object? raw) {
+  static LearningStep? fromJson(Object? raw, {String? fallbackId}) {
     if (raw is! Map<String, Object?>) return null;
     final title = raw['title'];
     if (title is! String || title.trim().isEmpty) return null;
     final id = raw['id'];
     return LearningStep(
-      id: id is String && id.isNotEmpty ? id : newLearningStepId(),
+      id: id is String && id.isNotEmpty
+          ? id
+          : fallbackId ?? newLearningStepId(),
       title: title.trim(),
       description: raw['description'] is String
           ? (raw['description']! as String).trim()

@@ -1346,6 +1346,18 @@ abstract class AppLocalizations {
   /// **'Minutes'**
   String get learningSessionDuration;
 
+  /// No description provided for @learningSessionMinutes.
+  ///
+  /// In en, this message translates to:
+  /// **'{minutes} min'**
+  String learningSessionMinutes(int minutes);
+
+  /// No description provided for @learningDurationRange.
+  ///
+  /// In en, this message translates to:
+  /// **'Duration must be between 1 and 1440 minutes.'**
+  String get learningDurationRange;
+
   /// No description provided for @learningSessionNotes.
   ///
   /// In en, this message translates to:
@@ -1412,23 +1424,11 @@ abstract class AppLocalizations {
   /// **'Track saved'**
   String get learningTrackSaved;
 
-  /// No description provided for @learningTrackSaveError.
-  ///
-  /// In en, this message translates to:
-  /// **'Could not save the track'**
-  String get learningTrackSaveError;
-
   /// No description provided for @learningTrackDeleted.
   ///
   /// In en, this message translates to:
   /// **'Track deleted'**
   String get learningTrackDeleted;
-
-  /// No description provided for @learningTrackDeleteError.
-  ///
-  /// In en, this message translates to:
-  /// **'Could not delete the track'**
-  String get learningTrackDeleteError;
 
   /// No description provided for @learningSessionSaved.
   ///
@@ -1436,29 +1436,29 @@ abstract class AppLocalizations {
   /// **'Session added'**
   String get learningSessionSaved;
 
-  /// No description provided for @learningSessionSaveError.
-  ///
-  /// In en, this message translates to:
-  /// **'Could not add the session'**
-  String get learningSessionSaveError;
-
   /// No description provided for @learningSessionDeleted.
   ///
   /// In en, this message translates to:
   /// **'Session deleted'**
   String get learningSessionDeleted;
 
-  /// No description provided for @learningSessionDeleteError.
-  ///
-  /// In en, this message translates to:
-  /// **'Could not delete the session'**
-  String get learningSessionDeleteError;
-
   /// No description provided for @learningRoadmapReplace.
   ///
   /// In en, this message translates to:
   /// **'Replace the current roadmap with the generated one?'**
   String get learningRoadmapReplace;
+
+  /// No description provided for @learningReplace.
+  ///
+  /// In en, this message translates to:
+  /// **'Replace'**
+  String get learningReplace;
+
+  /// No description provided for @learningChangeStepStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'Change step status'**
+  String get learningChangeStepStatus;
 
   /// No description provided for @learningRoadmapEmptyGoal.
   ///

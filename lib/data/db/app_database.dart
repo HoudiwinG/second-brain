@@ -568,6 +568,10 @@ class AppDatabase extends _$AppDatabase {
       'ON learning_tracks(updated_at)',
     );
     await customStatement(
+      'CREATE INDEX IF NOT EXISTS idx_learning_tracks_deleted '
+      'ON learning_tracks(deleted_at, updated_at)',
+    );
+    await customStatement(
       'CREATE INDEX IF NOT EXISTS idx_learning_sessions_track_date '
       'ON learning_sessions(track_id, date)',
     );
