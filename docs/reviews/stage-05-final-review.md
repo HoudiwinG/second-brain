@@ -6,7 +6,8 @@
   первое ревью — `47bdffa`, исправления — `63d780e`)
 - **Первое ревью:** [stage-05-review.md](stage-05-review.md) — FAIL
   (S05-001, JSON-бэкап)
-- **Исправления:** [stage-05-fix-results.md](stage-05-fix-results.md)
+- **Исправления:** [stage-05-fix-results.md](stage-05-fix-results.md);
+  финальные S05Z — `82f49d5`
 
 ## Итог
 

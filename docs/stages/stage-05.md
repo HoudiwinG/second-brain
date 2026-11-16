@@ -7,7 +7,7 @@
   **FAIL** (1 major: JSON-бэкап), reviewer B — **PASS WITH COMMENTS**; все
   S05-001…S05-011 и финальные комментарии S05Z исправлены. Финальное ревью —
   **PASS WITH COMMENTS** (0 major). Гейты: analyze 0, test **193/193**,
-  Windows debug build success.
+  Windows debug build success; CI `43901179307` (`82f49d5`) — success.
 - **Предыдущий этап:** stage-04 — **PASS WITH COMMENTS** (0 MAJOR), stage-06
   разблокирован.
 - **Схема БД:** **v7** (`learning_tracks`, `learning_sessions`).

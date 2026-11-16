@@ -5,7 +5,8 @@
   Первое ревью — FAIL (S05-001, JSON-бэкап), все S05-001…011 и финальные
   S05Z исправлены; финальное ревью — PASS WITH COMMENTS. Треки, roadmap,
   сессии, AI-тренер, приватный трек, backup v2, схема **v7**. Analyze 0,
-  test **193/193**, Windows debug build success.
+  test **193/193**, Windows debug build success; CI `43901179307`
+  (`82f49d5`) — success. Stage-06 разблокирован.
 - Предыдущий этап: stage-04 (инструменты ассистента) — **PASS WITH COMMENTS
   (0 MAJOR)**. Исходное ревью — FAIL; повторное ревью — FAIL (3 MAJOR), все
   11 `S04R` исправлены; повторная проверка — **PASS WITH COMMENTS**;
@@ -16,7 +17,9 @@
   остаются неблокирующими комментариями.
 - Гейты stage-05 (2026-11-16): `flutter analyze --fatal-infos` — **No issues
   found**, `flutter test` — **193/193**, `flutter build windows --debug` —
-  **success**; CI для `63d780e` — success, CI финальных S05Z — после push.
+  **success**; CI-run
+  [43901179307](https://github.com/HoudiwinG/second-brain/actions/runs/43901179307)
+  (`82f49d5`) — success.
 - Локальные гейты stage-03 (2026-10-28): analyze 0, test 132/132, Windows debug
   build; CI `40636764573` (`49bc00f`, включая `14e63a7`) — success.
 - Снимок состояния: [context.md](context.md)
