@@ -828,4 +828,4 @@ test **241/241**, Windows debug build success. Первое ревью A/B — F
 | 2026-11-17 | — | review | A/B FAIL: фильтры после LIMIT, backfill, валюты, лимит |
 | 2026-11-17 | — | fixes | SQL type/date, index version, RUB-only, countMessages, 241/241 |
 | 2026-11-17 | — | final-review | A/B PASS WITH COMMENTS (0 MAJOR); 241/241 |
-| 2026-11-17 | — | CI | run 44028937569 (`d10dec0`): analyze-and-test + build-windows success |
+| 2026-11-17 | — | CI | run 44030371436 (`3743fc2`): analyze-and-test + build-windows success |

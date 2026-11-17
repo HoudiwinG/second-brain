@@ -9,7 +9,7 @@
   [reviews/stage-08-final-review.md](../reviews/stage-08-final-review.md)).
   Гейты: `flutter analyze --fatal-infos` — 0 issues, `flutter test` —
   **241/241**, `flutter build windows --debug` — success; CI
-  `44028937569` (`d10dec0`) — success, оба job'а.
+  `44030371436` (`3743fc2`) — success, оба job'а.
 - **Предыдущий этап:** stage-07 — **PASS WITH COMMENTS (0 MAJOR)**.
 - **Схема БД:** **v8** без изменений.
 - **ADR:** ADR-025.

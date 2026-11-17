@@ -12,7 +12,8 @@
 - **Reviewer B: PASS WITH COMMENTS.** 0 critical, 0 major, 2 minor, 2 nit.
 - **Объединённый вердикт: PASS WITH COMMENTS (0 MAJOR).**
 - **Гейты:** analyze 0; test **241/241**; CI `44028937569` (`d10dec0`) —
-  success, оба job'а.
+  success; финальный code-commit `3743fc2`, CI `44030371436` — success, оба
+  job'а.
 
 ## Статус блокеров
 

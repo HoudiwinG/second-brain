@@ -4,7 +4,7 @@
   COMMENTS (0 MAJOR)** после первого FAIL-ревью. FTS расширен
   обучением/чатом/почтой, SQL-фильтры типа/даты, backfill индекса, экран
   `/analytics`. Analyze 0, test **241/241**, Windows debug build success; CI
-  `44028937569` (`d10dec0`) — success. Отчёт:
+  `44030371436` (`3743fc2`) — success. Отчёт:
   [stages/stage-08.md](stages/stage-08.md); финальное ревью:
   [reviews/stage-08-final-review.md](reviews/stage-08-final-review.md); ADR-025;
   схема **v8** без изменений.
