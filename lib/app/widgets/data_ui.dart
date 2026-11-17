@@ -105,6 +105,9 @@ String searchTypeLabel(AppLocalizations lcm, SearchEntityType value) =>
       SearchEntityType.task => lcm.searchTypeTask,
       SearchEntityType.idea => lcm.searchTypeIdea,
       SearchEntityType.finance => lcm.searchTypeFinance,
+      SearchEntityType.learning => lcm.searchTypeLearning,
+      SearchEntityType.chat => lcm.searchTypeChat,
+      SearchEntityType.mail => lcm.searchTypeMail,
     };
 
 /// Пустое состояние списка.

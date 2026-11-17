@@ -710,6 +710,162 @@ abstract class AppLocalizations {
   /// **'Finance'**
   String get searchTypeFinance;
 
+  /// No description provided for @searchTypeLearning.
+  ///
+  /// In en, this message translates to:
+  /// **'Learning'**
+  String get searchTypeLearning;
+
+  /// No description provided for @searchTypeChat.
+  ///
+  /// In en, this message translates to:
+  /// **'Chat'**
+  String get searchTypeChat;
+
+  /// No description provided for @searchTypeMail.
+  ///
+  /// In en, this message translates to:
+  /// **'Mail'**
+  String get searchTypeMail;
+
+  /// No description provided for @searchFilters.
+  ///
+  /// In en, this message translates to:
+  /// **'Filters'**
+  String get searchFilters;
+
+  /// No description provided for @searchAllTypes.
+  ///
+  /// In en, this message translates to:
+  /// **'All'**
+  String get searchAllTypes;
+
+  /// No description provided for @searchResultsCount.
+  ///
+  /// In en, this message translates to:
+  /// **'Found: {count}'**
+  String searchResultsCount(int count);
+
+  /// No description provided for @searchPrivateOnly.
+  ///
+  /// In en, this message translates to:
+  /// **'Private only'**
+  String get searchPrivateOnly;
+
+  /// No description provided for @analyticsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Analytics'**
+  String get analyticsTitle;
+
+  /// No description provided for @analyticsNotes.
+  ///
+  /// In en, this message translates to:
+  /// **'Notes'**
+  String get analyticsNotes;
+
+  /// No description provided for @analyticsIdeas.
+  ///
+  /// In en, this message translates to:
+  /// **'Ideas'**
+  String get analyticsIdeas;
+
+  /// No description provided for @analyticsTasks.
+  ///
+  /// In en, this message translates to:
+  /// **'Tasks'**
+  String get analyticsTasks;
+
+  /// No description provided for @analyticsTasksOpen.
+  ///
+  /// In en, this message translates to:
+  /// **'Open tasks'**
+  String get analyticsTasksOpen;
+
+  /// No description provided for @analyticsTasksDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Completed'**
+  String get analyticsTasksDone;
+
+  /// No description provided for @analyticsTasksOverdue.
+  ///
+  /// In en, this message translates to:
+  /// **'Overdue'**
+  String get analyticsTasksOverdue;
+
+  /// No description provided for @analyticsLearning.
+  ///
+  /// In en, this message translates to:
+  /// **'Learning'**
+  String get analyticsLearning;
+
+  /// No description provided for @analyticsTracks.
+  ///
+  /// In en, this message translates to:
+  /// **'Tracks'**
+  String get analyticsTracks;
+
+  /// No description provided for @analyticsSessions.
+  ///
+  /// In en, this message translates to:
+  /// **'Sessions'**
+  String get analyticsSessions;
+
+  /// No description provided for @analyticsMinutes.
+  ///
+  /// In en, this message translates to:
+  /// **'Minutes'**
+  String get analyticsMinutes;
+
+  /// No description provided for @analyticsMail.
+  ///
+  /// In en, this message translates to:
+  /// **'Cached mail'**
+  String get analyticsMail;
+
+  /// No description provided for @analyticsFinance.
+  ///
+  /// In en, this message translates to:
+  /// **'Finance'**
+  String get analyticsFinance;
+
+  /// No description provided for @analyticsIncome.
+  ///
+  /// In en, this message translates to:
+  /// **'Income'**
+  String get analyticsIncome;
+
+  /// No description provided for @analyticsExpense.
+  ///
+  /// In en, this message translates to:
+  /// **'Expense'**
+  String get analyticsExpense;
+
+  /// No description provided for @analyticsBalance.
+  ///
+  /// In en, this message translates to:
+  /// **'Balance'**
+  String get analyticsBalance;
+
+  /// No description provided for @analyticsTopExpenses.
+  ///
+  /// In en, this message translates to:
+  /// **'Top expenses'**
+  String get analyticsTopExpenses;
+
+  /// No description provided for @analyticsNoExpenses.
+  ///
+  /// In en, this message translates to:
+  /// **'No expenses yet'**
+  String get analyticsNoExpenses;
+
+  /// No description provided for @analyticsTransactions.
+  ///
+  /// In en, this message translates to:
+  /// **'Transactions'**
+  String get analyticsTransactions;
+
   /// No description provided for @privateBadge.
   ///
   /// In en, this message translates to:

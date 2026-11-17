@@ -7,6 +7,20 @@ abstract final class SearchEntityTypes {
   static const String task = 'task';
   static const String idea = 'idea';
   static const String finance = 'finance';
+  static const String learning = 'learning';
+  static const String chat = 'chat';
+  static const String mail = 'mail';
+}
+
+/// Удаляет несколько записей индекса (например, письма удалённого ящика).
+Future<void> removeSearchEntries(
+  db.AppDatabase database,
+  String entityType,
+  Iterable<int> entityIds,
+) async {
+  for (final id in entityIds) {
+    await removeSearchEntry(database, entityType, id);
+  }
 }
 
 Future<void> removeSearchEntry(
@@ -125,6 +139,71 @@ Future<void> indexFinance(db.AppDatabase database, int transactionId) async {
   );
 }
 
+Future<void> indexLearningTrack(db.AppDatabase database, int trackId) async {
+  final row = await (database.select(
+    database.learningTracks,
+  )..where((t) => t.id.equals(trackId))).getSingleOrNull();
+  if (row == null || row.deletedAt != null) {
+    await removeSearchEntry(database, SearchEntityTypes.learning, trackId);
+    return;
+  }
+  await upsertSearchEntry(
+    database,
+    entityType: SearchEntityTypes.learning,
+    entityId: trackId,
+    title: row.title,
+    body: '${row.goal}\n${row.roadmapJson}\n${row.customFieldsJson}',
+    tags: '',
+    isPrivateForLlm: row.isPrivateForLlm,
+  );
+}
+
+/// Индексирует тред целиком: поиск находит содержимое любого сообщения.
+Future<void> indexChatThread(db.AppDatabase database, int threadId) async {
+  final thread = await (database.select(
+    database.chatThreads,
+  )..where((t) => t.id.equals(threadId))).getSingleOrNull();
+  if (thread == null) {
+    await removeSearchEntry(database, SearchEntityTypes.chat, threadId);
+    return;
+  }
+  final messages = await (database.select(
+    database.chatMessages,
+  )..where((m) => m.threadId.equals(threadId))).get();
+  final body = messages
+      .map((m) => m.content)
+      .where((c) => c.isNotEmpty)
+      .join('\n');
+  await upsertSearchEntry(
+    database,
+    entityType: SearchEntityTypes.chat,
+    entityId: threadId,
+    title: thread.title,
+    body: body,
+    tags: '',
+    isPrivateForLlm: messages.any((m) => m.isPrivateForLlm),
+  );
+}
+
+Future<void> indexMailMessage(db.AppDatabase database, int messageId) async {
+  final row = await (database.select(
+    database.mailMessages,
+  )..where((m) => m.id.equals(messageId))).getSingleOrNull();
+  if (row == null) {
+    await removeSearchEntry(database, SearchEntityTypes.mail, messageId);
+    return;
+  }
+  await upsertSearchEntry(
+    database,
+    entityType: SearchEntityTypes.mail,
+    entityId: messageId,
+    title: row.subject.isEmpty ? row.fromAddress : row.subject,
+    body: '${row.fromAddress}\n${row.snippet}\n${row.body}',
+    tags: '',
+    isPrivateForLlm: row.isPrivateForLlm,
+  );
+}
+
 /// Полная переиндексация всех сущностей.
 Future<void> rebuildSearchIndex(db.AppDatabase database) async {
   await database.customStatement('DELETE FROM search_index');
@@ -144,5 +223,17 @@ Future<void> rebuildSearchIndex(db.AppDatabase database) async {
   final finance = await database.select(database.financeTransactions).get();
   for (final row in finance) {
     if (row.deletedAt == null) await indexFinance(database, row.id);
+  }
+  final tracks = await database.select(database.learningTracks).get();
+  for (final row in tracks) {
+    if (row.deletedAt == null) await indexLearningTrack(database, row.id);
+  }
+  final threads = await database.select(database.chatThreads).get();
+  for (final row in threads) {
+    await indexChatThread(database, row.id);
+  }
+  final mail = await database.select(database.mailMessages).get();
+  for (final row in mail) {
+    await indexMailMessage(database, row.id);
   }
 }

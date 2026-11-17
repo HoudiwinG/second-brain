@@ -120,6 +120,11 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
         title: Text(lcm.navDashboard),
         actions: [
           IconButton(
+            tooltip: lcm.analyticsTitle,
+            onPressed: () => context.push('/analytics'),
+            icon: const Icon(Icons.insights_outlined),
+          ),
+          IconButton(
             tooltip: lcm.actionRefresh,
             onPressed: _reload,
             icon: const Icon(Icons.refresh),

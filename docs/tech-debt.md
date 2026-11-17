@@ -110,6 +110,12 @@
 > [stages/stage-07.md](stages/stage-07.md), финальное ревью —
 > [reviews/stage-07-final-review.md](reviews/stage-07-final-review.md), ADR-024.
 
+> **Stage-08 (2026-11-17):** глобальный FTS-поиск расширен обучением, чатом и
+> почтой; фильтры типа/периода; экран аналитики. Схема v8 без миграций.
+> Analyze 0, test **238/238**, Windows debug build success. Независимое ревью
+> ещё не проводилось; вложения/мультивалютная аналитика — техдолг.
+> Отчёт — [stages/stage-08.md](stages/stage-08.md), ADR-025.
+
 Проверка после исправлений R02-009…R02-013 (2026-10-24, Flutter 3.47.7):
 `flutter pub get --enforce-lockfile` → OK; `flutter analyze --fatal-infos` →
 0 issues; `flutter test` → **77/77**; `flutter build windows --debug` →

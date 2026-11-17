@@ -5,7 +5,10 @@ enum SearchEntityType {
   note,
   task,
   idea,
-  finance;
+  finance,
+  learning,
+  chat,
+  mail;
 
   static SearchEntityType fromDb(String value) => values.firstWhere(
     (t) => t.name == value,
@@ -22,6 +25,7 @@ class SearchHit {
     required this.snippet,
     required this.tags,
     required this.isPrivateForLlm,
+    this.occurredAt,
   });
 
   final SearchEntityType type;
@@ -30,6 +34,7 @@ class SearchHit {
   final String snippet;
   final List<String> tags;
   final bool isPrivateForLlm;
+  final DateTime? occurredAt;
 }
 
 abstract interface class SearchRepository {
@@ -38,6 +43,9 @@ abstract interface class SearchRepository {
     String query, {
     bool forLlm = false,
     int limit = 50,
+    Set<SearchEntityType>? types,
+    DateTime? from,
+    DateTime? to,
   });
 
   /// Полная переиндексация (после импорта или ручного изменения БД).

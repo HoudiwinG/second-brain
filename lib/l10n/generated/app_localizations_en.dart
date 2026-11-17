@@ -319,6 +319,86 @@ class AppLocalizationsEn extends AppLocalizations {
   String get searchTypeFinance => 'Finance';
 
   @override
+  String get searchTypeLearning => 'Learning';
+
+  @override
+  String get searchTypeChat => 'Chat';
+
+  @override
+  String get searchTypeMail => 'Mail';
+
+  @override
+  String get searchFilters => 'Filters';
+
+  @override
+  String get searchAllTypes => 'All';
+
+  @override
+  String searchResultsCount(int count) {
+    return 'Found: $count';
+  }
+
+  @override
+  String get searchPrivateOnly => 'Private only';
+
+  @override
+  String get analyticsTitle => 'Analytics';
+
+  @override
+  String get analyticsNotes => 'Notes';
+
+  @override
+  String get analyticsIdeas => 'Ideas';
+
+  @override
+  String get analyticsTasks => 'Tasks';
+
+  @override
+  String get analyticsTasksOpen => 'Open tasks';
+
+  @override
+  String get analyticsTasksDone => 'Completed';
+
+  @override
+  String get analyticsTasksOverdue => 'Overdue';
+
+  @override
+  String get analyticsLearning => 'Learning';
+
+  @override
+  String get analyticsTracks => 'Tracks';
+
+  @override
+  String get analyticsSessions => 'Sessions';
+
+  @override
+  String get analyticsMinutes => 'Minutes';
+
+  @override
+  String get analyticsMail => 'Cached mail';
+
+  @override
+  String get analyticsFinance => 'Finance';
+
+  @override
+  String get analyticsIncome => 'Income';
+
+  @override
+  String get analyticsExpense => 'Expense';
+
+  @override
+  String get analyticsBalance => 'Balance';
+
+  @override
+  String get analyticsTopExpenses => 'Top expenses';
+
+  @override
+  String get analyticsNoExpenses => 'No expenses yet';
+
+  @override
+  String get analyticsTransactions => 'Transactions';
+
+  @override
   String get privateBadge => 'Private';
 
   @override

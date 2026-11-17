@@ -319,6 +319,86 @@ class AppLocalizationsRu extends AppLocalizations {
   String get searchTypeFinance => 'Финансы';
 
   @override
+  String get searchTypeLearning => 'Обучение';
+
+  @override
+  String get searchTypeChat => 'Чат';
+
+  @override
+  String get searchTypeMail => 'Почта';
+
+  @override
+  String get searchFilters => 'Фильтры';
+
+  @override
+  String get searchAllTypes => 'Все';
+
+  @override
+  String searchResultsCount(int count) {
+    return 'Найдено: $count';
+  }
+
+  @override
+  String get searchPrivateOnly => 'Только приватные';
+
+  @override
+  String get analyticsTitle => 'Аналитика';
+
+  @override
+  String get analyticsNotes => 'Заметки';
+
+  @override
+  String get analyticsIdeas => 'Идеи';
+
+  @override
+  String get analyticsTasks => 'Задачи';
+
+  @override
+  String get analyticsTasksOpen => 'Открытые задачи';
+
+  @override
+  String get analyticsTasksDone => 'Выполнено';
+
+  @override
+  String get analyticsTasksOverdue => 'Просрочено';
+
+  @override
+  String get analyticsLearning => 'Обучение';
+
+  @override
+  String get analyticsTracks => 'Треки';
+
+  @override
+  String get analyticsSessions => 'Сессии';
+
+  @override
+  String get analyticsMinutes => 'Минуты';
+
+  @override
+  String get analyticsMail => 'Письма в кэше';
+
+  @override
+  String get analyticsFinance => 'Финансы';
+
+  @override
+  String get analyticsIncome => 'Доход';
+
+  @override
+  String get analyticsExpense => 'Расход';
+
+  @override
+  String get analyticsBalance => 'Баланс';
+
+  @override
+  String get analyticsTopExpenses => 'Топ расходов';
+
+  @override
+  String get analyticsNoExpenses => 'Расходов пока нет';
+
+  @override
+  String get analyticsTransactions => 'Операции';
+
+  @override
   String get privateBadge => 'Приватно';
 
   @override

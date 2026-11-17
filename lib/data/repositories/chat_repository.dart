@@ -6,6 +6,7 @@ import '../../features/chat/domain/chat_message.dart';
 import '../../features/chat/domain/chat_thread.dart';
 import '../../features/llm/domain/llm_message.dart';
 import '../db/app_database.dart' as db;
+import '../search/search_index.dart';
 import 'repository_guard.dart';
 
 /// Доступ к офлайн-истории чата.
@@ -84,6 +85,7 @@ final class DriftChatRepository implements ChatRepository {
               updatedAt: now,
             ),
           );
+      await indexChatThread(_db, id);
       final row = await (_db.select(
         _db.chatThreads,
       )..where((t) => t.id.equals(id))).getSingle();
@@ -112,6 +114,7 @@ final class DriftChatRepository implements ChatRepository {
       if (updated == 0) {
         throw ValidationException('ChatRepository: тред $id не найден');
       }
+      await indexChatThread(_db, id);
       final row = await (_db.select(
         _db.chatThreads,
       )..where((t) => t.id.equals(id))).getSingle();
@@ -123,6 +126,7 @@ final class DriftChatRepository implements ChatRepository {
   Future<Result<void>> deleteThread(int id) {
     return RepositoryGuard.guard('ChatRepository.deleteThread', () async {
       await (_db.delete(_db.chatThreads)..where((t) => t.id.equals(id))).go();
+      await removeSearchEntry(_db, SearchEntityTypes.chat, id);
     });
   }
 
@@ -168,6 +172,7 @@ final class DriftChatRepository implements ChatRepository {
         await (_db.update(_db.chatThreads)
               ..where((t) => t.id.equals(draft.threadId)))
             .write(db.ChatThreadsCompanion(updatedAt: Value(now)));
+        await indexChatThread(_db, draft.threadId);
         final row = await (_db.select(
           _db.chatMessages,
         )..where((m) => m.id.equals(id))).getSingle();
@@ -188,6 +193,10 @@ final class DriftChatRepository implements ChatRepository {
       if (updated == 0) {
         throw ValidationException('ChatRepository: сообщение $id не найдено');
       }
+      final row = await (_db.select(
+        _db.chatMessages,
+      )..where((m) => m.id.equals(id))).getSingle();
+      await indexChatThread(_db, row.threadId);
     });
   }
 

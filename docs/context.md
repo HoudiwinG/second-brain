@@ -1,17 +1,14 @@
 # Контекст проекта (снимок состояния)
 
-- **Текущий этап:** stage-07 (поиск идей) — **PASS WITH COMMENTS (0 MAJOR)**
-  после первого FAIL-ревью. Crossref + Hacker News для статей, Openverse для
-  изображений, сохранение в идеи/заметки. Analyze 0, test **235/235**, Windows
-  debug build success; CI `44020286840` (`5ed3d99`) — success. Отчёт:
-  [stages/stage-07.md](stages/stage-07.md); финальное ревью:
-  [reviews/stage-07-final-review.md](reviews/stage-07-final-review.md);
-  ADR-024; схема **v8** без изменений.
-- **Предыдущий этап:** stage-06 (почта) — **PASS WITH COMMENTS (0 MAJOR)**
-  после двух FAIL-кругов; OAuth 2.0 + PKCE, Gmail API, Yandex 360 Mail API,
-  Mail.ru отключён, кэш/поиск, per-message privacy, backup v3; схема v8.
-  Analyze 0, test 228/228. Ревью:
-  [reviews/stage-06-final-review.md](reviews/stage-06-final-review.md).
+- **Текущий этап:** stage-08 (глобальный поиск + аналитика) — **реализация и
+  self-check готовы, независимое ревью ещё не проводилось.** FTS расширен
+  обучением/чатом/почтой, фильтры типа и периода, экран `/analytics`. Analyze
+  0, test **238/238**, Windows debug build success. Отчёт:
+  [stages/stage-08.md](stages/stage-08.md); ADR-025; схема **v8** без
+  изменений.
+- **Предыдущий этап:** stage-07 — **PASS WITH COMMENTS (0 MAJOR)** после
+  первого FAIL-ревью; Crossref/Hacker News/Openverse. Analyze 0, test 235/235.
+  Ревью: [reviews/stage-07-final-review.md](reviews/stage-07-final-review.md).
 - **Предыдущий этап:** stage-05 (обучение) — **PASS WITH COMMENTS (0 MAJOR)**;
   S05-001…011 и S05Z fixed; analyze 0, test 193/193. Stage-04 — **PASS WITH
   COMMENTS**; stage-03 — **PASS** (28/28); stage-02 — **PASS WITH COMMENTS**.
@@ -57,9 +54,10 @@
   **FAIL** (ревью и повторное №2). Результаты исправлений R02-001…R02-008 —
   [reviews/stage-02-review-results.md](reviews/stage-02-review-results.md),
   R02-009…R02-013 — [reviews/stage-02-fix-results.md](reviews/stage-02-fix-results.md).
-- **Текущий отчёт:** [stages/stage-07.md](stages/stage-07.md)
+- **Текущий отчёт:** [stages/stage-08.md](stages/stage-08.md)
 - **Открытых CRITICAL:** 0
-- **Stage-07:** PASS WITH COMMENTS (0 MAJOR) после первого FAIL-ревью.
+- **Stage-08:** self-check, независимое ревью ещё не проводилось.
+  **Stage-07:** PASS WITH COMMENTS (0 MAJOR) после первого FAIL-ревью.
   **Stage-06:** PASS WITH COMMENTS (0 MAJOR) после двух FAIL-кругов.
   **Stage-05:** PASS WITH COMMENTS (0 MAJOR), S05-001…011 и S05Z fixed.
   **Stage-04:** PASS WITH COMMENTS, все S04R/S04F/S04Z fixed. **Открытых
@@ -69,9 +67,9 @@
   TD-28 (нет UI выбора контекста; триггер перенесён на позднюю доработку
   чата). TD-21 — отдельное принятое ограничение `REAL` для финансов.
 - **Сборка:** `flutter analyze --fatal-infos` — **No issues found**;
-  `flutter test` — **235/235**; `flutter build windows --debug` — **success**
-  (2026-11-17, `build\windows\x64\runner\Debug\second_brain.exe`); CI
-  `44020286840` (`5ed3d99`) — success, оба job'а.
+  `flutter test` — **238/238**; `flutter build windows --debug` — **success**
+  (2026-11-17, `build\windows\x64\runner\Debug\second_brain.exe`); CI —
+  после push stage-08.
 - **Flutter SDK:** 3.47.7 stable, `C:\src\flutter` (Dart 3.13.5)
 - **Windows-тулчейн:** Visual Studio Build Tools 2022 17.14 (MSVC v143 +
   Windows SDK + ATL/ATLMFC), установлен 2026-10-24; `flutter doctor` — без
@@ -180,6 +178,17 @@
 - `EmbeddingService` и `VectorStore` — интерфейсы RAG, без индексации.
 - В чате пока нет UI выбора контекста (TD-28), но production-путь
   `sendMessage(contextRefs:)` покрыт тестами.
+
+## Что сделано на stage-08
+
+- FTS5 расширен: `learning`, `chat`, `mail`; инвалидация в репозиториях и
+  rebuild при импорте.
+- `SearchHit.occurredAt`; фильтры search по типам и периоду 7/30 дней; chips
+  и переход в раздел из результата.
+- Аналитика: чистая `buildAnalyticsSummary` и экран `/analytics` (задачи,
+  обучение, контент, почта, финансы, топ расходов); кнопка на дашборде.
+- Схема v8 без миграций, новых зависимостей нет. Тесты: 238/238, analyze 0,
+  Windows debug build success. Независимое ревью ещё не проводилось.
 
 ## Что сделано на stage-07
 
@@ -409,11 +418,12 @@
   `dashboard_period_test.dart` проверяет календарную семантику границ.
 
 ## Ближайшие задачи (stage-07)
-- Stage-07 закрыт **PASS WITH COMMENTS**; начинать stage-08.
-- **Stage-08 — календарь + интеграции**: Google/Yandex Calendar OAuth,
-  синхронизация задач, заготовки Notion/Obsidian/Telegram/Drive.
-- Закрыть ограничения stage-06/07: live OAuth/API smoke, Mail.ru,
-  live-smoke Crossref/HN/Openverse, LLM-переранжирование статей, пагинация.
+- Провести независимое ревью stage-08; после PASS — stage-09.
+- **Stage-09 — полировка MVP**: производительность, тесты, документация,
+  Windows-инсталлятор.
+- Закрыть ограничения stage-06/07/08: live OAuth/API smoke, Mail.ru,
+  live-smoke Crossref/HN/Openverse, вложения в поиске, LLM-переранжирование,
+  мультивалютная аналитика.
 - Учесть неблокирующие S03R/S04Z/S05Z-комментарии.
 - TD-28 (UI выбора контекста) — отдельная поздняя доработка чата.
 - RAG: реализация `EmbeddingService`/`VectorStore` и индексация заметок.
@@ -468,6 +478,7 @@
   228/228, ожидается re-review.
 
 ## Ссылки
+- Отчёт stage-08: [stages/stage-08.md](stages/stage-08.md)
 - Отчёт stage-07: [stages/stage-07.md](stages/stage-07.md)
 - Ревью stage-07: [reviews/stage-07-review.md](reviews/stage-07-review.md)
   (**FAIL**), [reviews/stage-07-final-review.md](reviews/stage-07-final-review.md)
@@ -483,6 +494,7 @@
   локальный кэш
 - ADR-024: поиск идей — Crossref/Hacker News, Openverse и сохранение
   результатов
+- ADR-025: глобальный поиск по обучению/чату/почте и локальная аналитика
 - Отчёт stage-05: [stages/stage-05.md](stages/stage-05.md)
 - Ревью stage-05: [reviews/stage-05-review.md](reviews/stage-05-review.md)
 - Финальное ревью stage-05:

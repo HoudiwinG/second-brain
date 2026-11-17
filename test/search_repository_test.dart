@@ -1,13 +1,24 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:drift/drift.dart' show Value;
 import 'package:second_brain/data/db/app_database.dart';
+import 'package:second_brain/core/secrets/in_memory_secret_store.dart';
+import 'package:second_brain/data/repositories/chat_repository.dart';
 import 'package:second_brain/data/repositories/finance_repository.dart';
 import 'package:second_brain/data/repositories/ideas_repository.dart';
+import 'package:second_brain/data/repositories/learning_repository.dart';
+import 'package:second_brain/data/repositories/mail_repository.dart';
 import 'package:second_brain/data/repositories/notes_repository.dart';
 import 'package:second_brain/data/repositories/search_repository.dart';
 import 'package:second_brain/data/repositories/tasks_repository.dart';
+import 'package:second_brain/features/chat/domain/chat_message.dart';
+import 'package:second_brain/features/chat/domain/chat_thread.dart';
 import 'package:second_brain/features/finance/domain/finance_transaction.dart';
 import 'package:second_brain/features/ideas/domain/idea_entry.dart';
+import 'package:second_brain/features/learning/domain/learning_track.dart';
+import 'package:second_brain/features/llm/domain/llm_message.dart';
+import 'package:second_brain/features/mail/domain/mail_account.dart';
+import 'package:second_brain/features/mail/domain/mail_message.dart';
+import 'package:second_brain/features/mail/domain/mail_provider_type.dart';
 import 'package:second_brain/features/notes/domain/note.dart';
 import 'package:second_brain/features/search/domain/search_hit.dart';
 import 'package:second_brain/features/tasks/domain/task_item.dart';
@@ -150,6 +161,64 @@ void main() {
       expect((await search.search('"*()')).unwrap(), isEmpty);
       await notes.create(const NoteDraft(title: 'Обычная заметка'));
       expect((await search.search('"')).unwrap(), isEmpty);
+    });
+
+    test('глобальный индекс: обучение, чат и почта', () async {
+      final learning = DriftLearningRepository(db);
+      await learning.createTrack(
+        const LearningTrackDraft(
+          title: 'Kubernetes',
+          goal: 'Изучить оркестрацию',
+        ),
+      );
+
+      final chat = DriftChatRepository(db);
+      final thread = (await chat.createThread(
+        const ChatThreadDraft(
+          title: 'План релиза',
+          providerConfigId: null,
+          model: 'test',
+        ),
+      )).unwrap();
+      await chat.appendMessage(
+        ChatMessageDraft(
+          threadId: thread.id,
+          role: LlmRole.user,
+          content: 'Обсудить глобальный поиск',
+        ),
+      );
+
+      final mail = DriftMailRepository(db, InMemorySecretStore());
+      final account = (await mail.createAccount(
+        const MailAccountDraft(
+          provider: MailProviderType.gmail,
+          email: 'search@example.com',
+          clientId: 'client',
+        ),
+      )).unwrap();
+      await mail.upsertMessages(account.id, [
+        MailMessageDraft(
+          remoteId: 'm1',
+          fromAddress: 'sender@example.com',
+          subject: 'Аналитика почты',
+          snippet: 'Сводка',
+          body: 'Тело письма',
+          receivedAt: DateTime.utc(2026, 11, 1),
+        ),
+      ]);
+
+      expect(
+        (await search.search('Kubernetes')).unwrap().single.type,
+        SearchEntityType.learning,
+      );
+      expect(
+        (await search.search('глобальный')).unwrap().single.type,
+        SearchEntityType.chat,
+      );
+      expect(
+        (await search.search('Аналитика')).unwrap().single.type,
+        SearchEntityType.mail,
+      );
     });
   });
 }

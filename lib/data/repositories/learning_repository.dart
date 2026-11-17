@@ -7,6 +7,7 @@ import '../../core/result/result.dart';
 import '../../features/learning/domain/learning_session.dart';
 import '../../features/learning/domain/learning_track.dart';
 import '../db/app_database.dart' as db;
+import '../search/search_index.dart';
 import 'repository_guard.dart';
 
 /// Drift-реализация треков и сессий обучения.
@@ -63,6 +64,7 @@ class DriftLearningRepository implements LearningRepository {
               updatedAt: now,
             ),
           );
+      await indexLearningTrack(_db, id);
       final row = await _findTrack(id);
       return _toTrack(row!);
     });
@@ -88,6 +90,7 @@ class DriftLearningRepository implements LearningRepository {
           updatedAt: Value(DateTime.now().toUtc()),
         ),
       );
+      await indexLearningTrack(_db, id);
       final row = await _findTrack(id);
       return _toTrack(row!);
     });
@@ -109,6 +112,7 @@ class DriftLearningRepository implements LearningRepository {
           updatedAt: Value(DateTime.now().toUtc()),
         ),
       );
+      await indexLearningTrack(_db, id);
       final row = await _findTrack(id);
       return _toTrack(row!);
     });
@@ -152,6 +156,7 @@ class DriftLearningRepository implements LearningRepository {
             updatedAt: Value(DateTime.now().toUtc()),
           ),
         );
+        await indexLearningTrack(_db, trackId);
         final row = await _findTrack(trackId);
         return _toTrack(row!);
       });
@@ -177,6 +182,7 @@ class DriftLearningRepository implements LearningRepository {
             updatedAt: Value(now),
           ),
         );
+        await indexLearningTrack(_db, id);
       },
     );
   }

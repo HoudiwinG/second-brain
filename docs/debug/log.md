@@ -810,3 +810,18 @@ success. Первое ревью A/B — FAIL (HN вытеснялся Crossref)
 | 2026-11-17 | — | fixes | round-robin, вкладки, refresh, UA, entities, 235/235 |
 | 2026-11-17 | — | final-review | A/B PASS WITH COMMENTS (0 MAJOR); 235/235 |
 | 2026-11-17 | — | CI | run 44020286840 (`5ed3d99`): analyze-and-test + build-windows success |
+
+## Stage-08: глобальный поиск + аналитика (2026-11-17)
+
+FTS5 расширен обучением, чатом и почтой; добавлены фильтры типа/периода и
+экран аналитики. Схема v8 без миграций, новых зависимостей нет. Analyze 0,
+test **238/238**, Windows debug build success. Независимое ревью ещё не
+проводилось.
+
+| Timestamp (UTC) | ID | Действие | Примечание |
+|-----------------|----|----------|------------|
+| 2026-11-17 | — | search | entity types learning/chat/mail, index + rebuild |
+| 2026-11-17 | — | filters | типы и период 7/30 дней, occurredAt, переход в раздел |
+| 2026-11-17 | — | analytics | buildAnalyticsSummary + `/analytics` |
+| 2026-11-17 | — | tests | глобальный индекс, аналитика, 238/238 |
+| 2026-11-17 | — | статус | self-check done; ожидается ревью stage-08 |

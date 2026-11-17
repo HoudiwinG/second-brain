@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../core/logging/app_logger.dart';
+import '../features/analytics/presentation/analytics_screen.dart';
 import '../features/chat/presentation/chat_screen.dart';
 import '../features/dashboard/presentation/dashboard_screen.dart';
 import '../features/finance/presentation/finance_screen.dart';
@@ -78,6 +79,10 @@ class RouterController {
                 ],
               ),
           ],
+        ),
+        GoRoute(
+          path: '/analytics',
+          builder: (context, state) => const AnalyticsScreen(),
         ),
       ],
     );

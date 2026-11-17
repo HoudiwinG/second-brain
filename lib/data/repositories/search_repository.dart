@@ -17,6 +17,9 @@ class DriftSearchRepository implements SearchRepository {
     String query, {
     bool forLlm = false,
     int limit = 50,
+    Set<SearchEntityType>? types,
+    DateTime? from,
+    DateTime? to,
   }) {
     return RepositoryGuard.guard('SearchRepository.search', () async {
       final match = _toMatchQuery(query);
@@ -36,21 +39,78 @@ class DriftSearchRepository implements SearchRepository {
             variables: [Variable.withString(match), Variable.withInt(limit)],
           )
           .get();
-      return [
-        for (final row in rows)
+      final hits = <SearchHit>[];
+      for (final row in rows) {
+        final hit = SearchHit(
+          type: SearchEntityType.fromDb(row.read<String>('entity_type')),
+          entityId: row.read<int>('entity_id'),
+          title: row.read<String>('title'),
+          snippet: row.read<String?>('snippet') ?? '',
+          tags: (row.read<String?>('tags') ?? '')
+              .split(' ')
+              .where((t) => t.isNotEmpty)
+              .toList(),
+          isPrivateForLlm: row.read<String?>('is_private') == '1',
+        );
+        if (types != null && !types.contains(hit.type)) continue;
+        DateTime? occurredAt;
+        if (from != null || to != null) {
+          occurredAt = await _occurredAt(hit.type, hit.entityId);
+          if (from != null &&
+              (occurredAt == null || occurredAt.isBefore(from))) {
+            continue;
+          }
+          if (to != null && (occurredAt == null || !occurredAt.isBefore(to))) {
+            continue;
+          }
+        }
+        hits.add(
           SearchHit(
-            type: SearchEntityType.fromDb(row.read<String>('entity_type')),
-            entityId: row.read<int>('entity_id'),
-            title: row.read<String>('title'),
-            snippet: row.read<String?>('snippet') ?? '',
-            tags: (row.read<String?>('tags') ?? '')
-                .split(' ')
-                .where((t) => t.isNotEmpty)
-                .toList(),
-            isPrivateForLlm: row.read<String?>('is_private') == '1',
+            type: hit.type,
+            entityId: hit.entityId,
+            title: hit.title,
+            snippet: hit.snippet,
+            tags: hit.tags,
+            isPrivateForLlm: hit.isPrivateForLlm,
+            occurredAt: occurredAt,
           ),
-      ];
+        );
+      }
+      return hits;
     });
+  }
+
+  Future<DateTime?> _occurredAt(SearchEntityType type, int id) async {
+    switch (type) {
+      case SearchEntityType.note:
+        return (await (_db.select(
+          _db.notes,
+        )..where((t) => t.id.equals(id))).getSingleOrNull())?.updatedAt;
+      case SearchEntityType.task:
+        return (await (_db.select(
+          _db.tasks,
+        )..where((t) => t.id.equals(id))).getSingleOrNull())?.updatedAt;
+      case SearchEntityType.idea:
+        return (await (_db.select(
+          _db.ideaEntries,
+        )..where((t) => t.id.equals(id))).getSingleOrNull())?.updatedAt;
+      case SearchEntityType.finance:
+        return (await (_db.select(
+          _db.financeTransactions,
+        )..where((t) => t.id.equals(id))).getSingleOrNull())?.date;
+      case SearchEntityType.learning:
+        return (await (_db.select(
+          _db.learningTracks,
+        )..where((t) => t.id.equals(id))).getSingleOrNull())?.updatedAt;
+      case SearchEntityType.chat:
+        return (await (_db.select(
+          _db.chatThreads,
+        )..where((t) => t.id.equals(id))).getSingleOrNull())?.updatedAt;
+      case SearchEntityType.mail:
+        return (await (_db.select(
+          _db.mailMessages,
+        )..where((t) => t.id.equals(id))).getSingleOrNull())?.receivedAt;
+    }
   }
 
   @override

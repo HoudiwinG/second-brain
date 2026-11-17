@@ -11,6 +11,7 @@ import '../../features/mail/domain/mail_message.dart';
 import '../../features/mail/domain/mail_provider_type.dart';
 import '../../features/mail/domain/mail_repository.dart';
 import '../db/app_database.dart' as db;
+import '../search/search_index.dart';
 import 'repository_guard.dart';
 
 /// Drift-реализация почтовых аккаунтов и кэша писем.
@@ -139,6 +140,12 @@ class DriftMailRepository implements MailRepository {
             const db.MailMessagesCompanion(isPrivateForLlm: Value(true)),
           );
         }
+        final messages = await (_db.select(
+          _db.mailMessages,
+        )..where((m) => m.accountId.equals(id))).get();
+        for (final message in messages) {
+          await indexMailMessage(_db, message.id);
+        }
       });
       final row = await _findAccount(id);
       return _toAccount(row!);
@@ -150,7 +157,15 @@ class DriftMailRepository implements MailRepository {
     return RepositoryGuard.guard('MailRepository.deleteAccount', () async {
       final current = await _findAccount(id);
       if (current == null) return;
+      final messages = await (_db.select(
+        _db.mailMessages,
+      )..where((m) => m.accountId.equals(id))).get();
       await (_db.delete(_db.mailAccounts)..where((t) => t.id.equals(id))).go();
+      await removeSearchEntries(
+        _db,
+        SearchEntityTypes.mail,
+        messages.map((m) => m.id),
+      );
       final deleted = await _secrets.delete(current.secretRef);
       deleted.when(
         success: (_) {},
@@ -236,6 +251,7 @@ class DriftMailRepository implements MailRepository {
         final effective = isPrivate || (account?.isPrivateForLlm ?? false);
         await (_db.update(_db.mailMessages)..where((m) => m.id.equals(id)))
             .write(db.MailMessagesCompanion(isPrivateForLlm: Value(effective)));
+        await indexMailMessage(_db, id);
         final updated = await (_db.select(
           _db.mailMessages,
         )..where((m) => m.id.equals(id))).getSingle();
@@ -268,8 +284,9 @@ class DriftMailRepository implements MailRepository {
                         m.remoteId.equals(message.remoteId),
                   ))
                   .getSingleOrNull();
+          late final int messageId;
           if (existing == null) {
-            await _db
+            messageId = await _db
                 .into(_db.mailMessages)
                 .insert(
                   db.MailMessagesCompanion.insert(
@@ -286,6 +303,7 @@ class DriftMailRepository implements MailRepository {
                   ),
                 );
           } else {
+            messageId = existing.id;
             // Сохраняем id/created_at, чтобы UI-ссылки и кэш не «мигали».
             await (_db.update(
               _db.mailMessages,
@@ -303,6 +321,7 @@ class DriftMailRepository implements MailRepository {
               ),
             );
           }
+          await indexMailMessage(_db, messageId);
         }
       });
       return messages.length;
@@ -313,6 +332,7 @@ class DriftMailRepository implements MailRepository {
   Future<Result<void>> deleteMessage(int id) {
     return RepositoryGuard.guard('MailRepository.deleteMessage', () async {
       await (_db.delete(_db.mailMessages)..where((m) => m.id.equals(id))).go();
+      await removeSearchEntry(_db, SearchEntityTypes.mail, id);
     });
   }
 
