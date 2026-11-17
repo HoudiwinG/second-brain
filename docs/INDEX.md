@@ -1,10 +1,11 @@
 # INDEX — карта документации
 
 ## Состояние
-- Текущий этап: stage-09 (полировка MVP) — **реализация и self-check готовы,
-  независимое ревью ещё не проводилось.** Windows release build и Inno Setup
-  installer, CI artifact, README/RELEASE/ADR-026. Analyze 0, test
-  **243/243**, debug/release build success.
+- Текущий этап: stage-09 (полировка MVP) — **первое ревью A/B: FAIL; блокеры
+  исправлены, ожидается повторное ревью.** Windows release build и Inno Setup
+  installer (с VC++ runtime), perf-smoke, packaging tests, CI artifact,
+  README/RELEASE/ADR-026. Analyze 0, test **243/243**, debug/release build
+  success.
 - Предыдущий этап: stage-08 — **PASS WITH COMMENTS (0 MAJOR)** после первого
   FAIL-ревью; CI `44030371436` (`3743fc2`) — success, 243/243.
 - Предыдущий этап: stage-06 (почта) — **PASS WITH COMMENTS (0 MAJOR)** после
@@ -108,6 +109,10 @@
   ревью A/B (2026-11-17, `3743fc2`): **PASS WITH COMMENTS (0 MAJOR)**.
 - [stage-08-fix-results](reviews/stage-08-fix-results.md) — SQL-фильтры,
   backfill индекса, RUB-only аналитика, count; analyze 0, test 243/243.
+- [stage-09-review](reviews/stage-09-review.md) — первое ревью A/B
+  (2026-11-17, `234fc29`): **FAIL** (MSVC runtime, perf-проход).
+- [stage-09-fix-results](reviews/stage-09-fix-results.md) — VC redist,
+  perf-smoke, packaging tests; analyze 0, test 243/243; ожидается re-review.
 - Исправления stage-04:
   [reviews/stage-04-fix-results.md](reviews/stage-04-fix-results.md) — все 9
   исходных находок закрыты коммитом `821b4f8` (+ docs-коммит).
@@ -158,8 +163,8 @@
   обучению/чату/почте, SQL-фильтры, аналитика; ADR-025; схема v8; analyze 0,
   test 243/243, Windows build success; FAIL → **PASS WITH COMMENTS**)
 - [stage-09](stages/stage-09.md) — полировка MVP (release build, Inno Setup
-  installer, CI artifact, README/RELEASE; ADR-026; analyze 0, test 243/243;
-  независимое ревью ожидается)
+  installer + VC++ runtime, perf-smoke, CI artifact, README/RELEASE; ADR-026;
+  analyze 0, test 243/243; FAIL → ожидается re-review)
 
 ## Шаблоны
 - [decisions.template.md](decisions.template.md) — формат ADR

@@ -5,7 +5,8 @@
 выполняются последовательно (Этап 0 → 10).
 
 ## Статус
-- **MVP завершён:** этапы 0–9; stage-09 — **полировка, тесты и Windows-инсталлятор**.
+- **Реализация MVP завершена:** этапы 0–9; stage-09 — полировка, тесты и
+  Windows-инсталлятор. Ожидается независимое ревью stage-09.
 - Данные локальны (SQLite/Drift), секреты — в secure storage.
 - Точки входа: [docs/INDEX.md](docs/INDEX.md), [docs/context.md](docs/context.md),
   [docs/decisions.md](docs/decisions.md), [docs/tech-debt.md](docs/tech-debt.md).

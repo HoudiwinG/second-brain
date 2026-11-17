@@ -3,10 +3,13 @@
 - **Дата:** 2026-11-17
 - **Агент:** agent-1 (OpenCode)
 - **Ветка:** `master`
-- **Статус:** **fixes ready / self-check**, независимое ревью ожидается.
+- **Статус:** **fixes ready**, ожидается повторное ревью. Первое ревью A/B —
+  FAIL (MSVC runtime в installer, perf-проход); блокеры исправлены.
   Гейты: `flutter analyze --fatal-infos` — 0 issues, `flutter test` —
-  **243/243**, `flutter build windows --debug` — success,
-  `flutter build windows --release` — success.
+  **243/243**, `flutter build windows --debug`/`--release` — success.
+- **CI/installer:** `44122513044` (`f09349c`) — success, artifact
+  `second-brain-windows`, `SecondBrain-1.0.0-setup.exe` 36 270 862 B,
+  SHA256 `064C8C980821D2CE7BF5762D605C210929112822B74E56DD9A54BEC827020C8F`.
 - **Предыдущий этап:** stage-08 — **PASS WITH COMMENTS (0 MAJOR)**.
 - **Схема БД:** **v8** без изменений.
 - **ADR:** ADR-026.

@@ -1,11 +1,13 @@
 # Контекст проекта (снимок состояния)
 
-- **Текущий этап:** stage-09 (полировка MVP) — **реализация и self-check
-  готовы, независимое ревью ещё не проводилось.** Windows release build и
-  Inno Setup installer, CI artifact, README/RELEASE. Analyze 0, test
-  **243/243**, debug/release build success. Отчёт:
-  [stages/stage-09.md](stages/stage-09.md); ADR-026; схема **v8** без
-  изменений.
+- **Текущий этап:** stage-09 (полировка MVP) — **первое ревью A/B: FAIL;
+  блокеры исправлены, ожидается повторное ревью.** Windows release build и
+  Inno Setup installer (с VC++ runtime), perf-smoke, packaging tests, CI
+  artifact, README/RELEASE. Analyze 0, test **243/243**, debug/release build
+  success. Отчёт: [stages/stage-09.md](stages/stage-09.md); ревью:
+  [reviews/stage-09-review.md](reviews/stage-09-review.md); исправления:
+  [reviews/stage-09-fix-results.md](reviews/stage-09-fix-results.md); ADR-026;
+  схема **v8** без изменений.
 - **Предыдущий этап:** stage-08 — **PASS WITH COMMENTS (0 MAJOR)** после
   первого FAIL-ревью; FTS/аналитика, CI `44030371436` (`3743fc2`), 243/243.
   Финальное ревью:
@@ -60,7 +62,7 @@
   R02-009…R02-013 — [reviews/stage-02-fix-results.md](reviews/stage-02-fix-results.md).
 - **Текущий отчёт:** [stages/stage-09.md](stages/stage-09.md)
 - **Открытых CRITICAL:** 0
-- **Stage-09:** self-check, независимое ревью ещё не проводилось.
+- **Stage-09:** первое ревью FAIL; блокеры исправлены, ожидается re-review.
   **Stage-08:** PASS WITH COMMENTS (0 MAJOR) после первого FAIL-ревью.
   **Stage-07:** PASS WITH COMMENTS (0 MAJOR) после первого FAIL-ревью.
   **Stage-06:** PASS WITH COMMENTS (0 MAJOR) после двух FAIL-кругов.
@@ -194,8 +196,8 @@
 - CI `build-windows` собирает debug+release, ставит Inno Setup, публикует
   artifact `second-brain-windows`.
 - README, `docs/RELEASE.md`, ADR-026. Схема v8 не менялась.
-- Тесты: 243/243, analyze 0, debug/release build success. Независимое ревью
-  ещё не проводилось.
+- Тесты: 243/243, analyze 0, debug/release build success. Первое ревью A/B —
+  FAIL (MSVC runtime/perf), блокеры исправлены; ожидается re-review.
 
 ## Что сделано на stage-08
 
@@ -436,7 +438,7 @@
 - DST-переход (23/25-часовые сутки) локально не воспроизводился; тест
   `dashboard_period_test.dart` проверяет календарную семантику границ.
 
-## Ближайшие задачи (stage-07)
+## Ближайшие задачи (stage-09/MVP)
 - Провести независимое ревью stage-09 и закрыть MVP.
 - **Stage-10 (после MVP)**: облачный бэкенд, синхронизация, мультиаккаунт,
   подписка, веб/мобильные порты.
@@ -474,6 +476,9 @@
   приватность результатов
 - ADR-022: обучение — треки, JSON roadmap, сессии и AI-тренер
 - ADR-023: почта — OAuth 2.0, secure tokens, провайдеры и локальный кэш
+- ADR-024: поиск идей — Crossref/Hacker News, Openverse
+- ADR-025: глобальный FTS-поиск и локальная аналитика
+- ADR-026: Windows release build и Inno Setup installer
 
 ## Активный агент
 - agent-1: DeepSeek V4.1 Flash Free (OpenCode), ветка master
@@ -498,6 +503,8 @@
 
 ## Ссылки
 - Отчёт stage-09: [stages/stage-09.md](stages/stage-09.md)
+- Ревью stage-09: [reviews/stage-09-review.md](reviews/stage-09-review.md)
+  (**FAIL**) и [reviews/stage-09-fix-results.md](reviews/stage-09-fix-results.md)
 - Отчёт stage-08: [stages/stage-08.md](stages/stage-08.md)
 - Ревью stage-08: [reviews/stage-08-review.md](reviews/stage-08-review.md)
   (**FAIL**), [reviews/stage-08-final-review.md](reviews/stage-08-final-review.md)
