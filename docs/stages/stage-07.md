@@ -3,9 +3,12 @@
 - **Дата:** 2026-11-17
 - **Агент:** agent-1 (OpenCode)
 - **Ветка:** `master`
-- **Статус:** **done (self-check)**, независимое ревью ожидается.
+- **Статус:** **fixes ready**, ожидается повторное ревью. Первое ревью A/B —
+  **FAIL** (S07-A-001/S07-B-001: HN вытеснялся Crossref); блокер и
+  неблокирующие замечания исправлены (см.
+  [reviews/stage-07-fix-results.md](../reviews/stage-07-fix-results.md)).
   Гейты: `flutter analyze --fatal-infos` — 0 issues, `flutter test` —
-  **234/234**, `flutter build windows --debug` — success.
+  **235/235**, `flutter build windows --debug` — success.
 - **Предыдущий этап:** stage-06 — **PASS WITH COMMENTS (0 MAJOR)**.
 - **Схема БД:** **v8** без изменений.
 - **ADR:** ADR-024.
@@ -43,7 +46,7 @@
   - `OpenverseImageSearchProvider` — `GET /images?q=&page_size=`;
   - `ImageSearchService`.
 - `lib/features/ideas/presentation/idea_search_dialog.dart` — диалог поиска:
-  запрос, вкладки «Статьи»/«Изображения», превью изображений, кнопки
+  запрос, вкладки «Статьи»/«Изображения», иконка/атрибуция изображения, кнопки
   «В идеи»/«В заметки».
 - `lib/features/ideas/presentation/ideas_screen.dart` — action «Поиск идей».
 - `lib/app/di.dart` — `articleSearchServiceProvider`,
@@ -74,7 +77,7 @@
   агрегация/дедупликация, пустой запрос.
 - `test/idea_search_dialog_test.dart` — открытие диалога, поиск, сохранение
   статьи в идею (widget).
-- Итог: **234/234**, analyze 0, Windows debug build success.
+- Итог: **235/235**, analyze 0, Windows debug build success.
 
 ## Известные ограничения и техдолг
 
@@ -85,8 +88,9 @@
   публичных API не измерялись.
 - Пагинация — только первая страница; LLM-переранжирование и суммаризация
   статей не входят в этап.
-- Изображения показываются через `Image.network`; при отсутствии сети —
-  fallback-иконка.
+- В MVP изображение сохраняется ссылкой/атрибуцией и показывается иконкой;
+  встроенный просмотр/локальное скачивание — техдолг (сетевые вызовы не
+  обходят `ApiClient`).
 - Сохранённые результаты по умолчанию не private; пользователь может
   изменить флаг в редакторе идеи/заметки. Приватные исходные данные в поиск
   не отправляются.
@@ -108,4 +112,7 @@ flutter build windows --debug
 ## Ссылки
 
 - ADR-024.
+- Первое ревью A/B: [reviews/stage-07-review.md](../reviews/stage-07-review.md)
+  — **FAIL**.
+- Исправления: [reviews/stage-07-fix-results.md](../reviews/stage-07-fix-results.md).
 - Предыдущий этап: [stage-06.md](stage-06.md).

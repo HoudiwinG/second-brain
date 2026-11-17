@@ -34,6 +34,7 @@ class OpenverseImageSearchProvider implements ImageSearchProvider {
     final api = ApiClient(
       baseUrl: baseUrl,
       maxRetries: 2,
+      headersProvider: () => const {'User-Agent': 'SecondBrain/1.0'},
       client: client,
       delay: delay,
     );
@@ -53,7 +54,10 @@ class OpenverseImageSearchProvider implements ImageSearchProvider {
           if (results is! List) return const [];
           return [
             for (final item in results)
-              if (item is Map<String, Object?>) _parse(item),
+              if (item is Map<String, Object?> &&
+                  item['url'] is String &&
+                  (item['url']! as String).isNotEmpty)
+                _parse(item),
           ];
         },
       );

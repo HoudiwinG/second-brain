@@ -1,11 +1,13 @@
 # Контекст проекта (снимок состояния)
 
-- **Текущий этап:** stage-07 (поиск идей) — **реализация и self-check готовы,
-  независимое ревью ещё не проводилось.** Crossref + Hacker News для статей,
-  Openverse для изображений, сохранение в идеи/заметки. Analyze 0, test
-  **234/234**, Windows debug build success. Отчёт:
-  [stages/stage-07.md](stages/stage-07.md); ADR-024; схема **v8** без
-  изменений.
+- **Текущий этап:** stage-07 (поиск идей) — **первое ревью A/B: FAIL; блокер
+  и замечания исправлены, ожидается повторное ревью.** Crossref + Hacker News
+  для статей, Openverse для изображений, сохранение в идеи/заметки. Analyze 0,
+  test **235/235**, Windows debug build success. Отчёт:
+  [stages/stage-07.md](stages/stage-07.md); ревью:
+  [reviews/stage-07-review.md](reviews/stage-07-review.md); исправления:
+  [reviews/stage-07-fix-results.md](reviews/stage-07-fix-results.md); ADR-024;
+  схема **v8** без изменений.
 - **Предыдущий этап:** stage-06 (почта) — **PASS WITH COMMENTS (0 MAJOR)**
   после двух FAIL-кругов; OAuth 2.0 + PKCE, Gmail API, Yandex 360 Mail API,
   Mail.ru отключён, кэш/поиск, per-message privacy, backup v3; схема v8.
@@ -68,7 +70,7 @@
   TD-28 (нет UI выбора контекста; триггер перенесён на позднюю доработку
   чата). TD-21 — отдельное принятое ограничение `REAL` для финансов.
 - **Сборка:** `flutter analyze --fatal-infos` — **No issues found**;
-  `flutter test` — **234/234**; `flutter build windows --debug` — **success**
+  `flutter test` — **235/235**; `flutter build windows --debug` — **success**
   (2026-11-17, `build\windows\x64\runner\Debug\second_brain.exe`); CI —
   после push stage-07.
 - **Flutter SDK:** 3.47.7 stable, `C:\src\flutter` (Dart 3.13.5)
@@ -188,8 +190,8 @@
 - Диалог «Поиск идей» на экране идей: вкладки статьи/изображения, превью,
   сохранение в `IdeaEntry`/`Note` с тегом `idea-search`.
 - Все запросы через `ApiClient`; без новых зависимостей и миграций.
-- Тесты: 234/234, analyze 0, Windows debug build success. Независимое ревью
-  ещё не проводилось.
+- Тесты: 235/235, analyze 0, Windows debug build success. Первое ревью A/B —
+  FAIL (HN вытеснялся Crossref), блокер исправлен; ожидается re-review.
 
 ## Что сделано на stage-06
 
@@ -467,6 +469,8 @@
 
 ## Ссылки
 - Отчёт stage-07: [stages/stage-07.md](stages/stage-07.md)
+- Ревью stage-07: [reviews/stage-07-review.md](reviews/stage-07-review.md)
+  (**FAIL**) и [reviews/stage-07-fix-results.md](reviews/stage-07-fix-results.md)
 - Отчёт stage-06: [stages/stage-06.md](stages/stage-06.md)
 - Ревью stage-06: [reviews/stage-06-review.md](reviews/stage-06-review.md)
   (**FAIL**), [reviews/stage-06-re-review.md](reviews/stage-06-re-review.md)

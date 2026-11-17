@@ -83,10 +83,13 @@ class _IdeasScreenState extends ConsumerState<IdeasScreen> {
         actions: [
           IconButton(
             tooltip: lcm.ideasSearch,
-            onPressed: () => showDialog<void>(
-              context: context,
-              builder: (_) => const IdeaSearchDialog(),
-            ),
+            onPressed: () async {
+              await showDialog<void>(
+                context: context,
+                builder: (_) => const IdeaSearchDialog(),
+              );
+              if (mounted) _reload();
+            },
             icon: const Icon(Icons.travel_explore_outlined),
           ),
           IconButton(

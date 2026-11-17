@@ -57,7 +57,7 @@ class _IdeaSearchDialogState extends ConsumerState<IdeaSearchDialog> {
           failure: (_) => const [],
         );
         _error =
-            articles is Failure<List<ArticleSearchResult>> &&
+            articles is Failure<List<ArticleSearchResult>> ||
                 images is Failure<List<ImageSearchResult>>
             ? lcm.ideasSearchError
             : null;
@@ -92,7 +92,10 @@ class _IdeaSearchDialogState extends ConsumerState<IdeaSearchDialog> {
     final result = await repo.create(
       NoteDraft(
         title: title,
-        body: '$body\n\n$source',
+        body: [
+          body,
+          source,
+        ].where((part) => part.trim().isNotEmpty).join('\n\n'),
         tags: const ['idea-search'],
       ),
     );
@@ -119,7 +122,9 @@ class _IdeaSearchDialogState extends ConsumerState<IdeaSearchDialog> {
                 controller: _query,
                 autofocus: true,
                 decoration: dataFieldDecoration(lcm.ideasSearchHint),
-                onSubmitted: (_) => _search(),
+                onSubmitted: (_) {
+                  if (!_searching) _search();
+                },
               ),
               const SizedBox(height: 10),
               Row(
@@ -150,10 +155,16 @@ class _IdeaSearchDialogState extends ConsumerState<IdeaSearchDialog> {
                 ],
               ),
               const SizedBox(height: 8),
-              const TabBar(
+              TabBar(
                 tabs: [
-                  Tab(icon: Icon(Icons.article_outlined)),
-                  Tab(icon: Icon(Icons.image_outlined)),
+                  Tab(
+                    icon: const Icon(Icons.article_outlined),
+                    text: lcm.ideasSearchArticles,
+                  ),
+                  Tab(
+                    icon: const Icon(Icons.image_outlined),
+                    text: lcm.ideasSearchImages,
+                  ),
                 ],
               ),
               Expanded(
@@ -175,7 +186,7 @@ class _IdeaSearchDialogState extends ConsumerState<IdeaSearchDialog> {
                       results: _images,
                       onSaveIdea: (result) => _saveIdea(
                         text: _imageIdeaText(result),
-                        source: result.imageUrl,
+                        source: result.pageUrl ?? result.imageUrl,
                       ),
                       onSaveNote: (result) => _saveNote(
                         title: result.title,
@@ -295,15 +306,7 @@ class _ImageResults extends StatelessWidget {
       itemBuilder: (context, index) {
         final result = results[index];
         return ListTile(
-          leading: SizedBox(
-            width: 56,
-            height: 56,
-            child: Image.network(
-              result.thumbnailUrl ?? result.imageUrl,
-              fit: BoxFit.cover,
-              errorBuilder: (_, _, _) => const Icon(Icons.image_outlined),
-            ),
-          ),
+          leading: const Icon(Icons.image_outlined),
           title: Text(result.title),
           subtitle: Text(
             [

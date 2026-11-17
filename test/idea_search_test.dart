@@ -14,7 +14,7 @@ void main() {
       return http.Response(
         '{"message":{"items":[{'
         '"DOI":"10.1/test",'
-        '"title":["Quantum idea"],'
+        '"title":["Quantum <i>idea</i> &amp; more"],'
         '"URL":"https://doi.org/10.1/test",'
         '"abstract":"<jats:p>Short abstract</jats:p>",'
         '"container-title":["Journal"],'
@@ -29,7 +29,7 @@ void main() {
     final result = await provider.search('quantum');
 
     final items = (result as Success<List<ArticleSearchResult>>).value;
-    expect(items.single.title, 'Quantum idea');
+    expect(items.single.title, 'Quantum idea & more');
     expect(items.single.source, 'Journal');
     expect(items.single.summary, 'Short abstract');
     expect(items.single.publishedAt, DateTime.utc(2026, 5, 1));
@@ -82,11 +82,37 @@ void main() {
     final result = await service.search('topic');
 
     final items = (result as Success<List<ArticleSearchResult>>).value;
-    expect(items.map((item) => item.url), [
+    expect(items.map((item) => item.url).toSet(), {
       'https://a',
       'https://b',
       'https://c',
+    });
+  });
+
+  test('ArticleSearchService не вытесняет второй источник лимитом', () async {
+    final service = ArticleSearchService([
+      _FakeArticleProvider([
+        for (var i = 0; i < 10; i++)
+          ArticleSearchResult(
+            title: 'Crossref $i',
+            url: 'https://crossref/$i',
+            source: 'Crossref',
+          ),
+      ]),
+      _FakeArticleProvider([
+        const ArticleSearchResult(
+          title: 'HN story',
+          url: 'https://hn/1',
+          source: 'Hacker News',
+        ),
+      ]),
     ]);
+
+    final result = await service.search('topic');
+
+    final items = (result as Success<List<ArticleSearchResult>>).value;
+    expect(items, hasLength(10));
+    expect(items.any((item) => item.source == 'Hacker News'), isTrue);
   });
 
   test('Openverse парсит изображение и атрибуцию', () async {
@@ -116,13 +142,18 @@ void main() {
   });
 
   test('пустой запрос не уходит в сеть', () async {
+    var calls = 0;
     final provider = OpenverseImageSearchProvider(
-      client: MockClient((_) async => http.Response('{}', 500)),
+      client: MockClient((_) async {
+        calls++;
+        return http.Response('{}', 500);
+      }),
     );
     expect(
       await provider.search('  '),
       isA<Failure<List<ImageSearchResult>>>(),
     );
+    expect(calls, 0);
   });
 }
 

@@ -28,6 +28,7 @@ class CrossrefArticleSearchProvider implements ArticleSearchProvider {
     final api = ApiClient(
       baseUrl: baseUrl,
       maxRetries: 2,
+      headersProvider: () => const {'User-Agent': 'SecondBrain/1.0'},
       client: client,
       delay: delay,
     );
@@ -52,9 +53,11 @@ class CrossrefArticleSearchProvider implements ArticleSearchProvider {
           final items = message['items'];
           if (items is! List) return const [];
           return [
-            for (final item in items)
-              if (item is Map<String, Object?>) _parseItem(item),
-          ];
+                for (final item in items)
+                  if (item is Map<String, Object?>) _parseItem(item),
+              ]
+              .where((item) => item.url.isNotEmpty && item.title.isNotEmpty)
+              .toList();
         },
       );
     } finally {
@@ -63,7 +66,7 @@ class CrossrefArticleSearchProvider implements ArticleSearchProvider {
   }
 
   ArticleSearchResult _parseItem(Map<String, Object?> item) {
-    final title = _textList(item['title']);
+    final title = _htmlToText(_textList(item['title']));
     final doi = item['DOI'] is String ? item['DOI']! as String : '';
     final rawUrl = item['URL'] is String ? item['URL']! as String : '';
     final url = rawUrl.isNotEmpty
@@ -71,7 +74,7 @@ class CrossrefArticleSearchProvider implements ArticleSearchProvider {
         : doi.isEmpty
         ? ''
         : 'https://doi.org/$doi';
-    final container = _textList(item['container-title']);
+    final container = _htmlToText(_textList(item['container-title']));
     final authors = item['author'];
     final authorNames = <String>[];
     if (authors is List) {
@@ -131,6 +134,12 @@ class CrossrefArticleSearchProvider implements ArticleSearchProvider {
 
   static String _htmlToText(String value) => value
       .replaceAll(RegExp('<[^>]*>'), ' ')
+      .replaceAll('&amp;', '&')
+      .replaceAll('&lt;', '<')
+      .replaceAll('&gt;', '>')
+      .replaceAll('&quot;', '"')
+      .replaceAll('&#39;', "'")
+      .replaceAll('&nbsp;', ' ')
       .replaceAll(RegExp(r'\s+'), ' ')
       .trim();
 }
@@ -158,6 +167,7 @@ class HackerNewsArticleSearchProvider implements ArticleSearchProvider {
     final api = ApiClient(
       baseUrl: baseUrl,
       maxRetries: 2,
+      headersProvider: () => const {'User-Agent': 'SecondBrain/1.0'},
       client: client,
       delay: delay,
     );
@@ -187,7 +197,9 @@ class HackerNewsArticleSearchProvider implements ArticleSearchProvider {
   }
 
   ArticleSearchResult _parseHit(Map<String, Object?> hit) {
-    final title = hit['title'] is String ? hit['title']! as String : '';
+    final title = hit['title'] is String
+        ? _htmlToText(hit['title']! as String)
+        : '';
     final objectId = hit['objectID'] is String
         ? hit['objectID']! as String
         : '';
@@ -214,6 +226,9 @@ class HackerNewsArticleSearchProvider implements ArticleSearchProvider {
       .replaceAll('&amp;', '&')
       .replaceAll('&lt;', '<')
       .replaceAll('&gt;', '>')
+      .replaceAll('&quot;', '"')
+      .replaceAll('&#39;', "'")
+      .replaceAll('&nbsp;', ' ')
       .replaceAll(RegExp(r'\s+'), ' ')
       .trim();
 }
@@ -235,23 +250,37 @@ class ArticleSearchService {
         ValidationException('ArticleSearch: пустой запрос'),
       );
     }
-    final merged = <ArticleSearchResult>[];
-    final urls = <String>{};
+    final providerResults = <List<ArticleSearchResult>>[];
     final errors = <AppException>[];
     for (final provider in providers) {
       final result = await provider.search(text, limit: limit);
-      result.when(
-        success: (items) {
-          for (final item in items) {
-            if (urls.add(item.url)) merged.add(item);
-          }
-        },
-        failure: errors.add,
-      );
+      result.when(success: providerResults.add, failure: errors.add);
     }
-    if (merged.isEmpty && errors.isNotEmpty) {
+    if (providerResults.isEmpty && errors.isNotEmpty) {
       return Result.failure(errors.first);
     }
-    return Result.success(merged.take(limit).toList());
+
+    // Round-robin, чтобы второй источник не вытеснялся первым при полном
+    // ответе Crossref/HN.
+    final merged = <ArticleSearchResult>[];
+    final urls = <String>{};
+    final positions = List<int>.filled(providerResults.length, 0);
+    var hasMore = true;
+    while (merged.length < limit && hasMore) {
+      hasMore = false;
+      for (var i = 0; i < providerResults.length; i++) {
+        final items = providerResults[i];
+        while (positions[i] < items.length) {
+          final item = items[positions[i]++];
+          if (urls.add(item.url)) {
+            merged.add(item);
+            hasMore = true;
+            break;
+          }
+        }
+        if (merged.length >= limit) break;
+      }
+    }
+    return Result.success(merged);
   }
 }
