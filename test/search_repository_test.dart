@@ -203,6 +203,7 @@ void main() {
       final result = (await search.search(
         'filter',
         types: {SearchEntityType.mail},
+        limit: 1,
       )).unwrap();
 
       expect(result, hasLength(1));

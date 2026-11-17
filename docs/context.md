@@ -1,12 +1,12 @@
 # Контекст проекта (снимок состояния)
 
-- **Текущий этап:** stage-08 (глобальный поиск + аналитика) — **первое ревью
-  A/B: FAIL; блокеры исправлены, ожидается повторное ревью.** FTS расширен
-  обучением/чатом/почтой, фильтры типа и периода, экран `/analytics`. Analyze
-  0, test **241/241**, Windows debug build success. Отчёт:
-  [stages/stage-08.md](stages/stage-08.md); ревью:
-  [reviews/stage-08-review.md](reviews/stage-08-review.md); исправления:
-  [reviews/stage-08-fix-results.md](reviews/stage-08-fix-results.md); ADR-025;
+- **Текущий этап:** stage-08 (глобальный поиск + аналитика) — **PASS WITH
+  COMMENTS (0 MAJOR)** после первого FAIL-ревью. FTS расширен
+  обучением/чатом/почтой, SQL-фильтры типа/даты, backfill индекса, экран
+  `/analytics`. Analyze 0, test **241/241**, Windows debug build success; CI
+  `44028937569` (`d10dec0`) — success. Отчёт:
+  [stages/stage-08.md](stages/stage-08.md); финальное ревью:
+  [reviews/stage-08-final-review.md](reviews/stage-08-final-review.md); ADR-025;
   схема **v8** без изменений.
 - **Предыдущий этап:** stage-07 — **PASS WITH COMMENTS (0 MAJOR)** после
   первого FAIL-ревью; Crossref/Hacker News/Openverse. Analyze 0, test 235/235.
@@ -58,7 +58,7 @@
   R02-009…R02-013 — [reviews/stage-02-fix-results.md](reviews/stage-02-fix-results.md).
 - **Текущий отчёт:** [stages/stage-08.md](stages/stage-08.md)
 - **Открытых CRITICAL:** 0
-- **Stage-08:** первое ревью FAIL; блокеры исправлены, ожидается re-review.
+- **Stage-08:** PASS WITH COMMENTS (0 MAJOR) после первого FAIL-ревью.
   **Stage-07:** PASS WITH COMMENTS (0 MAJOR) после первого FAIL-ревью.
   **Stage-06:** PASS WITH COMMENTS (0 MAJOR) после двух FAIL-кругов.
   **Stage-05:** PASS WITH COMMENTS (0 MAJOR), S05-001…011 и S05Z fixed.
@@ -190,7 +190,8 @@
 - Аналитика: чистая `buildAnalyticsSummary` и экран `/analytics` (задачи,
   обучение, контент, почта, финансы, топ расходов); кнопка на дашборде.
 - Схема v8 без миграций, новых зависимостей нет. Тесты: 241/241, analyze 0,
-  Windows debug build success. Независимое ревью ещё не проводилось.
+  Windows debug build success. Первое ревью A/B — FAIL, блокеры исправлены;
+финальное ревью — **PASS WITH COMMENTS (0 MAJOR)**.
 
 ## Что сделано на stage-07
 
@@ -482,7 +483,9 @@
 ## Ссылки
 - Отчёт stage-08: [stages/stage-08.md](stages/stage-08.md)
 - Ревью stage-08: [reviews/stage-08-review.md](reviews/stage-08-review.md)
-  (**FAIL**) и [reviews/stage-08-fix-results.md](reviews/stage-08-fix-results.md)
+  (**FAIL**), [reviews/stage-08-final-review.md](reviews/stage-08-final-review.md)
+  (**PASS WITH COMMENTS**) и
+  [reviews/stage-08-fix-results.md](reviews/stage-08-fix-results.md)
 - Отчёт stage-07: [stages/stage-07.md](stages/stage-07.md)
 - Ревью stage-07: [reviews/stage-07-review.md](reviews/stage-07-review.md)
   (**FAIL**), [reviews/stage-07-final-review.md](reviews/stage-07-final-review.md)

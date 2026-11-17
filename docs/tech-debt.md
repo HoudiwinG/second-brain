@@ -112,11 +112,11 @@
 
 > **Stage-08 (2026-11-17):** глобальный FTS-поиск расширен обучением, чатом и
 > почтой; SQL-фильтры типа/даты, backfill индекса, экран аналитики. Первое
-> ревью A/B — FAIL, блокеры исправлены. Схема v8 без миграций. Analyze 0, test
-> **241/241**, Windows debug build success; ожидается re-review. Вложения,
-> фильтр тегов и мультивалютная аналитика — техдолг. Отчёт —
-> [stages/stage-08.md](stages/stage-08.md), ревью —
-> [reviews/stage-08-review.md](reviews/stage-08-review.md), ADR-025.
+> ревью A/B — FAIL, затем **PASS WITH COMMENTS (0 MAJOR)**. Схема v8 без
+> миграций. Analyze 0, test **241/241**, Windows debug build success.
+> Вложения, фильтр тегов и мультивалютная аналитика — техдолг. Отчёт —
+> [stages/stage-08.md](stages/stage-08.md), финальное ревью —
+> [reviews/stage-08-final-review.md](reviews/stage-08-final-review.md), ADR-025.
 
 Проверка после исправлений R02-009…R02-013 (2026-10-24, Flutter 3.47.7):
 `flutter pub get --enforce-lockfile` → OK; `flutter analyze --fatal-infos` →

@@ -3,12 +3,13 @@
 - **Дата:** 2026-11-17
 - **Агент:** agent-1 (OpenCode)
 - **Ветка:** `master`
-- **Статус:** **fixes ready**, ожидается повторное ревью. Первое ревью A/B —
-  **FAIL** (фильтры после LIMIT, backfill, валюты, лимит писем); блокеры
-  исправлены (см.
-  [reviews/stage-08-fix-results.md](../reviews/stage-08-fix-results.md)).
+- **Статус:** **PASS WITH COMMENTS (0 MAJOR).** Первое ревью A/B — FAIL
+  (фильтры после LIMIT, backfill, валюты, лимит писем); блокеры исправлены,
+  финальное ревью A/B — PASS WITH COMMENTS (см.
+  [reviews/stage-08-final-review.md](../reviews/stage-08-final-review.md)).
   Гейты: `flutter analyze --fatal-infos` — 0 issues, `flutter test` —
-  **241/241**, `flutter build windows --debug` — success.
+  **241/241**, `flutter build windows --debug` — success; CI
+  `44028937569` (`d10dec0`) — success, оба job'а.
 - **Предыдущий этап:** stage-07 — **PASS WITH COMMENTS (0 MAJOR)**.
 - **Схема БД:** **v8** без изменений.
 - **ADR:** ADR-025.
@@ -105,5 +106,8 @@ flutter build windows --debug
 - ADR-025.
 - Первое ревью A/B: [reviews/stage-08-review.md](../reviews/stage-08-review.md)
   — **FAIL**.
+- Финальное ревью A/B:
+  [reviews/stage-08-final-review.md](../reviews/stage-08-final-review.md) —
+  **PASS WITH COMMENTS (0 MAJOR)**.
 - Исправления: [reviews/stage-08-fix-results.md](../reviews/stage-08-fix-results.md).
 - Предыдущий этап: [stage-07.md](stage-07.md).

@@ -1,11 +1,11 @@
 # INDEX — карта документации
 
 ## Состояние
-- Текущий этап: stage-08 (глобальный поиск + аналитика) — **первое ревью
-  A/B: FAIL; блокеры исправлены, ожидается повторное ревью.** FTS расширен
+- Текущий этап: stage-08 (глобальный поиск + аналитика) — **PASS WITH
+  COMMENTS (0 MAJOR)** после первого FAIL-ревью. FTS расширен
   обучением/чатом/почтой, SQL-фильтры типа/даты, backfill индекса, экран
   аналитики; схема **v8** без изменений. Analyze 0, test **241/241**, Windows
-  debug build success.
+  debug build success; CI `44028937569` (`d10dec0`) — success.
 - Предыдущий этап: stage-07 — **PASS WITH COMMENTS (0 MAJOR)** после первого
   FAIL-ревью; CI `44020286840` (`5ed3d99`) — success, 235/235.
 - Предыдущий этап: stage-06 (почта) — **PASS WITH COMMENTS (0 MAJOR)** после
@@ -15,7 +15,9 @@
   WITH COMMENTS; stage-03 — PASS; stage-02 — PASS WITH COMMENTS.
 - Гейты stage-08 (2026-11-17): `flutter analyze --fatal-infos` — **No issues
   found**, `flutter test` — **241/241**, `flutter build windows --debug` —
-  **success**; CI — после push.
+  **success**; CI
+  [44028937569](https://github.com/HoudiwinG/second-brain/actions/runs/44028937569)
+  (`d10dec0`) — success, оба job'а.
 - Гейты stage-07 (2026-11-17): analyze 0, test 235/235, Windows debug build
   success; CI
   [44020286840](https://github.com/HoudiwinG/second-brain/actions/runs/44020286840)
@@ -99,9 +101,10 @@
   UI/сеть/тесты; analyze 0, test 235/235.
 - [stage-08-review](reviews/stage-08-review.md) — первое ревью A/B
   (2026-11-17, `d672da0`): **FAIL** (фильтры/backfill/валюты/лимит).
+- [stage-08-final-review](reviews/stage-08-final-review.md) — финальное
+  ревью A/B (2026-11-17, `d10dec0`): **PASS WITH COMMENTS (0 MAJOR)**.
 - [stage-08-fix-results](reviews/stage-08-fix-results.md) — SQL-фильтры,
-  backfill индекса, RUB-only аналитика, count; analyze 0, test 241/241;
-  ожидается re-review.
+  backfill индекса, RUB-only аналитика, count; analyze 0, test 241/241.
 - Исправления stage-04:
   [reviews/stage-04-fix-results.md](reviews/stage-04-fix-results.md) — все 9
   исходных находок закрыты коммитом `821b4f8` (+ docs-коммит).
@@ -149,9 +152,8 @@
   analyze 0, test 235/235, Windows debug build success; FAIL → **PASS WITH
   COMMENTS (0 MAJOR)**)
 - [stage-08](stages/stage-08.md) — глобальный поиск + аналитика (FTS по
-  обучению/чату/почте, фильтры типа/даты, экран аналитики; ADR-025; схема v8
-  без изменений; analyze 0, test 241/241, Windows debug build success;
-  независимое ревью ожидается)
+  обучению/чату/почте, SQL-фильтры, аналитика; ADR-025; схема v8; analyze 0,
+  test 241/241, Windows build success; FAIL → **PASS WITH COMMENTS**)
 
 ## Шаблоны
 - [decisions.template.md](decisions.template.md) — формат ADR

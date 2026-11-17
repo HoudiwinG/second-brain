@@ -82,6 +82,7 @@ class DriftSearchRepository implements SearchRepository {
             occurredAt: occurredAt,
           ),
         );
+        if (hits.length >= limit) break;
       }
       return hits;
     });
