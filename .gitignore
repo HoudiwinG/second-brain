@@ -41,6 +41,7 @@ migrate_working_dir/
 /build/
 /coverage/
 /dist/
+/installer/vc_redist.x64.exe
 
 # Symbolication related
 app.*.symbols

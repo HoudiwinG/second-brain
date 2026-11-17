@@ -815,7 +815,7 @@ success. Первое ревью A/B — FAIL (HN вытеснялся Crossref)
 
 FTS5 расширен обучением, чатом и почтой; добавлены фильтры типа/периода и
 экран аналитики. Схема v8 без миграций, новых зависимостей нет. Analyze 0,
-test **241/241**, Windows debug build success. Первое ревью A/B — FAIL
+test **243/243**, Windows debug build success. Первое ревью A/B — FAIL
 (фильтры после LIMIT, backfill, валюты, лимит писем); блокеры исправлены;
 финальное ревью — **PASS WITH COMMENTS (0 MAJOR)**.
 
@@ -824,16 +824,16 @@ test **241/241**, Windows debug build success. Первое ревью A/B — F
 | 2026-11-17 | — | search | entity types learning/chat/mail, index + rebuild |
 | 2026-11-17 | — | filters | типы и период 7/30 дней, occurredAt, переход в раздел |
 | 2026-11-17 | — | analytics | buildAnalyticsSummary + `/analytics` |
-| 2026-11-17 | — | tests | глобальный индекс, аналитика, 241/241 |
+| 2026-11-17 | — | tests | глобальный индекс, аналитика, 243/243 |
 | 2026-11-17 | — | review | A/B FAIL: фильтры после LIMIT, backfill, валюты, лимит |
-| 2026-11-17 | — | fixes | SQL type/date, index version, RUB-only, countMessages, 241/241 |
-| 2026-11-17 | — | final-review | A/B PASS WITH COMMENTS (0 MAJOR); 241/241 |
+| 2026-11-17 | — | fixes | SQL type/date, index version, RUB-only, countMessages, 243/243 |
+| 2026-11-17 | — | final-review | A/B PASS WITH COMMENTS (0 MAJOR); 243/243 |
 | 2026-11-17 | — | CI | run 44030371436 (`3743fc2`): analyze-and-test + build-windows success |
 
 ## Stage-09: полировка MVP (2026-11-17)
 
 Release build, Inno Setup installer, CI artifact, README/RELEASE и ADR-026.
-Схема v8 не менялась. Analyze 0, test **241/241**, debug/release build успешны.
+Схема v8 не менялась. Analyze 0, test **243/243**, debug/release build успешны.
 Installer проверяется в CI; независимое ревью ещё не проводилось.
 
 | Timestamp (UTC) | ID | Действие | Примечание |

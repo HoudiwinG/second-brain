@@ -3,11 +3,11 @@
 - **Текущий этап:** stage-09 (полировка MVP) — **реализация и self-check
   готовы, независимое ревью ещё не проводилось.** Windows release build и
   Inno Setup installer, CI artifact, README/RELEASE. Analyze 0, test
-  **241/241**, debug/release build success. Отчёт:
+  **243/243**, debug/release build success. Отчёт:
   [stages/stage-09.md](stages/stage-09.md); ADR-026; схема **v8** без
   изменений.
 - **Предыдущий этап:** stage-08 — **PASS WITH COMMENTS (0 MAJOR)** после
-  первого FAIL-ревью; FTS/аналитика, CI `44030371436` (`3743fc2`), 241/241.
+  первого FAIL-ревью; FTS/аналитика, CI `44030371436` (`3743fc2`), 243/243.
   Финальное ревью:
   [reviews/stage-08-final-review.md](reviews/stage-08-final-review.md).
 - **Предыдущий этап:** stage-07 — **PASS WITH COMMENTS (0 MAJOR)** после
@@ -72,8 +72,9 @@
   TD-28 (нет UI выбора контекста; триггер перенесён на позднюю доработку
   чата). TD-21 — отдельное принятое ограничение `REAL` для финансов.
 - **Сборка:** `flutter analyze --fatal-infos` — **No issues found**;
-  `flutter test` — **241/241**; `flutter build windows --debug` и
-  `--release` — **success** (2026-11-17); installer — CI после push stage-09.
+  `flutter test` — **243/243**; `flutter build windows --debug` и
+  `--release` — **success** (2026-11-17); CI `44119141513` (`234fc29`) —
+  success, installer artifact `second-brain-windows` (~12 MB).
 - **Installer:** `installer/second_brain.iss`,
   `tool/build_installer.ps1`, artifact `second-brain-windows`.
 - **Flutter SDK:** 3.47.7 stable, `C:\src\flutter` (Dart 3.13.5)
@@ -193,7 +194,7 @@
 - CI `build-windows` собирает debug+release, ставит Inno Setup, публикует
   artifact `second-brain-windows`.
 - README, `docs/RELEASE.md`, ADR-026. Схема v8 не менялась.
-- Тесты: 241/241, analyze 0, debug/release build success. Независимое ревью
+- Тесты: 243/243, analyze 0, debug/release build success. Независимое ревью
   ещё не проводилось.
 
 ## Что сделано на stage-08
@@ -204,7 +205,7 @@
   и переход в раздел из результата.
 - Аналитика: чистая `buildAnalyticsSummary` и экран `/analytics` (задачи,
   обучение, контент, почта, финансы, топ расходов); кнопка на дашборде.
-- Схема v8 без миграций, новых зависимостей нет. Тесты: 241/241, analyze 0,
+- Схема v8 без миграций, новых зависимостей нет. Тесты: 243/243, analyze 0,
   Windows debug build success. Первое ревью A/B — FAIL, блокеры исправлены;
 финальное ревью — **PASS WITH COMMENTS (0 MAJOR)**.
 

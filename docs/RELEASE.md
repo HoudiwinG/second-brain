@@ -18,10 +18,11 @@ flutter build windows --release
 
 ## 3. Installer
 ```powershell
-choco install innosetup -y
-.\tool\build_installer.ps1
+choco install innosetup -y   # Inno Setup >= 6.3
+.\tool\build_installer.ps1  # скачает vc_redist.x64.exe при необходимости
 ```
 - [ ] `dist/SecondBrain-<version>-setup.exe` создан.
+- [ ] `vc_redist.x64.exe` не попал в git (скачивается скриптом).
 - [ ] Установка в `%LOCALAPPDATA%\Programs\Second Brain` (без admin).
 - [ ] Ярлыки меню «Пуск»/рабочего стола, uninstaller работают.
 - [ ] Запуск после установки, данные в `%APPDATA%`/secure storage на месте.

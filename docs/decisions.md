@@ -1403,7 +1403,9 @@ MVP должен устанавливаться на Windows. Debug-сборки
 - Installer: **Inno Setup 6** (`installer/second_brain.iss`), per-user
   установка в `%LOCALAPPDATA%\Programs\Second Brain` без admin.
 - Скрипт `tool/build_installer.ps1` проверяет release-файлы, находит
-  `ISCC.exe`, собирает `dist/SecondBrain-<version>-setup.exe`.
+  `ISCC.exe`, при необходимости скачивает `vc_redist.x64.exe`, собирает
+  `dist/SecondBrain-<version>-setup.exe`. Installer проверяет MSVC runtime и
+  ставит его тихо, если его нет.
 - CI устанавливает Inno Setup через Chocolatey, собирает installer и
   публикует artifact `second-brain-windows` (`actions/upload-artifact@v4`).
 - Release checklist — `docs/RELEASE.md`; версия `1.0.0+1` в pubspec и

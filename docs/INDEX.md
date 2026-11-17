@@ -4,18 +4,19 @@
 - Текущий этап: stage-09 (полировка MVP) — **реализация и self-check готовы,
   независимое ревью ещё не проводилось.** Windows release build и Inno Setup
   installer, CI artifact, README/RELEASE/ADR-026. Analyze 0, test
-  **241/241**, debug/release build success.
+  **243/243**, debug/release build success.
 - Предыдущий этап: stage-08 — **PASS WITH COMMENTS (0 MAJOR)** после первого
-  FAIL-ревью; CI `44030371436` (`3743fc2`) — success, 241/241.
+  FAIL-ревью; CI `44030371436` (`3743fc2`) — success, 243/243.
 - Предыдущий этап: stage-06 (почта) — **PASS WITH COMMENTS (0 MAJOR)** после
   двух FAIL-кругов; OAuth 2.0 + PKCE, Gmail API, Yandex 360 Mail API,
   Mail.ru отключён, локальный кэш/поиск, privacy; схема v8, backup v3.
   Analyze 0, test 228/228. Stage-05 — PASS WITH COMMENTS; stage-04 — PASS
   WITH COMMENTS; stage-03 — PASS; stage-02 — PASS WITH COMMENTS.
 - Гейты stage-09 (2026-11-17): `flutter analyze --fatal-infos` — **No issues
-  found**, `flutter test` — **241/241**, debug/release Windows build —
-  **success**; installer — CI (после push).
-- Гейты stage-08 (2026-11-17): analyze 0, test 241/241, Windows debug build
+  found**, `flutter test` — **243/243**, debug/release Windows build —
+  **success**; CI `44119141513` (`234fc29`) — success, installer artifact
+  `second-brain-windows` (~12 MB).
+- Гейты stage-08 (2026-11-17): analyze 0, test 243/243, Windows debug build
   success; CI
   [44030371436](https://github.com/HoudiwinG/second-brain/actions/runs/44030371436)
   (`3743fc2`) — success, оба job'а.
@@ -106,7 +107,7 @@
 - [stage-08-final-review](reviews/stage-08-final-review.md) — финальное
   ревью A/B (2026-11-17, `3743fc2`): **PASS WITH COMMENTS (0 MAJOR)**.
 - [stage-08-fix-results](reviews/stage-08-fix-results.md) — SQL-фильтры,
-  backfill индекса, RUB-only аналитика, count; analyze 0, test 241/241.
+  backfill индекса, RUB-only аналитика, count; analyze 0, test 243/243.
 - Исправления stage-04:
   [reviews/stage-04-fix-results.md](reviews/stage-04-fix-results.md) — все 9
   исходных находок закрыты коммитом `821b4f8` (+ docs-коммит).
@@ -155,9 +156,9 @@
   COMMENTS (0 MAJOR)**)
 - [stage-08](stages/stage-08.md) — глобальный поиск + аналитика (FTS по
   обучению/чату/почте, SQL-фильтры, аналитика; ADR-025; схема v8; analyze 0,
-  test 241/241, Windows build success; FAIL → **PASS WITH COMMENTS**)
+  test 243/243, Windows build success; FAIL → **PASS WITH COMMENTS**)
 - [stage-09](stages/stage-09.md) — полировка MVP (release build, Inno Setup
-  installer, CI artifact, README/RELEASE; ADR-026; analyze 0, test 241/241;
+  installer, CI artifact, README/RELEASE; ADR-026; analyze 0, test 243/243;
   независимое ревью ожидается)
 
 ## Шаблоны

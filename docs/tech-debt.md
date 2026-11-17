@@ -113,13 +113,13 @@
 > **Stage-08 (2026-11-17):** глобальный FTS-поиск расширен обучением, чатом и
 > почтой; SQL-фильтры типа/даты, backfill индекса, экран аналитики. Первое
 > ревью A/B — FAIL, затем **PASS WITH COMMENTS (0 MAJOR)**. Схема v8 без
-> миграций. Analyze 0, test **241/241**, Windows debug build success.
+> миграций. Analyze 0, test **243/243**, Windows debug build success.
 > Вложения, фильтр тегов и мультивалютная аналитика — техдолг. Отчёт —
 > [stages/stage-08.md](stages/stage-08.md), финальное ревью —
 > [reviews/stage-08-final-review.md](reviews/stage-08-final-review.md), ADR-025.
 
 > **Stage-09 (2026-11-17):** MVP-полировка — release build, Inno Setup
-> installer, CI artifact, README/RELEASE, ADR-026. Analyze 0, test 241/241,
+> installer, CI artifact, README/RELEASE, ADR-026. Analyze 0, test 243/243,
 > debug/release build success. Installer проверяется CI; подпись кода и
 > ручной smoke установки — после MVP. Независимое ревью ещё не проводилось.
 

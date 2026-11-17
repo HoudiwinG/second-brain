@@ -27,6 +27,14 @@ if (-not $isccPath) {
 }
 
 $iss = Join-Path $root "installer\second_brain.iss"
+$redist = Join-Path $root "installer\vc_redist.x64.exe"
+if (-not (Test-Path $redist)) {
+  Write-Host "Downloading Microsoft Visual C++ Redistributable..."
+  Invoke-WebRequest `
+    -Uri "https://aka.ms/vs/17/release/vc_redist.x64.exe" `
+    -OutFile $redist `
+    -UseBasicParsing
+}
 $dist = Join-Path $root "dist"
 New-Item -ItemType Directory -Force -Path $dist | Out-Null
 Push-Location $root
