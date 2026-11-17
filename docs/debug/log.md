@@ -815,13 +815,15 @@ success. Первое ревью A/B — FAIL (HN вытеснялся Crossref)
 
 FTS5 расширен обучением, чатом и почтой; добавлены фильтры типа/периода и
 экран аналитики. Схема v8 без миграций, новых зависимостей нет. Analyze 0,
-test **238/238**, Windows debug build success. Независимое ревью ещё не
-проводилось.
+test **241/241**, Windows debug build success. Первое ревью A/B — FAIL
+(фильтры после LIMIT, backfill, валюты, лимит писем); блокеры исправлены,
+ожидается re-review.
 
 | Timestamp (UTC) | ID | Действие | Примечание |
 |-----------------|----|----------|------------|
 | 2026-11-17 | — | search | entity types learning/chat/mail, index + rebuild |
 | 2026-11-17 | — | filters | типы и период 7/30 дней, occurredAt, переход в раздел |
 | 2026-11-17 | — | analytics | buildAnalyticsSummary + `/analytics` |
-| 2026-11-17 | — | tests | глобальный индекс, аналитика, 238/238 |
-| 2026-11-17 | — | статус | self-check done; ожидается ревью stage-08 |
+| 2026-11-17 | — | tests | глобальный индекс, аналитика, 241/241 |
+| 2026-11-17 | — | review | A/B FAIL: фильтры после LIMIT, backfill, валюты, лимит |
+| 2026-11-17 | — | fixes | SQL type/date, index version, RUB-only, countMessages, 241/241 |

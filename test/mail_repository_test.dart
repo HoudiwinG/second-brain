@@ -128,6 +128,15 @@ void main() {
     expect(visible.map((m) => m.remoteId), ['2']);
   });
 
+  test('countMessages считает кэш и privacy-фильтр', () async {
+    final account = await createAccount();
+    await repo.upsertMessages(account.id, [message('1'), message('2')]);
+    expect((await repo.countMessages()).unwrap(), 2);
+    expect((await repo.countMessages(forLlm: true)).unwrap(), 2);
+    (await repo.updateAccount(account.id, isPrivateForLlm: true)).unwrap();
+    expect((await repo.countMessages(forLlm: true)).unwrap(), 0);
+  });
+
   test('повторный upsert не создаёт дубликаты', () async {
     final account = await createAccount();
     await repo.upsertMessages(account.id, [message('1')]);

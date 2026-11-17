@@ -2,7 +2,6 @@ import '../../finance/domain/finance_transaction.dart';
 import '../../ideas/domain/idea_entry.dart';
 import '../../learning/domain/learning_session.dart';
 import '../../learning/domain/learning_track.dart';
-import '../../mail/domain/mail_message.dart';
 import '../../notes/domain/note.dart';
 import '../../tasks/domain/task_item.dart';
 
@@ -55,11 +54,19 @@ AnalyticsSummary buildAnalyticsSummary({
   required List<TaskItem> tasks,
   required List<LearningTrack> tracks,
   required List<LearningSession> sessions,
-  required List<MailMessage> mail,
+  required int mailMessages,
   required List<FinanceTransaction> finance,
+  String? currency,
   DateTime? now,
 }) {
   final reference = (now ?? DateTime.now()).toUtc();
+  final effectiveFinance = finance
+      .where(
+        (item) =>
+            !item.isDeleted &&
+            (currency == null || item.currency.toUpperCase() == currency),
+      )
+      .toList();
   final open = tasks.where(
     (task) =>
         !task.isDeleted &&
@@ -67,17 +74,17 @@ AnalyticsSummary buildAnalyticsSummary({
         task.status != TaskStatus.cancelled,
   );
   final overdue = open.where((task) {
-    final at = task.dueAt ?? task.remindAt;
+    final at = task.dueAt;
     return at != null && at.isBefore(reference);
   }).length;
-  final income = finance
+  final income = effectiveFinance
       .where((item) => item.type == FinanceTransactionType.income)
       .fold<double>(0, (sum, item) => sum + item.amount);
-  final expense = finance
+  final expense = effectiveFinance
       .where((item) => item.type == FinanceTransactionType.expense)
       .fold<double>(0, (sum, item) => sum + item.amount);
   final byCategory = <String, double>{};
-  for (final item in finance) {
+  for (final item in effectiveFinance) {
     if (item.type != FinanceTransactionType.expense) continue;
     final category = item.category?.trim();
     final key = category == null || category.isEmpty ? '—' : category;
@@ -98,10 +105,10 @@ AnalyticsSummary buildAnalyticsSummary({
       0,
       (sum, session) => sum + session.durationMinutes,
     ),
-    mailMessages: mail.length,
+    mailMessages: mailMessages,
     income: income,
     expense: expense,
-    transactions: finance.length,
+    transactions: effectiveFinance.length,
     expenseByCategory: byCategory,
   );
 }

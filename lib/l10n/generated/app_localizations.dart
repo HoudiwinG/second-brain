@@ -671,7 +671,7 @@ abstract class AppLocalizations {
   /// No description provided for @searchHint.
   ///
   /// In en, this message translates to:
-  /// **'Search notes, tasks, ideas and finance'**
+  /// **'Search notes, tasks, ideas, finance, learning, chat and mail'**
   String get searchHint;
 
   /// No description provided for @searchNoResults.
@@ -745,12 +745,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Found: {count}'**
   String searchResultsCount(int count);
-
-  /// No description provided for @searchPrivateOnly.
-  ///
-  /// In en, this message translates to:
-  /// **'Private only'**
-  String get searchPrivateOnly;
 
   /// No description provided for @analyticsTitle.
   ///

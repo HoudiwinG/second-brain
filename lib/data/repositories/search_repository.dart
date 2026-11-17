@@ -25,20 +25,27 @@ class DriftSearchRepository implements SearchRepository {
       final match = _toMatchQuery(query);
       if (match == null) return <SearchHit>[];
       final privacy = forLlm ? "AND is_private = '0'" : '';
-      final rows = await _db
-          .customSelect(
-            '''
+      final typeFilter = types == null || types.isEmpty
+          ? ''
+          : 'AND entity_type IN (${List.filled(types.length, '?').join(',')})';
+      // Если фильтруем по дате, дата вычисляется по исходной таблице уже после
+      // FTS; поэтому не обрезаем выборку до фильтра.
+      final sqlLimit = from != null || to != null ? -1 : limit;
+      final variables = <Variable<Object>>[
+        Variable.withString(match),
+        for (final type in types ?? const <SearchEntityType>[])
+          Variable.withString(type.name),
+        Variable.withInt(sqlLimit),
+      ];
+      final rows = await _db.customSelect('''
         SELECT entity_type, entity_id, title,
                snippet(search_index, 3, '<<', '>>', '…', 12) AS snippet,
                tags, is_private
         FROM search_index
-        WHERE search_index MATCH ? $privacy
+        WHERE search_index MATCH ? $privacy $typeFilter
         ORDER BY bm25(search_index)
         LIMIT ?
-        ''',
-            variables: [Variable.withString(match), Variable.withInt(limit)],
-          )
-          .get();
+        ''', variables: variables).get();
       final hits = <SearchHit>[];
       for (final row in rows) {
         final hit = SearchHit(

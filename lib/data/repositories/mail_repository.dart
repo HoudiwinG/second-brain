@@ -225,6 +225,19 @@ class DriftMailRepository implements MailRepository {
   }
 
   @override
+  Future<Result<int>> countMessages({bool forLlm = false}) {
+    return RepositoryGuard.guard('MailRepository.countMessages', () async {
+      final query = _db.selectOnly(_db.mailMessages)
+        ..addColumns([_db.mailMessages.id.count()]);
+      if (forLlm) {
+        query.where(_db.mailMessages.isPrivateForLlm.equals(false));
+      }
+      final row = await query.getSingle();
+      return row.read(_db.mailMessages.id.count()) ?? 0;
+    });
+  }
+
+  @override
   Future<Result<MailMessage?>> getMessage(int id) {
     return RepositoryGuard.guard('MailRepository.getMessage', () async {
       final row = await (_db.select(

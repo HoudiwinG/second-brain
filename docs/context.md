@@ -1,11 +1,13 @@
 # Контекст проекта (снимок состояния)
 
-- **Текущий этап:** stage-08 (глобальный поиск + аналитика) — **реализация и
-  self-check готовы, независимое ревью ещё не проводилось.** FTS расширен
+- **Текущий этап:** stage-08 (глобальный поиск + аналитика) — **первое ревью
+  A/B: FAIL; блокеры исправлены, ожидается повторное ревью.** FTS расширен
   обучением/чатом/почтой, фильтры типа и периода, экран `/analytics`. Analyze
-  0, test **238/238**, Windows debug build success. Отчёт:
-  [stages/stage-08.md](stages/stage-08.md); ADR-025; схема **v8** без
-  изменений.
+  0, test **241/241**, Windows debug build success. Отчёт:
+  [stages/stage-08.md](stages/stage-08.md); ревью:
+  [reviews/stage-08-review.md](reviews/stage-08-review.md); исправления:
+  [reviews/stage-08-fix-results.md](reviews/stage-08-fix-results.md); ADR-025;
+  схема **v8** без изменений.
 - **Предыдущий этап:** stage-07 — **PASS WITH COMMENTS (0 MAJOR)** после
   первого FAIL-ревью; Crossref/Hacker News/Openverse. Analyze 0, test 235/235.
   Ревью: [reviews/stage-07-final-review.md](reviews/stage-07-final-review.md).
@@ -56,7 +58,7 @@
   R02-009…R02-013 — [reviews/stage-02-fix-results.md](reviews/stage-02-fix-results.md).
 - **Текущий отчёт:** [stages/stage-08.md](stages/stage-08.md)
 - **Открытых CRITICAL:** 0
-- **Stage-08:** self-check, независимое ревью ещё не проводилось.
+- **Stage-08:** первое ревью FAIL; блокеры исправлены, ожидается re-review.
   **Stage-07:** PASS WITH COMMENTS (0 MAJOR) после первого FAIL-ревью.
   **Stage-06:** PASS WITH COMMENTS (0 MAJOR) после двух FAIL-кругов.
   **Stage-05:** PASS WITH COMMENTS (0 MAJOR), S05-001…011 и S05Z fixed.
@@ -67,7 +69,7 @@
   TD-28 (нет UI выбора контекста; триггер перенесён на позднюю доработку
   чата). TD-21 — отдельное принятое ограничение `REAL` для финансов.
 - **Сборка:** `flutter analyze --fatal-infos` — **No issues found**;
-  `flutter test` — **238/238**; `flutter build windows --debug` — **success**
+  `flutter test` — **241/241**; `flutter build windows --debug` — **success**
   (2026-11-17, `build\windows\x64\runner\Debug\second_brain.exe`); CI —
   после push stage-08.
 - **Flutter SDK:** 3.47.7 stable, `C:\src\flutter` (Dart 3.13.5)
@@ -187,7 +189,7 @@
   и переход в раздел из результата.
 - Аналитика: чистая `buildAnalyticsSummary` и экран `/analytics` (задачи,
   обучение, контент, почта, финансы, топ расходов); кнопка на дашборде.
-- Схема v8 без миграций, новых зависимостей нет. Тесты: 238/238, analyze 0,
+- Схема v8 без миграций, новых зависимостей нет. Тесты: 241/241, analyze 0,
   Windows debug build success. Независимое ревью ещё не проводилось.
 
 ## Что сделано на stage-07
@@ -479,6 +481,8 @@
 
 ## Ссылки
 - Отчёт stage-08: [stages/stage-08.md](stages/stage-08.md)
+- Ревью stage-08: [reviews/stage-08-review.md](reviews/stage-08-review.md)
+  (**FAIL**) и [reviews/stage-08-fix-results.md](reviews/stage-08-fix-results.md)
 - Отчёт stage-07: [stages/stage-07.md](stages/stage-07.md)
 - Ревью stage-07: [reviews/stage-07-review.md](reviews/stage-07-review.md)
   (**FAIL**), [reviews/stage-07-final-review.md](reviews/stage-07-final-review.md)

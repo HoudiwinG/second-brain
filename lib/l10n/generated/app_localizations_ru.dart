@@ -298,7 +298,8 @@ class AppLocalizationsRu extends AppLocalizations {
   String get categoriesEmpty => 'Категорий пока нет';
 
   @override
-  String get searchHint => 'Поиск по заметкам, задачам, идеям и финансам';
+  String get searchHint =>
+      'Поиск по заметкам, задачам, идеям, финансам, обучению, чату и почте';
 
   @override
   String get searchNoResults => 'Ничего не найдено';
@@ -337,9 +338,6 @@ class AppLocalizationsRu extends AppLocalizations {
   String searchResultsCount(int count) {
     return 'Найдено: $count';
   }
-
-  @override
-  String get searchPrivateOnly => 'Только приватные';
 
   @override
   String get analyticsTitle => 'Аналитика';

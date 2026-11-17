@@ -10,6 +10,7 @@ import 'package:second_brain/data/repositories/mail_repository.dart';
 import 'package:second_brain/data/repositories/notes_repository.dart';
 import 'package:second_brain/data/repositories/search_repository.dart';
 import 'package:second_brain/data/repositories/tasks_repository.dart';
+import 'package:second_brain/data/search/search_index.dart';
 import 'package:second_brain/features/chat/domain/chat_message.dart';
 import 'package:second_brain/features/chat/domain/chat_thread.dart';
 import 'package:second_brain/features/finance/domain/finance_transaction.dart';
@@ -161,6 +162,51 @@ void main() {
       expect((await search.search('"*()')).unwrap(), isEmpty);
       await notes.create(const NoteDraft(title: 'Обычная заметка'));
       expect((await search.search('"')).unwrap(), isEmpty);
+    });
+
+    test('backfill переиндексирует существующую БД', () async {
+      final learning = DriftLearningRepository(db);
+      await learning.createTrack(
+        const LearningTrackDraft(title: 'Old track', goal: 'Legacy content'),
+      );
+      await db.customStatement('DELETE FROM search_index');
+
+      await ensureSearchIndexVersion(db);
+
+      final hits = (await search.search('Legacy')).unwrap();
+      expect(hits.single.type, SearchEntityType.learning);
+    });
+
+    test('фильтр типа не теряется после SQL LIMIT', () async {
+      for (var i = 0; i < 60; i++) {
+        await notes.create(NoteDraft(title: 'filter noise $i'));
+      }
+      final mail = DriftMailRepository(db, InMemorySecretStore());
+      final account = (await mail.createAccount(
+        const MailAccountDraft(
+          provider: MailProviderType.gmail,
+          email: 'filter@example.com',
+          clientId: 'client',
+        ),
+      )).unwrap();
+      await mail.upsertMessages(account.id, [
+        MailMessageDraft(
+          remoteId: 'm1',
+          fromAddress: 'sender@example.com',
+          subject: 'filter target',
+          snippet: 'target',
+          body: 'target',
+          receivedAt: DateTime.utc(2026, 11, 1),
+        ),
+      ]);
+
+      final result = (await search.search(
+        'filter',
+        types: {SearchEntityType.mail},
+      )).unwrap();
+
+      expect(result, hasLength(1));
+      expect(result.single.type, SearchEntityType.mail);
     });
 
     test('глобальный индекс: обучение, чат и почта', () async {

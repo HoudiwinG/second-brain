@@ -298,7 +298,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get categoriesEmpty => 'No categories yet';
 
   @override
-  String get searchHint => 'Search notes, tasks, ideas and finance';
+  String get searchHint =>
+      'Search notes, tasks, ideas, finance, learning, chat and mail';
 
   @override
   String get searchNoResults => 'Nothing found';
@@ -337,9 +338,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String searchResultsCount(int count) {
     return 'Found: $count';
   }
-
-  @override
-  String get searchPrivateOnly => 'Private only';
 
   @override
   String get analyticsTitle => 'Analytics';

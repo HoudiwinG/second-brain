@@ -20,6 +20,7 @@ import '../data/repositories/search_repository.dart';
 import '../data/repositories/settings_repository.dart';
 import '../data/repositories/tags_repository.dart';
 import '../data/repositories/tasks_repository.dart';
+import '../data/search/search_index.dart';
 import '../data/repositories/tool_audit_repository.dart';
 import '../features/finance/domain/finance_transaction.dart';
 import '../features/ideas/data/article_search_providers.dart';
@@ -58,6 +59,7 @@ import 'router.dart';
 final appDatabaseProvider = FutureProvider<AppDatabase>((ref) async {
   final db = await AppDatabase.open();
   ref.onDispose(db.close);
+  await ensureSearchIndexVersion(db);
   return db;
 });
 

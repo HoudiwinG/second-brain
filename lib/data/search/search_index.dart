@@ -1,3 +1,5 @@
+import 'package:drift/drift.dart';
+
 import '../db/app_database.dart' as db;
 import '../repositories/tag_utils.dart';
 
@@ -204,6 +206,26 @@ Future<void> indexMailMessage(db.AppDatabase database, int messageId) async {
   );
 }
 
+/// Версия структуры/содержимого индекса. Меняется при расширении набора
+/// сущностей; при несовпадении выполняется однократный rebuild.
+const String searchIndexVersion = '2';
+const String searchIndexVersionKey = 'search.index.version';
+
+/// Однократный backfill для уже существующих БД без миграции схемы.
+Future<void> ensureSearchIndexVersion(db.AppDatabase database) async {
+  final rows = await database
+      .customSelect(
+        'SELECT value FROM app_settings WHERE key = ?',
+        variables: [Variable.withString(searchIndexVersionKey)],
+      )
+      .get();
+  if (rows.isNotEmpty &&
+      rows.first.read<String>('value') == searchIndexVersion) {
+    return;
+  }
+  await rebuildSearchIndex(database);
+}
+
 /// Полная переиндексация всех сущностей.
 Future<void> rebuildSearchIndex(db.AppDatabase database) async {
   await database.customStatement('DELETE FROM search_index');
@@ -236,4 +258,13 @@ Future<void> rebuildSearchIndex(db.AppDatabase database) async {
   for (final row in mail) {
     await indexMailMessage(database, row.id);
   }
+  await database
+      .into(database.appSettings)
+      .insertOnConflictUpdate(
+        db.AppSettingsCompanion.insert(
+          key: searchIndexVersionKey,
+          value: searchIndexVersion,
+          updatedAt: DateTime.now().toUtc(),
+        ),
+      );
 }

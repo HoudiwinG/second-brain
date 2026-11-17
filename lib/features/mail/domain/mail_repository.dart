@@ -26,6 +26,8 @@ abstract interface class MailRepository {
     int limit = 50,
   });
 
+  Future<Result<int>> countMessages({bool forLlm = false});
+
   Future<Result<MailMessage?>> getMessage(int id);
 
   Future<Result<MailMessage>> updateMessagePrivacy(int id, bool isPrivate);

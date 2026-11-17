@@ -41,16 +41,19 @@ class _AnalyticsScreenState extends ConsumerState<AnalyticsScreen> {
     for (final track in tracks) {
       sessions.addAll((await learningRepo.listSessions(track.id)).unwrap());
     }
-    final mail = (await mailRepo.listMessages(limit: 1000)).unwrap();
-    final finance = (await financeRepo.list()).unwrap();
+    final mailCount = (await mailRepo.countMessages()).unwrap();
+    final finance = (await financeRepo.list(
+      currency: FinanceDraft.defaultCurrency,
+    )).unwrap();
     return buildAnalyticsSummary(
       notes: notes,
       ideas: ideas,
       tasks: tasks,
       tracks: tracks,
       sessions: sessions,
-      mail: mail,
+      mailMessages: mailCount,
       finance: finance,
+      currency: FinanceDraft.defaultCurrency,
     );
   }
 

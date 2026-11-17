@@ -105,7 +105,7 @@
   "ideasSearchSaved": "Сохранено",
   "financeEmpty": "Операций пока нет",
   "categoriesEmpty": "Категорий пока нет",
-  "searchHint": "Поиск по заметкам, задачам, идеям и финансам",
+  "searchHint": "Поиск по заметкам, задачам, идеям, финансам, обучению, чату и почте",
   "searchNoResults": "Ничего не найдено",
   "searchPrompt": "Введите запрос",
   "searchTypeNote": "Заметка",
@@ -125,7 +125,6 @@
       }
     }
   },
-  "searchPrivateOnly": "Только приватные",
   "analyticsTitle": "Аналитика",
   "analyticsNotes": "Заметки",
   "analyticsIdeas": "Идеи",

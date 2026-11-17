@@ -105,7 +105,7 @@
   "ideasSearchSaved": "Saved",
   "financeEmpty": "No transactions yet",
   "categoriesEmpty": "No categories yet",
-  "searchHint": "Search notes, tasks, ideas and finance",
+  "searchHint": "Search notes, tasks, ideas, finance, learning, chat and mail",
   "searchNoResults": "Nothing found",
   "searchPrompt": "Enter a query",
   "searchTypeNote": "Note",
@@ -125,7 +125,6 @@
       }
     }
   },
-  "searchPrivateOnly": "Private only",
   "analyticsTitle": "Analytics",
   "analyticsNotes": "Notes",
   "analyticsIdeas": "Ideas",

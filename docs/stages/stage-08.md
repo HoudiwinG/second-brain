@@ -3,9 +3,12 @@
 - **Дата:** 2026-11-17
 - **Агент:** agent-1 (OpenCode)
 - **Ветка:** `master`
-- **Статус:** **done (self-check)**, независимое ревью ожидается.
+- **Статус:** **fixes ready**, ожидается повторное ревью. Первое ревью A/B —
+  **FAIL** (фильтры после LIMIT, backfill, валюты, лимит писем); блокеры
+  исправлены (см.
+  [reviews/stage-08-fix-results.md](../reviews/stage-08-fix-results.md)).
   Гейты: `flutter analyze --fatal-infos` — 0 issues, `flutter test` —
-  **238/238**, `flutter build windows --debug` — success.
+  **241/241**, `flutter build windows --debug` — success.
 - **Предыдущий этап:** stage-07 — **PASS WITH COMMENTS (0 MAJOR)**.
 - **Схема БД:** **v8** без изменений.
 - **ADR:** ADR-025.
@@ -23,7 +26,8 @@
 
 - [x] FTS-индекс расширен типами `learning`, `chat`, `mail`;
 - [x] обучение/чат/почта индексируются и инвалидируются при изменении;
-- [x] фильтры типа и периода 7/30 дней;
+- [x] фильтры типа и периода 7/30 дней (тип — в SQL до `LIMIT`, дата —
+  без обрезки выдачи);
 - [x] переход из результата в соответствующий раздел;
 - [x] экран аналитики: задачи, обучение, заметки/идеи/почта, финансы, топ
   расходов;
@@ -35,7 +39,9 @@
 - `lib/data/search/search_index.dart`:
   - `SearchEntityTypes.learning/chat/mail`;
   - `indexLearningTrack`, `indexChatThread`, `indexMailMessage`;
-  - rebuild для новых типов; `removeSearchEntries` для удаления пакета.
+  - rebuild для новых типов; `removeSearchEntries` для удаления пакета;
+  - версия индекса `search.index.version` и однократный backfill
+    `ensureSearchIndexVersion` в `appDatabaseProvider`.
 - `lib/data/repositories/search_repository.dart`:
   - фильтры `types`, `from`, `to`;
   - `SearchHit.occurredAt` (updatedAt/date/receivedAt).
@@ -51,8 +57,10 @@
 ## Схема БД и бэкап
 
 - Схема **v8** не меняется; миграций нет.
-- Backup уже вызывает `rebuildSearchIndex` после импорта, поэтому новые типы
-  индексируются автоматически.
+- При открытии существующей БД `ensureSearchIndexVersion` однократно
+  перестраивает индекс (новые типы появляются без миграции схемы).
+- Backup вызывает `rebuildSearchIndex` после импорта; чат в backup пока не
+  входит (ограничение зафиксировано ниже).
 
 ## Тесты
 
@@ -60,7 +68,8 @@
   почты; существующие FTS-тесты.
 - `test/analytics_summary_test.dart` — задачи/сессии/финансы/топ расходов.
 - `test/analytics_screen_test.dart` — widget-тест экрана аналитики.
-- Итог: **238/238**, analyze 0, Windows debug build success.
+- `test/mail_repository_test.dart` — `countMessages` и privacy.
+- Итог: **241/241**, analyze 0, Windows debug build success.
 
 ## Известные ограничения
 
@@ -68,8 +77,11 @@
 - Для заметок/задач/треков/чата фильтр даты использует `updatedAt`, для
   финансов — дату операции, для почты — `receivedAt`; это не единая
   «дата создания».
-- Аналитика не мультивалютная (TD-21), не учитывает приватность как фильтр
-  (это локальная сводка, не LLM-контекст).
+- Аналитика считает только валюту `FinanceDraft.defaultCurrency` (RUB) и
+  явно подписывает её; операции в других валютах не входят. Приватность не
+  фильтруется — это локальная сводка, не LLM-контекст.
+- Фильтра по тегам в UI пока нет (теги находятся как текст); это ограничение
+  stage-08, не блокер.
 - Поиск по чату индексирует тред целиком; отдельные сообщения не являются
   отдельными результатами.
 - Live-проверка UI/данных не выполнялась.
@@ -91,4 +103,7 @@ flutter build windows --debug
 ## Ссылки
 
 - ADR-025.
+- Первое ревью A/B: [reviews/stage-08-review.md](../reviews/stage-08-review.md)
+  — **FAIL**.
+- Исправления: [reviews/stage-08-fix-results.md](../reviews/stage-08-fix-results.md).
 - Предыдущий этап: [stage-07.md](stage-07.md).

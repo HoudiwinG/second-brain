@@ -4,7 +4,6 @@ import 'package:second_brain/features/finance/domain/finance_transaction.dart';
 import 'package:second_brain/features/ideas/domain/idea_entry.dart';
 import 'package:second_brain/features/learning/domain/learning_session.dart';
 import 'package:second_brain/features/learning/domain/learning_track.dart';
-import 'package:second_brain/features/mail/domain/mail_message.dart';
 import 'package:second_brain/features/notes/domain/note.dart';
 import 'package:second_brain/features/tasks/domain/task_item.dart';
 
@@ -50,7 +49,7 @@ void main() {
           createdAt: DateTime.utc(2026, 1, 1),
         ),
       ],
-      mail: const <MailMessage>[],
+      mailMessages: 0,
       finance: [
         FinanceTransaction(
           id: 1,
@@ -80,7 +79,22 @@ void main() {
           updatedAt: DateTime.utc(2026, 1, 2),
           deletedAt: null,
         ),
+        FinanceTransaction(
+          id: 3,
+          amount: 1000,
+          currency: 'USD',
+          type: FinanceTransactionType.expense,
+          category: 'Travel',
+          account: null,
+          date: DateTime.utc(2026, 1, 2),
+          note: null,
+          isPrivateForLlm: false,
+          createdAt: DateTime.utc(2026, 1, 2),
+          updatedAt: DateTime.utc(2026, 1, 2),
+          deletedAt: null,
+        ),
       ],
+      currency: 'RUB',
       now: DateTime.utc(2026, 1, 3),
     );
 
@@ -93,6 +107,7 @@ void main() {
     expect(summary.income, 100);
     expect(summary.expense, 40);
     expect(summary.balance, 60);
+    expect(summary.transactions, 2);
     expect(summary.topExpenses.single.key, 'Food');
   });
 }
