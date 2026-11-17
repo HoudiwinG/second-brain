@@ -1,13 +1,12 @@
 # Контекст проекта (снимок состояния)
 
-- **Текущий этап:** stage-07 (поиск идей) — **первое ревью A/B: FAIL; блокер
-  и замечания исправлены, ожидается повторное ревью.** Crossref + Hacker News
-  для статей, Openverse для изображений, сохранение в идеи/заметки. Analyze 0,
-  test **235/235**, Windows debug build success. Отчёт:
-  [stages/stage-07.md](stages/stage-07.md); ревью:
-  [reviews/stage-07-review.md](reviews/stage-07-review.md); исправления:
-  [reviews/stage-07-fix-results.md](reviews/stage-07-fix-results.md); ADR-024;
-  схема **v8** без изменений.
+- **Текущий этап:** stage-07 (поиск идей) — **PASS WITH COMMENTS (0 MAJOR)**
+  после первого FAIL-ревью. Crossref + Hacker News для статей, Openverse для
+  изображений, сохранение в идеи/заметки. Analyze 0, test **235/235**, Windows
+  debug build success; CI `44020286840` (`5ed3d99`) — success. Отчёт:
+  [stages/stage-07.md](stages/stage-07.md); финальное ревью:
+  [reviews/stage-07-final-review.md](reviews/stage-07-final-review.md);
+  ADR-024; схема **v8** без изменений.
 - **Предыдущий этап:** stage-06 (почта) — **PASS WITH COMMENTS (0 MAJOR)**
   после двух FAIL-кругов; OAuth 2.0 + PKCE, Gmail API, Yandex 360 Mail API,
   Mail.ru отключён, кэш/поиск, per-message privacy, backup v3; схема v8.
@@ -60,7 +59,7 @@
   R02-009…R02-013 — [reviews/stage-02-fix-results.md](reviews/stage-02-fix-results.md).
 - **Текущий отчёт:** [stages/stage-07.md](stages/stage-07.md)
 - **Открытых CRITICAL:** 0
-- **Stage-07:** self-check, независимое ревью ещё не проводилось.
+- **Stage-07:** PASS WITH COMMENTS (0 MAJOR) после первого FAIL-ревью.
   **Stage-06:** PASS WITH COMMENTS (0 MAJOR) после двух FAIL-кругов.
   **Stage-05:** PASS WITH COMMENTS (0 MAJOR), S05-001…011 и S05Z fixed.
   **Stage-04:** PASS WITH COMMENTS, все S04R/S04F/S04Z fixed. **Открытых
@@ -71,8 +70,8 @@
   чата). TD-21 — отдельное принятое ограничение `REAL` для финансов.
 - **Сборка:** `flutter analyze --fatal-infos` — **No issues found**;
   `flutter test` — **235/235**; `flutter build windows --debug` — **success**
-  (2026-11-17, `build\windows\x64\runner\Debug\second_brain.exe`); CI —
-  после push stage-07.
+  (2026-11-17, `build\windows\x64\runner\Debug\second_brain.exe`); CI
+  `44020286840` (`5ed3d99`) — success, оба job'а.
 - **Flutter SDK:** 3.47.7 stable, `C:\src\flutter` (Dart 3.13.5)
 - **Windows-тулчейн:** Visual Studio Build Tools 2022 17.14 (MSVC v143 +
   Windows SDK + ATL/ATLMFC), установлен 2026-10-24; `flutter doctor` — без
@@ -187,11 +186,12 @@
 - `ArticleSearchProvider`: Crossref REST (научные статьи) и Hacker News
   Algolia (блоги/техно); `ArticleSearchService` объединяет и дедуплицирует.
 - `ImageSearchProvider`: Openverse (изображение, автор, лицензия, страница).
-- Диалог «Поиск идей» на экране идей: вкладки статьи/изображения, превью,
-  сохранение в `IdeaEntry`/`Note` с тегом `idea-search`.
+- Диалог «Поиск идей» на экране идей: вкладки статьи/изображения,
+  иконка/атрибуция, сохранение в `IdeaEntry`/`Note` с тегом `idea-search`.
 - Все запросы через `ApiClient`; без новых зависимостей и миграций.
 - Тесты: 235/235, analyze 0, Windows debug build success. Первое ревью A/B —
-  FAIL (HN вытеснялся Crossref), блокер исправлен; ожидается re-review.
+  FAIL (HN вытеснялся Crossref), блокер исправлен; финальное ревью —
+  **PASS WITH COMMENTS (0 MAJOR)**.
 
 ## Что сделано на stage-06
 
@@ -409,7 +409,7 @@
   `dashboard_period_test.dart` проверяет календарную семантику границ.
 
 ## Ближайшие задачи (stage-07)
-- Провести независимое ревью stage-07; после PASS — stage-08.
+- Stage-07 закрыт **PASS WITH COMMENTS**; начинать stage-08.
 - **Stage-08 — календарь + интеграции**: Google/Yandex Calendar OAuth,
   синхронизация задач, заготовки Notion/Obsidian/Telegram/Drive.
 - Закрыть ограничения stage-06/07: live OAuth/API smoke, Mail.ru,
@@ -470,7 +470,9 @@
 ## Ссылки
 - Отчёт stage-07: [stages/stage-07.md](stages/stage-07.md)
 - Ревью stage-07: [reviews/stage-07-review.md](reviews/stage-07-review.md)
-  (**FAIL**) и [reviews/stage-07-fix-results.md](reviews/stage-07-fix-results.md)
+  (**FAIL**), [reviews/stage-07-final-review.md](reviews/stage-07-final-review.md)
+  (**PASS WITH COMMENTS**) и
+  [reviews/stage-07-fix-results.md](reviews/stage-07-fix-results.md)
 - Отчёт stage-06: [stages/stage-06.md](stages/stage-06.md)
 - Ревью stage-06: [reviews/stage-06-review.md](reviews/stage-06-review.md)
   (**FAIL**), [reviews/stage-06-re-review.md](reviews/stage-06-re-review.md)

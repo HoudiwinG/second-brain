@@ -1,10 +1,11 @@
 # INDEX — карта документации
 
 ## Состояние
-- Текущий этап: stage-07 (поиск идей) — **реализация и self-check готовы,
-  независимое ревью ещё не проводилось.** Crossref/Hacker News для статей,
-  Openverse для изображений, сохранение в идеи/заметки; схема **v8** без
-  изменений. Analyze 0, test **235/235**, Windows debug build success.
+- Текущий этап: stage-07 (поиск идей) — **PASS WITH COMMENTS (0 MAJOR)**
+  после первого FAIL-ревью. Crossref/Hacker News для статей, Openverse для
+  изображений, сохранение в идеи/заметки; схема **v8** без изменений.
+  Analyze 0, test **235/235**, Windows debug build success; CI
+  `44020286840` (`5ed3d99`) — success, оба job'а.
 - Предыдущий этап: stage-06 (почта) — **PASS WITH COMMENTS (0 MAJOR)** после
   двух FAIL-кругов; OAuth 2.0 + PKCE, Gmail API, Yandex 360 Mail API,
   Mail.ru отключён, локальный кэш/поиск, privacy; схема v8, backup v3.
@@ -12,7 +13,9 @@
   WITH COMMENTS; stage-03 — PASS; stage-02 — PASS WITH COMMENTS.
 - Гейты stage-07 (2026-11-17): `flutter analyze --fatal-infos` — **No issues
   found**, `flutter test` — **235/235**, `flutter build windows --debug` —
-  **success**; CI — после push.
+  **success**; CI
+  [44020286840](https://github.com/HoudiwinG/second-brain/actions/runs/44020286840)
+  (`5ed3d99`) — success, оба job'а.
 - Гейты stage-06 (2026-11-16): analyze 0, test 228/228, Windows debug build
   success; CI
   [43929611715](https://github.com/HoudiwinG/second-brain/actions/runs/43929611715)
@@ -85,8 +88,10 @@
   первого/второго/финального круга; analyze 0, test 228/228.
 - [stage-07-review](reviews/stage-07-review.md) — первое ревью A/B
   (2026-11-17, `a537265`): **FAIL**, блокер HN-выдачи.
+- [stage-07-final-review](reviews/stage-07-final-review.md) — финальное
+  ревью A/B (2026-11-17, `5ed3d99`): **PASS WITH COMMENTS (0 MAJOR)**.
 - [stage-07-fix-results](reviews/stage-07-fix-results.md) — round-robin,
-  UI/сеть/тесты; analyze 0, test 235/235; ожидается re-review.
+  UI/сеть/тесты; analyze 0, test 235/235.
 - Исправления stage-04:
   [reviews/stage-04-fix-results.md](reviews/stage-04-fix-results.md) — все 9
   исходных находок закрыты коммитом `821b4f8` (+ docs-коммит).
@@ -131,8 +136,8 @@
   **PASS WITH COMMENTS (0 MAJOR)**)
 - [stage-07](stages/stage-07.md) — поиск идей (Crossref + Hacker News,
   Openverse, сохранение в идеи/заметки; ADR-024; схема v8 без изменений;
-  analyze 0, test 235/235, Windows debug build success; независимое ревью
-  ожидается)
+  analyze 0, test 235/235, Windows debug build success; FAIL → **PASS WITH
+  COMMENTS (0 MAJOR)**)
 
 ## Шаблоны
 - [decisions.template.md](decisions.template.md) — формат ADR

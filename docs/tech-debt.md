@@ -104,11 +104,11 @@
 
 > **Stage-07 (2026-11-17):** поиск идей — Crossref + Hacker News для статей,
 > Openverse для изображений, сохранение в идеи/заметки. Первое ревью A/B —
-> **FAIL** (HN вытеснялся Crossref); блокер и замечания исправлены. Analyze 0,
-> test **235/235**, Windows debug build success; ожидается re-review;
-> live-запросы к публичным API и rate limits не проверялись. Отчёт —
-> [stages/stage-07.md](stages/stage-07.md), ревью —
-> [reviews/stage-07-review.md](reviews/stage-07-review.md), ADR-024.
+> **FAIL** (HN вытеснялся Crossref), затем **PASS WITH COMMENTS (0 MAJOR)**.
+> Analyze 0, test **235/235**, Windows debug build success; live-запросы к
+> публичным API и rate limits не проверялись. Отчёт —
+> [stages/stage-07.md](stages/stage-07.md), финальное ревью —
+> [reviews/stage-07-final-review.md](reviews/stage-07-final-review.md), ADR-024.
 
 Проверка после исправлений R02-009…R02-013 (2026-10-24, Flutter 3.47.7):
 `flutter pub get --enforce-lockfile` → OK; `flutter analyze --fatal-infos` →

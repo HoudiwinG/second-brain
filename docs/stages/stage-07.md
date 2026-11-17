@@ -3,12 +3,12 @@
 - **Дата:** 2026-11-17
 - **Агент:** agent-1 (OpenCode)
 - **Ветка:** `master`
-- **Статус:** **fixes ready**, ожидается повторное ревью. Первое ревью A/B —
-  **FAIL** (S07-A-001/S07-B-001: HN вытеснялся Crossref); блокер и
-  неблокирующие замечания исправлены (см.
-  [reviews/stage-07-fix-results.md](../reviews/stage-07-fix-results.md)).
+- **Статус:** **PASS WITH COMMENTS (0 MAJOR).** Первое ревью A/B — FAIL
+  (HN вытеснялся Crossref); блокер исправлен, финальное ревью A/B —
+  PASS WITH COMMENTS (см. [reviews/stage-07-final-review.md](../reviews/stage-07-final-review.md)).
   Гейты: `flutter analyze --fatal-infos` — 0 issues, `flutter test` —
-  **235/235**, `flutter build windows --debug` — success.
+  **235/235**, `flutter build windows --debug` — success; CI
+  `44020286840` (`5ed3d99`) — success, оба job'а.
 - **Предыдущий этап:** stage-06 — **PASS WITH COMMENTS (0 MAJOR)**.
 - **Схема БД:** **v8** без изменений.
 - **ADR:** ADR-024.
@@ -114,5 +114,8 @@ flutter build windows --debug
 - ADR-024.
 - Первое ревью A/B: [reviews/stage-07-review.md](../reviews/stage-07-review.md)
   — **FAIL**.
+- Финальное ревью A/B:
+  [reviews/stage-07-final-review.md](../reviews/stage-07-final-review.md) —
+  **PASS WITH COMMENTS (0 MAJOR)**.
 - Исправления: [reviews/stage-07-fix-results.md](../reviews/stage-07-fix-results.md).
 - Предыдущий этап: [stage-06.md](stage-06.md).

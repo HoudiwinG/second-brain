@@ -795,15 +795,18 @@ Mail API, локальный кэш/поиск, per-message privacy, сумма�
 Реализованы Crossref/Hacker News для статей, Openverse для изображений и
 диалог поиска с сохранением результатов в идеи/заметки. Схема не менялась
 (v8), новых зависимостей нет. Analyze 0, test **235/235**, Windows debug build
-success. Первое ревью A/B — FAIL (HN вытеснялся Crossref); блокер исправлен;
-ожидается re-review. Live-запросы к публичным API не выполнялись.
+success. Первое ревью A/B — FAIL (HN вытеснялся Crossref), затем финальное
+ревью — **PASS WITH COMMENTS (0 MAJOR)**. Live-запросы к публичным API не
+выполнялись.
 
 | Timestamp (UTC) | ID | Действие | Примечание |
 |-----------------|----|----------|------------|
 | 2026-11-17 | — | contracts | ArticleSearchProvider/ImageSearchProvider, модели результатов |
 | 2026-11-17 | — | providers | Crossref, Hacker News Algolia, Openverse через ApiClient |
 | 2026-11-17 | — | service | агрегация статей, дедупликация по URL, partial failure |
-| 2026-11-17 | — | UI | диалог поиска, вкладки, превью, сохранение в идеи/заметки |
+| 2026-11-17 | — | UI | диалог поиска, вкладки, иконка/атрибуция, сохранение |
 | 2026-11-17 | — | tests | Crossref, HN, Openverse, агрегатор, widget-сохранение |
 | 2026-11-17 | — | review | A/B FAIL: HN вытеснялся Crossref; UI/сеть/тесты |
 | 2026-11-17 | — | fixes | round-robin, вкладки, refresh, UA, entities, 235/235 |
+| 2026-11-17 | — | final-review | A/B PASS WITH COMMENTS (0 MAJOR); 235/235 |
+| 2026-11-17 | — | CI | run 44020286840 (`5ed3d99`): analyze-and-test + build-windows success |
