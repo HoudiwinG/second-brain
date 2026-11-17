@@ -256,6 +256,42 @@ class AppLocalizationsRu extends AppLocalizations {
   String get ideasEmpty => 'Идей пока нет';
 
   @override
+  String get ideasSearch => 'Поиск идей';
+
+  @override
+  String get ideasSearchTitle => 'Поиск статей и изображений';
+
+  @override
+  String get ideasSearchHint => 'Тема, вопрос или запрос';
+
+  @override
+  String get ideasSearchArticles => 'Статьи';
+
+  @override
+  String get ideasSearchImages => 'Изображения';
+
+  @override
+  String get ideasSearchAction => 'Найти';
+
+  @override
+  String get ideasSearching => 'Ищем…';
+
+  @override
+  String get ideasSearchEmpty => 'Ничего не найдено';
+
+  @override
+  String get ideasSearchError => 'Не удалось выполнить поиск';
+
+  @override
+  String get ideasSaveIdea => 'В идеи';
+
+  @override
+  String get ideasSaveNote => 'В заметки';
+
+  @override
+  String get ideasSearchSaved => 'Сохранено';
+
+  @override
   String get financeEmpty => 'Операций пока нет';
 
   @override

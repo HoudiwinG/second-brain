@@ -789,3 +789,20 @@ Mail API, локальный кэш/поиск, per-message privacy, сумма�
 | 2026-11-16 | — | CI | run 43929611715 (`952a1e9`): analyze-and-test + build-windows success |
 | 2026-11-16 | — | final-review | A/B PASS WITH COMMENTS (0 MAJOR); 228/228 |
 | 2026-11-16 | — | final-fixes | OAuth через ApiClient, Gmail MIME, re-auth clientId, privacy backup |
+
+## Stage-07: поиск идей (2026-11-17)
+
+Реализованы Crossref/Hacker News для статей, Openverse для изображений и
+диалог поиска с сохранением результатов в идеи/заметки. Схема не менялась
+(v8), новых зависимостей нет. Analyze 0, test **234/234**, Windows debug build
+success. Независимое ревью ещё не проводилось; live-запросы к публичным API
+не выполнялись.
+
+| Timestamp (UTC) | ID | Действие | Примечание |
+|-----------------|----|----------|------------|
+| 2026-11-17 | — | contracts | ArticleSearchProvider/ImageSearchProvider, модели результатов |
+| 2026-11-17 | — | providers | Crossref, Hacker News Algolia, Openverse через ApiClient |
+| 2026-11-17 | — | service | агрегация статей, дедупликация по URL, partial failure |
+| 2026-11-17 | — | UI | диалог поиска, вкладки, превью, сохранение в идеи/заметки |
+| 2026-11-17 | — | tests | Crossref, HN, Openverse, агрегатор, widget-сохранение |
+| 2026-11-17 | — | статус | self-check done; ожидается ревью stage-07 |

@@ -5,6 +5,7 @@ import '../../../app/di.dart';
 import '../../../app/widgets/data_ui.dart';
 import '../../../l10n/generated/app_localizations.dart';
 import '../domain/idea_entry.dart';
+import 'idea_search_dialog.dart';
 
 /// Дневник идей: CRUD, источник, настроение, теги и приватность.
 class IdeasScreen extends ConsumerStatefulWidget {
@@ -80,6 +81,14 @@ class _IdeasScreenState extends ConsumerState<IdeasScreen> {
       appBar: AppBar(
         title: Text(lcm.navIdeas),
         actions: [
+          IconButton(
+            tooltip: lcm.ideasSearch,
+            onPressed: () => showDialog<void>(
+              context: context,
+              builder: (_) => const IdeaSearchDialog(),
+            ),
+            icon: const Icon(Icons.travel_explore_outlined),
+          ),
           IconButton(
             tooltip: lcm.actionRefresh,
             onPressed: _reload,

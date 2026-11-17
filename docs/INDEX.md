@@ -1,24 +1,26 @@
 # INDEX — карта документации
 
 ## Состояние
-- Текущий этап: stage-06 (почта) — **PASS WITH COMMENTS (0 MAJOR)** после
-  двух FAIL-кругов; блокеры исправлены, финальное ревью A/B — PASS WITH
-  COMMENTS. OAuth 2.0 + PKCE, токены в secure storage, Gmail API, официальный
-  Yandex 360 Mail API, Mail.ru отключён (нет официального REST-чтения),
-  локальный кэш/поиск, per-message privacy, суммаризация и задача; схема
-  **v8**, backup v3. Analyze 0, test **228/228**, Windows debug build success.
-- Предыдущий этап: stage-05 (обучение) — **PASS WITH COMMENTS (0 MAJOR)**;
-  S05-001…011 и S05Z fixed; analyze 0, test 193/193, CI
-  `43901179307` (`82f49d5`) — success. Stage-04 — **PASS WITH COMMENTS**;
-  stage-03 — **PASS**; stage-02 — **PASS WITH COMMENTS**.
-- Гейты stage-06 (2026-11-16): `flutter analyze --fatal-infos` — **No issues
-  found**, `flutter test` — **228/228**, `flutter build windows --debug` —
-  **success**; CI
+- Текущий этап: stage-07 (поиск идей) — **реализация и self-check готовы,
+  независимое ревью ещё не проводилось.** Crossref/Hacker News для статей,
+  Openverse для изображений, сохранение в идеи/заметки; схема **v8** без
+  изменений. Analyze 0, test **234/234**, Windows debug build success.
+- Предыдущий этап: stage-06 (почта) — **PASS WITH COMMENTS (0 MAJOR)** после
+  двух FAIL-кругов; OAuth 2.0 + PKCE, Gmail API, Yandex 360 Mail API,
+  Mail.ru отключён, локальный кэш/поиск, privacy; схема v8, backup v3.
+  Analyze 0, test 228/228. Stage-05 — PASS WITH COMMENTS; stage-04 — PASS
+  WITH COMMENTS; stage-03 — PASS; stage-02 — PASS WITH COMMENTS.
+- Гейты stage-07 (2026-11-17): `flutter analyze --fatal-infos` — **No issues
+  found**, `flutter test` — **234/234**, `flutter build windows --debug` —
+  **success**; CI — после push.
+- Гейты stage-06 (2026-11-16): analyze 0, test 228/228, Windows debug build
+  success; CI
   [43929611715](https://github.com/HoudiwinG/second-brain/actions/runs/43929611715)
-  (`952a1e9`) — success, оба job'а.
+  (`952a1e9`) — success.
 - Локальные гейты stage-03 (2026-10-28): analyze 0, test 132/132, Windows debug
   build; CI `40636764573` (`49bc00f`, включая `14e63a7`) — success.
 - Снимок состояния: [context.md](context.md)
+- Отчёт stage-07: [stages/stage-07.md](stages/stage-07.md).
 - Отчёт stage-06: [stages/stage-06.md](stages/stage-06.md).
 - Отчёт stage-05: [stages/stage-05.md](stages/stage-05.md).
 - Отчёт stage-03: [stages/stage-03.md](stages/stage-03.md).
@@ -99,7 +101,7 @@
 2. Прочитай [context.md](context.md) — текущее состояние
 3. Прочитай [decisions.md](decisions.md) — все ADR
 4. Прочитай [tech-debt.md](tech-debt.md) — открытый/принятый техдолг
-5. Прочитай отчёт последнего этапа: [stages/stage-06.md](stages/stage-06.md)
+5. Прочитай отчёт последнего этапа: [stages/stage-07.md](stages/stage-07.md)
 
 ## Отчёты по этапам
 - [stage-00](stages/stage-00.md) — каркас (done, PASS WITH COMMENTS)
@@ -123,6 +125,10 @@
   per-message privacy, суммаризация, задача; ADR-023; схема v8, backup v3;
   analyze 0, test 228/228, Windows debug build success; два FAIL-круга →
   **PASS WITH COMMENTS (0 MAJOR)**)
+- [stage-07](stages/stage-07.md) — поиск идей (Crossref + Hacker News,
+  Openverse, сохранение в идеи/заметки; ADR-024; схема v8 без изменений;
+  analyze 0, test 234/234, Windows debug build success; независимое ревью
+  ожидается)
 
 ## Шаблоны
 - [decisions.template.md](decisions.template.md) — формат ADR
@@ -173,12 +179,12 @@
 - [decisions.md](decisions.md) — все ADR
 - Разделы:
   - architecture: ADR-001, ADR-002, ADR-004, ADR-005, ADR-008, ADR-012,
-    ADR-016, ADR-018, ADR-019, ADR-020, ADR-021, ADR-022, ADR-023
+    ADR-016, ADR-018, ADR-019, ADR-020, ADR-021, ADR-022, ADR-023, ADR-024
   - security: ADR-003, ADR-018, ADR-020, ADR-021, ADR-022, ADR-023
   - dependency: ADR-006, ADR-007, ADR-011, ADR-017
-  - integration: ADR-006, ADR-009, ADR-014, ADR-017, ADR-019, ADR-023
+  - integration: ADR-006, ADR-009, ADR-014, ADR-017, ADR-019, ADR-023, ADR-024
   - ux: ADR-005, ADR-008, ADR-010, ADR-016
-  - data/search: ADR-013
+  - data/search: ADR-013, ADR-024
   - schema: ADR-002, ADR-012, ADR-015, ADR-018, ADR-021, ADR-022, ADR-023
 
 ## Дебаг

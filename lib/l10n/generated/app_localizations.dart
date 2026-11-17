@@ -584,6 +584,78 @@ abstract class AppLocalizations {
   /// **'No ideas yet'**
   String get ideasEmpty;
 
+  /// No description provided for @ideasSearch.
+  ///
+  /// In en, this message translates to:
+  /// **'Search ideas'**
+  String get ideasSearch;
+
+  /// No description provided for @ideasSearchTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Search articles and images'**
+  String get ideasSearchTitle;
+
+  /// No description provided for @ideasSearchHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Topic, question or query'**
+  String get ideasSearchHint;
+
+  /// No description provided for @ideasSearchArticles.
+  ///
+  /// In en, this message translates to:
+  /// **'Articles'**
+  String get ideasSearchArticles;
+
+  /// No description provided for @ideasSearchImages.
+  ///
+  /// In en, this message translates to:
+  /// **'Images'**
+  String get ideasSearchImages;
+
+  /// No description provided for @ideasSearchAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Search'**
+  String get ideasSearchAction;
+
+  /// No description provided for @ideasSearching.
+  ///
+  /// In en, this message translates to:
+  /// **'Searching…'**
+  String get ideasSearching;
+
+  /// No description provided for @ideasSearchEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing found'**
+  String get ideasSearchEmpty;
+
+  /// No description provided for @ideasSearchError.
+  ///
+  /// In en, this message translates to:
+  /// **'Search failed'**
+  String get ideasSearchError;
+
+  /// No description provided for @ideasSaveIdea.
+  ///
+  /// In en, this message translates to:
+  /// **'To ideas'**
+  String get ideasSaveIdea;
+
+  /// No description provided for @ideasSaveNote.
+  ///
+  /// In en, this message translates to:
+  /// **'To notes'**
+  String get ideasSaveNote;
+
+  /// No description provided for @ideasSearchSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved'**
+  String get ideasSearchSaved;
+
   /// No description provided for @financeEmpty.
   ///
   /// In en, this message translates to:

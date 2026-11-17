@@ -102,6 +102,12 @@
 > финальное ревью —
 > [reviews/stage-06-final-review.md](reviews/stage-06-final-review.md), ADR-023.
 
+> **Stage-07 (2026-11-17):** поиск идей — Crossref + Hacker News для статей,
+> Openverse для изображений, сохранение в идеи/заметки. Analyze 0, test
+> **234/234**, Windows debug build success. Независимое ревью ещё не
+> проводилось; live-запросы к публичным API и rate limits не проверялись.
+> Отчёт — [stages/stage-07.md](stages/stage-07.md), ADR-024.
+
 Проверка после исправлений R02-009…R02-013 (2026-10-24, Flutter 3.47.7):
 `flutter pub get --enforce-lockfile` → OK; `flutter analyze --fatal-infos` →
 0 issues; `flutter test` → **77/77**; `flutter build windows --debug` →

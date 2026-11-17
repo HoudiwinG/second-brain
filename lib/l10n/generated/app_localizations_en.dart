@@ -256,6 +256,42 @@ class AppLocalizationsEn extends AppLocalizations {
   String get ideasEmpty => 'No ideas yet';
 
   @override
+  String get ideasSearch => 'Search ideas';
+
+  @override
+  String get ideasSearchTitle => 'Search articles and images';
+
+  @override
+  String get ideasSearchHint => 'Topic, question or query';
+
+  @override
+  String get ideasSearchArticles => 'Articles';
+
+  @override
+  String get ideasSearchImages => 'Images';
+
+  @override
+  String get ideasSearchAction => 'Search';
+
+  @override
+  String get ideasSearching => 'Searching…';
+
+  @override
+  String get ideasSearchEmpty => 'Nothing found';
+
+  @override
+  String get ideasSearchError => 'Search failed';
+
+  @override
+  String get ideasSaveIdea => 'To ideas';
+
+  @override
+  String get ideasSaveNote => 'To notes';
+
+  @override
+  String get ideasSearchSaved => 'Saved';
+
+  @override
   String get financeEmpty => 'No transactions yet';
 
   @override

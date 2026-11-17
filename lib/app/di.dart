@@ -22,6 +22,8 @@ import '../data/repositories/tags_repository.dart';
 import '../data/repositories/tasks_repository.dart';
 import '../data/repositories/tool_audit_repository.dart';
 import '../features/finance/domain/finance_transaction.dart';
+import '../features/ideas/data/article_search_providers.dart';
+import '../features/ideas/data/image_search_providers.dart';
 import '../features/ideas/domain/idea_entry.dart';
 import '../features/learning/application/learning_trainer.dart';
 import '../features/learning/domain/learning_track.dart';
@@ -91,6 +93,23 @@ final tasksRepositoryProvider = FutureProvider<TasksRepository>((ref) async {
 final ideasRepositoryProvider = FutureProvider<IdeasRepository>((ref) async {
   final db = await ref.watch(appDatabaseProvider.future);
   return DriftIdeasRepository(db);
+});
+
+/// Поиск статей: Crossref (наука) + Hacker News (блоги/техно).
+final articleSearchServiceProvider = Provider<ArticleSearchService>((ref) {
+  final client = http.Client();
+  ref.onDispose(client.close);
+  return ArticleSearchService([
+    CrossrefArticleSearchProvider(client: client),
+    HackerNewsArticleSearchProvider(client: client),
+  ]);
+});
+
+/// Первая реализация ImageSearchProvider — Openverse.
+final imageSearchServiceProvider = Provider<ImageSearchService>((ref) {
+  final client = http.Client();
+  ref.onDispose(client.close);
+  return ImageSearchService(OpenverseImageSearchProvider(client: client));
 });
 
 final financeRepositoryProvider = FutureProvider<FinanceRepository>((
