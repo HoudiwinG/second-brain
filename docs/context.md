@@ -1,13 +1,13 @@
 # Контекст проекта (снимок состояния)
 
-- **Текущий этап:** stage-09 (полировка MVP) — **первое ревью A/B: FAIL;
-  блокеры исправлены, ожидается повторное ревью.** Windows release build и
-  Inno Setup installer (с VC++ runtime), perf-smoke, packaging tests, CI
-  artifact, README/RELEASE. Analyze 0, test **243/243**, debug/release build
-  success. Отчёт: [stages/stage-09.md](stages/stage-09.md); ревью:
-  [reviews/stage-09-review.md](reviews/stage-09-review.md); исправления:
-  [reviews/stage-09-fix-results.md](reviews/stage-09-fix-results.md); ADR-026;
-  схема **v8** без изменений.
+- **Текущий этап:** stage-09 (полировка MVP) — **PASS WITH COMMENTS
+  (0 MAJOR)** после первого FAIL-ревью. Windows release build и Inno Setup
+  installer (с VC++ runtime), perf-smoke, packaging tests, CI artifact,
+  README/RELEASE. Analyze 0, test **243/243**, debug/release build success;
+  CI `44124645140` (`1bc7827`) — success, artifact ~36 MB. Отчёт:
+  [stages/stage-09.md](stages/stage-09.md); финальное ревью:
+  [reviews/stage-09-final-review.md](reviews/stage-09-final-review.md);
+  ADR-026; схема **v8** без изменений.
 - **Предыдущий этап:** stage-08 — **PASS WITH COMMENTS (0 MAJOR)** после
   первого FAIL-ревью; FTS/аналитика, CI `44030371436` (`3743fc2`), 243/243.
   Финальное ревью:
@@ -62,7 +62,7 @@
   R02-009…R02-013 — [reviews/stage-02-fix-results.md](reviews/stage-02-fix-results.md).
 - **Текущий отчёт:** [stages/stage-09.md](stages/stage-09.md)
 - **Открытых CRITICAL:** 0
-- **Stage-09:** первое ревью FAIL; блокеры исправлены, ожидается re-review.
+- **Stage-09:** PASS WITH COMMENTS (0 MAJOR) после первого FAIL-ревью.
   **Stage-08:** PASS WITH COMMENTS (0 MAJOR) после первого FAIL-ревью.
   **Stage-07:** PASS WITH COMMENTS (0 MAJOR) после первого FAIL-ревью.
   **Stage-06:** PASS WITH COMMENTS (0 MAJOR) после двух FAIL-кругов.
@@ -75,8 +75,8 @@
   чата). TD-21 — отдельное принятое ограничение `REAL` для финансов.
 - **Сборка:** `flutter analyze --fatal-infos` — **No issues found**;
   `flutter test` — **243/243**; `flutter build windows --debug` и
-  `--release` — **success** (2026-11-17); CI `44119141513` (`234fc29`) —
-  success, installer artifact `second-brain-windows` (~12 MB).
+  `--release` — **success** (2026-11-17); CI `44124645140` (`1bc7827`) —
+  success, installer artifact `second-brain-windows` (~36 MB).
 - **Installer:** `installer/second_brain.iss`,
   `tool/build_installer.ps1`, artifact `second-brain-windows`.
 - **Flutter SDK:** 3.47.7 stable, `C:\src\flutter` (Dart 3.13.5)
@@ -197,7 +197,8 @@
   artifact `second-brain-windows`.
 - README, `docs/RELEASE.md`, ADR-026. Схема v8 не менялась.
 - Тесты: 243/243, analyze 0, debug/release build success. Первое ревью A/B —
-  FAIL (MSVC runtime/perf), блокеры исправлены; ожидается re-review.
+  FAIL (MSVC runtime/perf), блокеры исправлены; финальное ревью —
+  **PASS WITH COMMENTS (0 MAJOR)**.
 
 ## Что сделано на stage-08
 
@@ -207,9 +208,9 @@
   и переход в раздел из результата.
 - Аналитика: чистая `buildAnalyticsSummary` и экран `/analytics` (задачи,
   обучение, контент, почта, финансы, топ расходов); кнопка на дашборде.
-- Схема v8 без миграций, новых зависимостей нет. Тесты: 243/243, analyze 0,
+- Схема v8 без миграций, новых зависимостей нет. Тесты: 241/241, analyze 0,
   Windows debug build success. Первое ревью A/B — FAIL, блокеры исправлены;
-финальное ревью — **PASS WITH COMMENTS (0 MAJOR)**.
+  финальное ревью — **PASS WITH COMMENTS (0 MAJOR)**.
 
 ## Что сделано на stage-07
 
@@ -504,7 +505,9 @@
 ## Ссылки
 - Отчёт stage-09: [stages/stage-09.md](stages/stage-09.md)
 - Ревью stage-09: [reviews/stage-09-review.md](reviews/stage-09-review.md)
-  (**FAIL**) и [reviews/stage-09-fix-results.md](reviews/stage-09-fix-results.md)
+  (**FAIL**), [reviews/stage-09-final-review.md](reviews/stage-09-final-review.md)
+  (**PASS WITH COMMENTS**) и
+  [reviews/stage-09-fix-results.md](reviews/stage-09-fix-results.md)
 - Отчёт stage-08: [stages/stage-08.md](stages/stage-08.md)
 - Ревью stage-08: [reviews/stage-08-review.md](reviews/stage-08-review.md)
   (**FAIL**), [reviews/stage-08-final-review.md](reviews/stage-08-final-review.md)

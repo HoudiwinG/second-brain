@@ -9,13 +9,14 @@
   Windows-инсталлятор. Ожидается независимое ревью stage-09.
 - Данные локальны (SQLite/Drift), секреты — в secure storage.
 - Точки входа: [docs/INDEX.md](docs/INDEX.md), [docs/context.md](docs/context.md),
-  [docs/decisions.md](docs/decisions.md), [docs/tech-debt.md](docs/tech-debt.md).
+  [docs/decisions.md](docs/decisions.md), [docs/tech-debt.md](docs/tech-debt.md),
+  [docs/RELEASE.md](docs/RELEASE.md), [docs/PERFORMANCE.md](docs/PERFORMANCE.md).
 
 ## Быстрый старт
 ```powershell
 flutter pub get
 flutter analyze --fatal-infos   # 0 issues
-flutter test                    # 241 тест
+flutter test                    # 243 теста
 flutter run -d windows
 ```
 

@@ -1,13 +1,13 @@
 # INDEX — карта документации
 
 ## Состояние
-- Текущий этап: stage-09 (полировка MVP) — **первое ревью A/B: FAIL; блокеры
-  исправлены, ожидается повторное ревью.** Windows release build и Inno Setup
-  installer (с VC++ runtime), perf-smoke, packaging tests, CI artifact,
+- Текущий этап: stage-09 (полировка MVP) — **PASS WITH COMMENTS (0 MAJOR)**
+  после первого FAIL-ревью. Windows release build и Inno Setup installer (с
+  VC++ runtime), perf-smoke, packaging tests, CI artifact,
   README/RELEASE/ADR-026. Analyze 0, test **243/243**, debug/release build
-  success.
+  success; CI `44124645140` (`1bc7827`) — success, artifact ~36 MB.
 - Предыдущий этап: stage-08 — **PASS WITH COMMENTS (0 MAJOR)** после первого
-  FAIL-ревью; CI `44030371436` (`3743fc2`) — success, 243/243.
+  FAIL-ревью; CI `44030371436` (`3743fc2`) — success, 241/241.
 - Предыдущий этап: stage-06 (почта) — **PASS WITH COMMENTS (0 MAJOR)** после
   двух FAIL-кругов; OAuth 2.0 + PKCE, Gmail API, Yandex 360 Mail API,
   Mail.ru отключён, локальный кэш/поиск, privacy; схема v8, backup v3.
@@ -15,9 +15,9 @@
   WITH COMMENTS; stage-03 — PASS; stage-02 — PASS WITH COMMENTS.
 - Гейты stage-09 (2026-11-17): `flutter analyze --fatal-infos` — **No issues
   found**, `flutter test` — **243/243**, debug/release Windows build —
-  **success**; CI `44119141513` (`234fc29`) — success, installer artifact
-  `second-brain-windows` (~12 MB).
-- Гейты stage-08 (2026-11-17): analyze 0, test 243/243, Windows debug build
+  **success**; CI `44124645140` (`1bc7827`) — success, installer artifact
+  `second-brain-windows` (~36 MB).
+- Гейты stage-08 (2026-11-17): analyze 0, test 241/241, Windows debug build
   success; CI
   [44030371436](https://github.com/HoudiwinG/second-brain/actions/runs/44030371436)
   (`3743fc2`) — success, оба job'а.
@@ -55,6 +55,8 @@
   [reviews/stage-02-review-results.md](reviews/stage-02-review-results.md),
   R02-009…R02-013 —
   [reviews/stage-02-fix-results.md](reviews/stage-02-fix-results.md)
+- Релиз: [RELEASE.md](RELEASE.md), производительность:
+  [PERFORMANCE.md](PERFORMANCE.md).
 - Реестр техдолга: [tech-debt.md](tech-debt.md) — открытых TD 0,
   принятых 15, исправлено 37 (включая R02-001…R02-013, TD-27, TD-16);
   R02-014 (MINOR) и R02-015 (NIT) остаются комментариями ревью №3.
@@ -108,11 +110,13 @@
 - [stage-08-final-review](reviews/stage-08-final-review.md) — финальное
   ревью A/B (2026-11-17, `3743fc2`): **PASS WITH COMMENTS (0 MAJOR)**.
 - [stage-08-fix-results](reviews/stage-08-fix-results.md) — SQL-фильтры,
-  backfill индекса, RUB-only аналитика, count; analyze 0, test 243/243.
+  backfill индекса, RUB-only аналитика, count; analyze 0, test 241/241.
 - [stage-09-review](reviews/stage-09-review.md) — первое ревью A/B
   (2026-11-17, `234fc29`): **FAIL** (MSVC runtime, perf-проход).
+- [stage-09-final-review](reviews/stage-09-final-review.md) — финальное
+  ревью A/B (2026-11-17, `1bc7827`): **PASS WITH COMMENTS (0 MAJOR)**.
 - [stage-09-fix-results](reviews/stage-09-fix-results.md) — VC redist,
-  perf-smoke, packaging tests; analyze 0, test 243/243; ожидается re-review.
+  perf-smoke, packaging tests; analyze 0, test 243/243.
 - Исправления stage-04:
   [reviews/stage-04-fix-results.md](reviews/stage-04-fix-results.md) — все 9
   исходных находок закрыты коммитом `821b4f8` (+ docs-коммит).
@@ -131,7 +135,7 @@
 2. Прочитай [context.md](context.md) — текущее состояние
 3. Прочитай [decisions.md](decisions.md) — все ADR
 4. Прочитай [tech-debt.md](tech-debt.md) — открытый/принятый техдолг
-5. Прочитай отчёт последнего этапа: [stages/stage-08.md](stages/stage-08.md)
+5. Прочитай отчёт последнего этапа: [stages/stage-09.md](stages/stage-09.md)
 
 ## Отчёты по этапам
 - [stage-00](stages/stage-00.md) — каркас (done, PASS WITH COMMENTS)
@@ -161,10 +165,10 @@
   COMMENTS (0 MAJOR)**)
 - [stage-08](stages/stage-08.md) — глобальный поиск + аналитика (FTS по
   обучению/чату/почте, SQL-фильтры, аналитика; ADR-025; схема v8; analyze 0,
-  test 243/243, Windows build success; FAIL → **PASS WITH COMMENTS**)
+  test 241/241, Windows build success; FAIL → **PASS WITH COMMENTS**)
 - [stage-09](stages/stage-09.md) — полировка MVP (release build, Inno Setup
   installer + VC++ runtime, perf-smoke, CI artifact, README/RELEASE; ADR-026;
-  analyze 0, test 243/243; FAIL → ожидается re-review)
+  analyze 0, test 243/243; FAIL → **PASS WITH COMMENTS**)
 
 ## Шаблоны
 - [decisions.template.md](decisions.template.md) — формат ADR

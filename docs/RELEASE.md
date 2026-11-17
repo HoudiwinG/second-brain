@@ -23,7 +23,8 @@ choco install innosetup -y   # Inno Setup >= 6.3
 ```
 - [ ] `dist/SecondBrain-<version>-setup.exe` создан.
 - [ ] `vc_redist.x64.exe` не попал в git (скачивается скриптом).
-- [ ] Установка в `%LOCALAPPDATA%\Programs\Second Brain` (без admin).
+- [ ] Установка в `%LOCALAPPDATA%\Programs\Second Brain` (без admin; для
+  отсутствующего VC++ runtime возможен однократный UAC).
 - [ ] Ярлыки меню «Пуск»/рабочего стола, uninstaller работают.
 - [ ] Запуск после установки, данные в `%APPDATA%`/secure storage на месте.
 - [ ] Обновление поверх старой версии сохраняет БД и настройки.

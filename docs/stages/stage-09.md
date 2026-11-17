@@ -3,13 +3,16 @@
 - **Дата:** 2026-11-17
 - **Агент:** agent-1 (OpenCode)
 - **Ветка:** `master`
-- **Статус:** **fixes ready**, ожидается повторное ревью. Первое ревью A/B —
-  FAIL (MSVC runtime в installer, perf-проход); блокеры исправлены.
+- **Статус:** **PASS WITH COMMENTS (0 MAJOR).** Первое ревью A/B — FAIL
+  (MSVC runtime в installer, perf-проход); блокеры исправлены, финальное
+  ревью A/B — PASS WITH COMMENTS (см.
+  [reviews/stage-09-final-review.md](../reviews/stage-09-final-review.md)).
   Гейты: `flutter analyze --fatal-infos` — 0 issues, `flutter test` —
   **243/243**, `flutter build windows --debug`/`--release` — success.
-- **CI/installer:** `44122513044` (`f09349c`) — success, artifact
-  `second-brain-windows`, `SecondBrain-1.0.0-setup.exe` 36 270 862 B,
-  SHA256 `064C8C980821D2CE7BF5762D605C210929112822B74E56DD9A54BEC827020C8F`.
+- **CI/installer:** `44124645140` (`1bc7827`) — success, artifact
+  `second-brain-windows` (~36 MB). Байтовая воспроизводимость setup не
+  гарантируется (Inno timestamps); проверен artifact `44122513044`:
+  36 270 862 B, SHA256 `064C8C98…020C8F`.
 - **Предыдущий этап:** stage-08 — **PASS WITH COMMENTS (0 MAJOR)**.
 - **Схема БД:** **v8** без изменений.
 - **ADR:** ADR-026.
@@ -22,7 +25,8 @@
 ## Что реализовано
 
 - `installer/second_brain.iss` — Inno Setup 6.3+:
-  - per-user установка в `%LOCALAPPDATA%\Programs\Second Brain` (без admin);
+  - per-user установка в `%LOCALAPPDATA%\Programs\Second Brain` (без admin;
+    VC++ runtime при отсутствии ставится с UAC);
   - ярлыки меню «Пуск»/рабочего стола, uninstaller, запуск после установки;
   - русский/английский wizard;
   - при отсутствии MSVC runtime устанавливается `vc_redist.x64.exe`
@@ -52,8 +56,8 @@ flutter test test/performance_smoke_test.dart
 
 Installer локально не собирался: `ISCC.exe` не установлен; CI job
 `build-windows` устанавливает Inno Setup и проверяет `dist/*.exe`.
-CI `44119141513` (`234fc29`) — success, artifact `second-brain-windows`
-(~12 MB).
+CI `44124645140` (`1bc7827`) — success, artifact `second-brain-windows`
+(~36 MB), installer компилируется с VC++ runtime.
 
 ## Известные ограничения
 
@@ -70,5 +74,9 @@ CI `44119141513` (`234fc29`) — success, artifact `second-brain-windows`
 ## Ссылки
 
 - ADR-026.
-- [RELEASE.md](../RELEASE.md).
+- [RELEASE.md](../RELEASE.md), [PERFORMANCE.md](../PERFORMANCE.md).
+- Первое ревью: [reviews/stage-09-review.md](../reviews/stage-09-review.md) —
+  **FAIL**; финальное:
+  [reviews/stage-09-final-review.md](../reviews/stage-09-final-review.md) —
+  **PASS WITH COMMENTS**.
 - Предыдущий этап: [stage-08.md](stage-08.md).

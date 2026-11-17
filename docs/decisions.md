@@ -1401,7 +1401,8 @@ MVP должен устанавливаться на Windows. Debug-сборки
 - Release: `flutter build windows --release`; CI job `build-windows` собирает
   debug + release.
 - Installer: **Inno Setup 6** (`installer/second_brain.iss`), per-user
-  установка в `%LOCALAPPDATA%\Programs\Second Brain` без admin.
+  установка в `%LOCALAPPDATA%\Programs\Second Brain` без admin (кроме
+  однократной установки VC++ runtime, где Windows запросит UAC).
 - Скрипт `tool/build_installer.ps1` проверяет release-файлы, находит
   `ISCC.exe`, при необходимости скачивает `vc_redist.x64.exe`, собирает
   `dist/SecondBrain-<version>-setup.exe`. Installer проверяет MSVC runtime и
