@@ -829,3 +829,17 @@ test **241/241**, Windows debug build success. Первое ревью A/B — F
 | 2026-11-17 | — | fixes | SQL type/date, index version, RUB-only, countMessages, 241/241 |
 | 2026-11-17 | — | final-review | A/B PASS WITH COMMENTS (0 MAJOR); 241/241 |
 | 2026-11-17 | — | CI | run 44030371436 (`3743fc2`): analyze-and-test + build-windows success |
+
+## Stage-09: полировка MVP (2026-11-17)
+
+Release build, Inno Setup installer, CI artifact, README/RELEASE и ADR-026.
+Схема v8 не менялась. Analyze 0, test **241/241**, debug/release build успешны.
+Installer проверяется в CI; независимое ревью ещё не проводилось.
+
+| Timestamp (UTC) | ID | Действие | Примечание |
+|-----------------|----|----------|------------|
+| 2026-11-17 | — | release | flutter build windows --release success |
+| 2026-11-17 | — | installer | second_brain.iss + build_installer.ps1 |
+| 2026-11-17 | — | CI | debug+release, Inno Setup, artifact second-brain-windows |
+| 2026-11-17 | — | docs | README, RELEASE, ADR-026, INDEX/context/tech-debt |
+| 2026-11-17 | — | статус | self-check done; ожидается ревью stage-09 |

@@ -1,13 +1,15 @@
 # Контекст проекта (снимок состояния)
 
-- **Текущий этап:** stage-08 (глобальный поиск + аналитика) — **PASS WITH
-  COMMENTS (0 MAJOR)** после первого FAIL-ревью. FTS расширен
-  обучением/чатом/почтой, SQL-фильтры типа/даты, backfill индекса, экран
-  `/analytics`. Analyze 0, test **241/241**, Windows debug build success; CI
-  `44030371436` (`3743fc2`) — success. Отчёт:
-  [stages/stage-08.md](stages/stage-08.md); финальное ревью:
-  [reviews/stage-08-final-review.md](reviews/stage-08-final-review.md); ADR-025;
-  схема **v8** без изменений.
+- **Текущий этап:** stage-09 (полировка MVP) — **реализация и self-check
+  готовы, независимое ревью ещё не проводилось.** Windows release build и
+  Inno Setup installer, CI artifact, README/RELEASE. Analyze 0, test
+  **241/241**, debug/release build success. Отчёт:
+  [stages/stage-09.md](stages/stage-09.md); ADR-026; схема **v8** без
+  изменений.
+- **Предыдущий этап:** stage-08 — **PASS WITH COMMENTS (0 MAJOR)** после
+  первого FAIL-ревью; FTS/аналитика, CI `44030371436` (`3743fc2`), 241/241.
+  Финальное ревью:
+  [reviews/stage-08-final-review.md](reviews/stage-08-final-review.md).
 - **Предыдущий этап:** stage-07 — **PASS WITH COMMENTS (0 MAJOR)** после
   первого FAIL-ревью; Crossref/Hacker News/Openverse. Analyze 0, test 235/235.
   Ревью: [reviews/stage-07-final-review.md](reviews/stage-07-final-review.md).
@@ -56,9 +58,10 @@
   **FAIL** (ревью и повторное №2). Результаты исправлений R02-001…R02-008 —
   [reviews/stage-02-review-results.md](reviews/stage-02-review-results.md),
   R02-009…R02-013 — [reviews/stage-02-fix-results.md](reviews/stage-02-fix-results.md).
-- **Текущий отчёт:** [stages/stage-08.md](stages/stage-08.md)
+- **Текущий отчёт:** [stages/stage-09.md](stages/stage-09.md)
 - **Открытых CRITICAL:** 0
-- **Stage-08:** PASS WITH COMMENTS (0 MAJOR) после первого FAIL-ревью.
+- **Stage-09:** self-check, независимое ревью ещё не проводилось.
+  **Stage-08:** PASS WITH COMMENTS (0 MAJOR) после первого FAIL-ревью.
   **Stage-07:** PASS WITH COMMENTS (0 MAJOR) после первого FAIL-ревью.
   **Stage-06:** PASS WITH COMMENTS (0 MAJOR) после двух FAIL-кругов.
   **Stage-05:** PASS WITH COMMENTS (0 MAJOR), S05-001…011 и S05Z fixed.
@@ -69,9 +72,10 @@
   TD-28 (нет UI выбора контекста; триггер перенесён на позднюю доработку
   чата). TD-21 — отдельное принятое ограничение `REAL` для финансов.
 - **Сборка:** `flutter analyze --fatal-infos` — **No issues found**;
-  `flutter test` — **241/241**; `flutter build windows --debug` — **success**
-  (2026-11-17, `build\windows\x64\runner\Debug\second_brain.exe`); CI —
-  после push stage-08.
+  `flutter test` — **241/241**; `flutter build windows --debug` и
+  `--release` — **success** (2026-11-17); installer — CI после push stage-09.
+- **Installer:** `installer/second_brain.iss`,
+  `tool/build_installer.ps1`, artifact `second-brain-windows`.
 - **Flutter SDK:** 3.47.7 stable, `C:\src\flutter` (Dart 3.13.5)
 - **Windows-тулчейн:** Visual Studio Build Tools 2022 17.14 (MSVC v143 +
   Windows SDK + ATL/ATLMFC), установлен 2026-10-24; `flutter doctor` — без
@@ -180,6 +184,17 @@
 - `EmbeddingService` и `VectorStore` — интерфейсы RAG, без индексации.
 - В чате пока нет UI выбора контекста (TD-28), но production-путь
   `sendMessage(contextRefs:)` покрыт тестами.
+
+## Что сделано на stage-09
+
+- Windows release build (`flutter build windows --release`).
+- Inno Setup 6 installer (`installer/second_brain.iss`) + PowerShell-скрипт;
+  per-user установка без admin, ярлыки/uninstaller.
+- CI `build-windows` собирает debug+release, ставит Inno Setup, публикует
+  artifact `second-brain-windows`.
+- README, `docs/RELEASE.md`, ADR-026. Схема v8 не менялась.
+- Тесты: 241/241, analyze 0, debug/release build success. Независимое ревью
+  ещё не проводилось.
 
 ## Что сделано на stage-08
 
@@ -421,12 +436,12 @@
   `dashboard_period_test.dart` проверяет календарную семантику границ.
 
 ## Ближайшие задачи (stage-07)
-- Провести независимое ревью stage-08; после PASS — stage-09.
-- **Stage-09 — полировка MVP**: производительность, тесты, документация,
-  Windows-инсталлятор.
-- Закрыть ограничения stage-06/07/08: live OAuth/API smoke, Mail.ru,
-  live-smoke Crossref/HN/Openverse, вложения в поиске, LLM-переранжирование,
-  мультивалютная аналитика.
+- Провести независимое ревью stage-09 и закрыть MVP.
+- **Stage-10 (после MVP)**: облачный бэкенд, синхронизация, мультиаккаунт,
+  подписка, веб/мобильные порты.
+- Закрыть ограничения MVP: live OAuth/API smoke, Mail.ru, live-smoke
+  Crossref/HN/Openverse, вложения в поиске, фильтр тегов, мультивалютная
+  аналитика, подпись installer.
 - Учесть неблокирующие S03R/S04Z/S05Z-комментарии.
 - TD-28 (UI выбора контекста) — отдельная поздняя доработка чата.
 - RAG: реализация `EmbeddingService`/`VectorStore` и индексация заметок.
@@ -481,6 +496,7 @@
   228/228, ожидается re-review.
 
 ## Ссылки
+- Отчёт stage-09: [stages/stage-09.md](stages/stage-09.md)
 - Отчёт stage-08: [stages/stage-08.md](stages/stage-08.md)
 - Ревью stage-08: [reviews/stage-08-review.md](reviews/stage-08-review.md)
   (**FAIL**), [reviews/stage-08-final-review.md](reviews/stage-08-final-review.md)
@@ -502,6 +518,7 @@
 - ADR-024: поиск идей — Crossref/Hacker News, Openverse и сохранение
   результатов
 - ADR-025: глобальный поиск по обучению/чату/почте и локальная аналитика
+- ADR-026: Windows release build и Inno Setup installer
 - Отчёт stage-05: [stages/stage-05.md](stages/stage-05.md)
 - Ревью stage-05: [reviews/stage-05-review.md](reviews/stage-05-review.md)
 - Финальное ревью stage-05:

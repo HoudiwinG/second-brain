@@ -1,21 +1,22 @@
 # INDEX — карта документации
 
 ## Состояние
-- Текущий этап: stage-08 (глобальный поиск + аналитика) — **PASS WITH
-  COMMENTS (0 MAJOR)** после первого FAIL-ревью. FTS расширен
-  обучением/чатом/почтой, SQL-фильтры типа/даты, backfill индекса, экран
-  аналитики; схема **v8** без изменений. Analyze 0, test **241/241**, Windows
-  debug build success; CI `44030371436` (`3743fc2`) — success.
-- Предыдущий этап: stage-07 — **PASS WITH COMMENTS (0 MAJOR)** после первого
-  FAIL-ревью; CI `44020286840` (`5ed3d99`) — success, 235/235.
+- Текущий этап: stage-09 (полировка MVP) — **реализация и self-check готовы,
+  независимое ревью ещё не проводилось.** Windows release build и Inno Setup
+  installer, CI artifact, README/RELEASE/ADR-026. Analyze 0, test
+  **241/241**, debug/release build success.
+- Предыдущий этап: stage-08 — **PASS WITH COMMENTS (0 MAJOR)** после первого
+  FAIL-ревью; CI `44030371436` (`3743fc2`) — success, 241/241.
 - Предыдущий этап: stage-06 (почта) — **PASS WITH COMMENTS (0 MAJOR)** после
   двух FAIL-кругов; OAuth 2.0 + PKCE, Gmail API, Yandex 360 Mail API,
   Mail.ru отключён, локальный кэш/поиск, privacy; схема v8, backup v3.
   Analyze 0, test 228/228. Stage-05 — PASS WITH COMMENTS; stage-04 — PASS
   WITH COMMENTS; stage-03 — PASS; stage-02 — PASS WITH COMMENTS.
-- Гейты stage-08 (2026-11-17): `flutter analyze --fatal-infos` — **No issues
-  found**, `flutter test` — **241/241**, `flutter build windows --debug` —
-  **success**; CI
+- Гейты stage-09 (2026-11-17): `flutter analyze --fatal-infos` — **No issues
+  found**, `flutter test` — **241/241**, debug/release Windows build —
+  **success**; installer — CI (после push).
+- Гейты stage-08 (2026-11-17): analyze 0, test 241/241, Windows debug build
+  success; CI
   [44030371436](https://github.com/HoudiwinG/second-brain/actions/runs/44030371436)
   (`3743fc2`) — success, оба job'а.
 - Гейты stage-07 (2026-11-17): analyze 0, test 235/235, Windows debug build
@@ -29,6 +30,7 @@
 - Локальные гейты stage-03 (2026-10-28): analyze 0, test 132/132, Windows debug
   build; CI `40636764573` (`49bc00f`, включая `14e63a7`) — success.
 - Снимок состояния: [context.md](context.md)
+- Отчёт stage-09: [stages/stage-09.md](stages/stage-09.md).
 - Отчёт stage-08: [stages/stage-08.md](stages/stage-08.md).
 - Отчёт stage-07: [stages/stage-07.md](stages/stage-07.md).
 - Отчёт stage-06: [stages/stage-06.md](stages/stage-06.md).
@@ -154,6 +156,9 @@
 - [stage-08](stages/stage-08.md) — глобальный поиск + аналитика (FTS по
   обучению/чату/почте, SQL-фильтры, аналитика; ADR-025; схема v8; analyze 0,
   test 241/241, Windows build success; FAIL → **PASS WITH COMMENTS**)
+- [stage-09](stages/stage-09.md) — полировка MVP (release build, Inno Setup
+  installer, CI artifact, README/RELEASE; ADR-026; analyze 0, test 241/241;
+  независимое ревью ожидается)
 
 ## Шаблоны
 - [decisions.template.md](decisions.template.md) — формат ADR
@@ -205,13 +210,14 @@
 - Разделы:
   - architecture: ADR-001, ADR-002, ADR-004, ADR-005, ADR-008, ADR-012,
     ADR-016, ADR-018, ADR-019, ADR-020, ADR-021, ADR-022, ADR-023, ADR-024,
-    ADR-025
+    ADR-025, ADR-026
   - security: ADR-003, ADR-018, ADR-020, ADR-021, ADR-022, ADR-023
   - dependency: ADR-006, ADR-007, ADR-011, ADR-017
   - integration: ADR-006, ADR-009, ADR-014, ADR-017, ADR-019, ADR-023, ADR-024
   - ux: ADR-005, ADR-008, ADR-010, ADR-016
   - data/search: ADR-013, ADR-024, ADR-025
   - schema: ADR-002, ADR-012, ADR-015, ADR-018, ADR-021, ADR-022, ADR-023
+  - release: ADR-026
 
 ## Дебаг
 - [debug/log.md](debug/log.md) — хронология находок

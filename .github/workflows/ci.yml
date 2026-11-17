@@ -56,3 +56,19 @@ jobs:
 
       - name: flutter build windows (debug)
         run: flutter build windows --debug
+
+      - name: flutter build windows (release)
+        run: flutter build windows --release
+
+      - name: Install Inno Setup
+        run: choco install innosetup --no-progress -y
+
+      - name: Build Windows installer
+        run: .\tool\build_installer.ps1
+
+      - name: Upload Windows artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: second-brain-windows
+          path: dist/SecondBrain-*-setup.exe
+          if-no-files-found: error

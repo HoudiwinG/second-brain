@@ -118,6 +118,11 @@
 > [stages/stage-08.md](stages/stage-08.md), финальное ревью —
 > [reviews/stage-08-final-review.md](reviews/stage-08-final-review.md), ADR-025.
 
+> **Stage-09 (2026-11-17):** MVP-полировка — release build, Inno Setup
+> installer, CI artifact, README/RELEASE, ADR-026. Analyze 0, test 241/241,
+> debug/release build success. Installer проверяется CI; подпись кода и
+> ручной smoke установки — после MVP. Независимое ревью ещё не проводилось.
+
 Проверка после исправлений R02-009…R02-013 (2026-10-24, Flutter 3.47.7):
 `flutter pub get --enforce-lockfile` → OK; `flutter analyze --fatal-infos` →
 0 issues; `flutter test` → **77/77**; `flutter build windows --debug` →

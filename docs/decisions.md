@@ -1382,3 +1382,50 @@ FTS5-индекс stage-01 покрывал заметки, задачи, иде
 
 ### Связанные записи
 ADR-013 (FTS), ADR-019 (ApiClient), ADR-023 (почта), ADR-024 (поиск идей)
+
+---
+
+## ADR-026: Windows MVP — release build и Inno Setup installer
+
+- **Дата (UTC):** 2026-11-17
+- **Этап:** stage-09 (полировка MVP)
+- **Тип:** release / packaging / ci
+- **Автор/агент:** agent-1
+- **Статус:** accepted
+
+### Контекст
+MVP должен устанавливаться на Windows. Debug-сборки CI недостаточно:
+нужен release-бинарник и installer без ручной сборки у пользователя.
+
+### Решение
+- Release: `flutter build windows --release`; CI job `build-windows` собирает
+  debug + release.
+- Installer: **Inno Setup 6** (`installer/second_brain.iss`), per-user
+  установка в `%LOCALAPPDATA%\Programs\Second Brain` без admin.
+- Скрипт `tool/build_installer.ps1` проверяет release-файлы, находит
+  `ISCC.exe`, собирает `dist/SecondBrain-<version>-setup.exe`.
+- CI устанавливает Inno Setup через Chocolatey, собирает installer и
+  публикует artifact `second-brain-windows` (`actions/upload-artifact@v4`).
+- Release checklist — `docs/RELEASE.md`; версия `1.0.0+1` в pubspec и
+  `1.0.0` в ISS.
+
+### Альтернативы
+- MSIX: требует сертификат/подпись и сложнее для локального MVP.
+- ZIP-архив: не даёт uninstall/ярлыки/обновление.
+- WiX/MSI: больше инфраструктуры; Inno Setup достаточно.
+- Подпись кода: отложена (нет сертификата); риск SmartScreen описан.
+
+### Последствия
+- Положительные: воспроизводимый установщик, artifact в CI, per-user без
+  прав администратора.
+- Отрицательные/риски: installer не подписан; Inno Setup нужен в CI/локально;
+  installer проверяется в CI, локальный ISCC может отсутствовать.
+- Совместимость: код приложения не меняется; БД/настройки в `%APPDATA%` и
+  secure storage сохраняются при обновлении.
+
+### Затронутые файлы/модули
+- `installer/second_brain.iss`, `tool/build_installer.ps1`.
+- `.github/workflows/ci.yml`, `.gitignore`, `README.md`, `docs/RELEASE.md`.
+
+### Связанные записи
+ADR-009 (Windows CI), ADR-011 (зависимости/hooks), ADR-025 (MVP-функции)
