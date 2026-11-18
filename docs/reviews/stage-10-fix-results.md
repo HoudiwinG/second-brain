@@ -34,7 +34,8 @@
 - Ошибка чтения профилей показывается в UI, а не маскируется пустым списком.
 - `_setActive`/`_delete` обрабатывают `Result`.
 - Stub-снимки стали instance-level (не static).
-- Добавлены тесты pull без снимка, undo и неизвестного профиля; 246/246.
+- Добавлены unit-тесты pull/undo/ошибок и widget-тесты доступности
+  Push/Pull, busy-блокировки и появления undo; 248/248.
 - ADR-027 уточняет privacy-scope snapshot для будущего облака.
 
 ## Остаточные ограничения
@@ -50,7 +51,7 @@
 
 ```text
 flutter analyze --fatal-infos       0 issues
-flutter test                        246/246 passed
+flutter test                        248/248 passed
 flutter build windows --debug       success
 flutter build web --release         success
 ```

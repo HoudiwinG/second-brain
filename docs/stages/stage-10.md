@@ -31,8 +31,10 @@
   сохранены.
 
 ## Тесты
-- `test/sync_service_test.dart` — push/pull snapshot, локальные профили.
-- Существующие 243 + 2 = **246/246**.
+- `test/sync_service_test.dart` — push/pull snapshot, undo, ошибки, профили.
+- `test/sync_settings_section_test.dart` — idle Push/Pull доступны, busy
+  блокирует кнопки, undo появляется после pull.
+- 3 unit-теста sync + 2 widget-теста настроек; всего **248/248**.
 - `flutter analyze --fatal-infos` — 0 issues.
 - `flutter build windows --debug` — success.
 - `flutter build web --release` — success.

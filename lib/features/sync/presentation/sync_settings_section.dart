@@ -6,7 +6,7 @@ import '../../../app/widgets/data_ui.dart';
 import '../../../l10n/generated/app_localizations.dart';
 import '../domain/sync_profile.dart';
 
-/// РќР°СЃС‚СЂРѕР№РєРё Р»РѕРєР°Р»СЊРЅС‹С… РїСЂРѕС„РёР»РµР№ sync Рё stub push/pull.
+/// Настройки локальных профилей sync и stub push/pull.
 class SyncSettingsSection extends ConsumerStatefulWidget {
   const SyncSettingsSection({super.key});
 
@@ -196,7 +196,7 @@ class _SyncSettingsSectionState extends ConsumerState<SyncSettingsSection> {
                   ),
                 ),
                 TextButton.icon(
-                  onPressed: _create,
+                  onPressed: _busyProfileId == null ? _create : null,
                   icon: const Icon(Icons.add),
                   label: Text(lcm.syncAddProfile),
                 ),
@@ -240,7 +240,7 @@ class _SyncSettingsSectionState extends ConsumerState<SyncSettingsSection> {
                         ),
                         title: Text(profile.displayName),
                         subtitle: Text(
-                          '${profile.isActive ? '${lcm.syncActive} В· ' : ''}'
+                          '${profile.isActive ? '${lcm.syncActive} · ' : ''}'
                           '${lcm.syncLast}: '
                           '${profile.lastSyncedAt?.toLocal().toString() ?? lcm.syncNever}',
                         ),
@@ -250,15 +250,17 @@ class _SyncSettingsSectionState extends ConsumerState<SyncSettingsSection> {
                             if (!profile.isActive)
                               IconButton(
                                 tooltip: lcm.syncSetActive,
-                                onPressed: () => _setActive(profile),
+                                onPressed: _busyProfileId == null
+                                    ? () => _setActive(profile)
+                                    : null,
                                 icon: const Icon(Icons.check_circle_outline),
                               ),
                             IconButton(
                               tooltip: lcm.syncPush,
-                              onPressed: _busyProfileId == null
+                              onPressed: _busyProfileId != null
                                   ? null
                                   : () => _sync(profile, push: true),
-                              icon: _busyProfileId == null
+                              icon: _busyProfileId == profile.id
                                   ? const SizedBox(
                                       width: 16,
                                       height: 16,
@@ -270,14 +272,16 @@ class _SyncSettingsSectionState extends ConsumerState<SyncSettingsSection> {
                             ),
                             IconButton(
                               tooltip: lcm.syncPull,
-                              onPressed: _busyProfileId == null
+                              onPressed: _busyProfileId != null
                                   ? null
                                   : () => _sync(profile, push: false),
                               icon: const Icon(Icons.download_outlined),
                             ),
                             IconButton(
                               tooltip: lcm.syncDelete,
-                              onPressed: () => _delete(profile),
+                              onPressed: _busyProfileId == null
+                                  ? () => _delete(profile)
+                                  : null,
                               icon: const Icon(Icons.delete_outline),
                             ),
                           ],

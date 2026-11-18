@@ -3,7 +3,7 @@
 - **Текущий этап:** stage-10 (после MVP) — **первое ревью A/B: FAIL; блокеры
   исправлены, ожидается повторное ревью.** Локальные sync-профили, backend
   stub, snapshot push/pull с confirm+undo, web-сборка, CI `build-web`.
-  Analyze 0, test **246/246**, Windows debug + web release build success.
+  Analyze 0, test **248/248**, Windows debug + web release build success.
   Отчёт: [stages/stage-10.md](stages/stage-10.md); ревью:
   [reviews/stage-10-review.md](reviews/stage-10-review.md); исправления:
   [reviews/stage-10-fix-results.md](reviews/stage-10-fix-results.md); ADR-027;
@@ -79,7 +79,7 @@
   TD-28 (нет UI выбора контекста; триггер перенесён на позднюю доработку
   чата). TD-21 — отдельное принятое ограничение `REAL` для финансов.
 - **Сборка:** `flutter analyze --fatal-infos` — **No issues found**;
-  `flutter test` — **246/246**; `flutter build windows --debug` и
+  `flutter test` — **248/248**; `flutter build windows --debug` и
   `flutter build web --release` — **success** (2026-11-18); CI `44317321230`
   (`cc9608e`) — success, artifacts Windows + web.
 - **Installer:** `installer/second_brain.iss`,
@@ -204,7 +204,7 @@
 - CI `build-web` + artifact `second-brain-web`; Windows installer сохранён.
 - Pull: подтверждение, safety snapshot и undo; после restore экраны
   пересоздаются через `syncDataVersion`.
-- Тесты: 246/246, analyze 0, Windows debug + web release build success.
+- Тесты: 248/248, analyze 0, Windows debug + web release build success.
   Первое ревью A/B — FAIL, блокеры исправлены; ожидается re-review.
   Реального облака/OAuth/подписки пока нет — backend stub.
 

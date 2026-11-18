@@ -18,7 +18,7 @@
 ```powershell
 flutter pub get
 flutter analyze --fatal-infos   # 0 issues
-flutter test                    # 246 тестов
+flutter test                    # 248 тестов
 flutter run -d windows
 flutter run -d chrome   # web-сборка stage-10
 ```
