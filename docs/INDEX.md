@@ -4,7 +4,7 @@
 - Текущий этап: stage-10 (после MVP) — **первая итерация: sync core + web,
   self-check, ревью ожидается.** Локальные sync-профили, backend stub,
   snapshot push/pull, web-сборка и CI artifact. Analyze 0, test **248/248**,
-  Windows debug + web release build success; CI `44317321230` (`cc9608e`) —
+  Windows debug + web release build success; CI `44327437808` (`f301efa`) —
   success, artifacts `second-brain-windows`/`second-brain-web`.
 - Предыдущий этап: stage-09 — **PASS WITH COMMENTS (0 MAJOR)**; Windows
   installer + VC++ runtime, perf-smoke, artifact ~36 MB. Analyze 0, test
@@ -15,7 +15,7 @@
   Analyze 0, test 228/228. Stage-05 — PASS WITH COMMENTS; stage-04 — PASS
   WITH COMMENTS; stage-03 — PASS; stage-02 — PASS WITH COMMENTS.
 - Гейты stage-10 (2026-11-18): analyze **0**, test **248/248**, Windows debug
-  и web release build — **success**; CI `44317321230` (`cc9608e`) — success,
+  и web release build — **success**; CI `44327437808` (`f301efa`) — success,
   artifacts Windows + web.
 - Гейты stage-09 (2026-11-17): `flutter analyze --fatal-infos` — **No issues
   found**, `flutter test` — **243/243**, debug/release Windows build —

@@ -38,7 +38,7 @@
 - `flutter analyze --fatal-infos` — 0 issues.
 - `flutter build windows --debug` — success.
 - `flutter build web --release` — success.
-- CI `44317321230` (`cc9608e`) — success: analyze+test, build-web
+- CI `44327437808` (`f301efa`) — success: analyze+test, build-web
   (`second-brain-web`), build-windows installer.
 
 ## Ограничения

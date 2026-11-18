@@ -80,8 +80,8 @@
   чата). TD-21 — отдельное принятое ограничение `REAL` для финансов.
 - **Сборка:** `flutter analyze --fatal-infos` — **No issues found**;
   `flutter test` — **248/248**; `flutter build windows --debug` и
-  `flutter build web --release` — **success** (2026-11-18); CI `44317321230`
-  (`cc9608e`) — success, artifacts Windows + web.
+  `flutter build web --release` — **success** (2026-11-18); CI `44327437808`
+  (`f301efa`) — success, artifacts Windows + web.
 - **Installer:** `installer/second_brain.iss`,
   `tool/build_installer.ps1`, artifact `second-brain-windows`.
 - **Web:** `web/` + `drift/wasm` (`sqlite3.wasm`, `drift_worker.js`);
