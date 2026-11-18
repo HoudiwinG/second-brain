@@ -1,11 +1,13 @@
 # Контекст проекта (снимок состояния)
 
-- **Текущий этап:** stage-10 (после MVP) — **первая итерация: sync core +
-  web, self-check, ревью ожидается.** Локальные sync-профили, backend stub,
-  snapshot push/pull, web-сборка, CI `build-web`. Analyze 0, test **245/245**,
-  Windows debug + web release build success. Отчёт:
-  [stages/stage-10.md](stages/stage-10.md); ADR-027; схема **v8** без
-  изменений.
+- **Текущий этап:** stage-10 (после MVP) — **первое ревью A/B: FAIL; блокеры
+  исправлены, ожидается повторное ревью.** Локальные sync-профили, backend
+  stub, snapshot push/pull с confirm+undo, web-сборка, CI `build-web`.
+  Analyze 0, test **246/246**, Windows debug + web release build success.
+  Отчёт: [stages/stage-10.md](stages/stage-10.md); ревью:
+  [reviews/stage-10-review.md](reviews/stage-10-review.md); исправления:
+  [reviews/stage-10-fix-results.md](reviews/stage-10-fix-results.md); ADR-027;
+  схема **v8** без изменений.
 - **Предыдущий этап:** stage-09 — **PASS WITH COMMENTS (0 MAJOR)**;
   installer + VC++ runtime, perf-smoke; CI `44124645140` (`1bc7827`).
   Финальное ревью:
@@ -64,7 +66,7 @@
   R02-009…R02-013 — [reviews/stage-02-fix-results.md](reviews/stage-02-fix-results.md).
 - **Текущий отчёт:** [stages/stage-10.md](stages/stage-10.md)
 - **Открытых CRITICAL:** 0
-- **Stage-10:** первая итерация, ревью ожидается.
+- **Stage-10:** первое ревью FAIL; блокеры исправлены, ожидается re-review.
   **Stage-09:** PASS WITH COMMENTS (0 MAJOR) после первого FAIL-ревью.
   **Stage-08:** PASS WITH COMMENTS (0 MAJOR) после первого FAIL-ревью.
   **Stage-07:** PASS WITH COMMENTS (0 MAJOR) после первого FAIL-ревью.
@@ -77,9 +79,9 @@
   TD-28 (нет UI выбора контекста; триггер перенесён на позднюю доработку
   чата). TD-21 — отдельное принятое ограничение `REAL` для финансов.
 - **Сборка:** `flutter analyze --fatal-infos` — **No issues found**;
-  `flutter test` — **245/245**; `flutter build windows --debug` и
-  `flutter build web --release` — **success** (2026-11-18); CI — после push
-  stage-10.
+  `flutter test` — **246/246**; `flutter build windows --debug` и
+  `flutter build web --release` — **success** (2026-11-18); CI `44317321230`
+  (`cc9608e`) — success, artifacts Windows + web.
 - **Installer:** `installer/second_brain.iss`,
   `tool/build_installer.ps1`, artifact `second-brain-windows`.
 - **Web:** `web/` + `drift/wasm` (`sqlite3.wasm`, `drift_worker.js`);
@@ -200,7 +202,10 @@
 - Web: conditional Drift (NativeDatabase / drift WASM), web-stub desktop-
   сервисов, `web/sqlite3.wasm` + `drift_worker.js`, `universal_io`.
 - CI `build-web` + artifact `second-brain-web`; Windows installer сохранён.
-- Тесты: 245/245, analyze 0, Windows debug + web release build success.
+- Pull: подтверждение, safety snapshot и undo; после restore экраны
+  пересоздаются через `syncDataVersion`.
+- Тесты: 246/246, analyze 0, Windows debug + web release build success.
+  Первое ревью A/B — FAIL, блокеры исправлены; ожидается re-review.
   Реального облака/OAuth/подписки пока нет — backend stub.
 
 ## Что сделано на stage-09
@@ -521,6 +526,8 @@
 
 ## Ссылки
 - Отчёт stage-10: [stages/stage-10.md](stages/stage-10.md)
+- Ревью stage-10: [reviews/stage-10-review.md](reviews/stage-10-review.md)
+  (**FAIL**) и [reviews/stage-10-fix-results.md](reviews/stage-10-fix-results.md)
 - Отчёт stage-09: [stages/stage-09.md](stages/stage-09.md)
 - Ревью stage-09: [reviews/stage-09-review.md](reviews/stage-09-review.md)
   (**FAIL**), [reviews/stage-09-final-review.md](reviews/stage-09-final-review.md)

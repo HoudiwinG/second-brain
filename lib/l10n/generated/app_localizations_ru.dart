@@ -440,6 +440,16 @@ class AppLocalizationsRu extends AppLocalizations {
   String get syncNever => 'ещё не было';
 
   @override
+  String get syncPullConfirm => 'Получить данные с backend?';
+
+  @override
+  String get syncPullWarning =>
+      'Все локальные данные будут заменены снимком с backend. Перед заменой сохраняется локальная копия для отката.';
+
+  @override
+  String get syncUndoPull => 'Отменить последний pull';
+
+  @override
   String get privateBadge => 'Приватно';
 
   @override

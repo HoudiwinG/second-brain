@@ -3,8 +3,9 @@
 ## Состояние
 - Текущий этап: stage-10 (после MVP) — **первая итерация: sync core + web,
   self-check, ревью ожидается.** Локальные sync-профили, backend stub,
-  snapshot push/pull, web-сборка и CI artifact. Analyze 0, test **245/245**,
-  Windows debug + web release build success; CI — после push.
+  snapshot push/pull, web-сборка и CI artifact. Analyze 0, test **246/246**,
+  Windows debug + web release build success; CI `44317321230` (`cc9608e`) —
+  success, artifacts `second-brain-windows`/`second-brain-web`.
 - Предыдущий этап: stage-09 — **PASS WITH COMMENTS (0 MAJOR)**; Windows
   installer + VC++ runtime, perf-smoke, artifact ~36 MB. Analyze 0, test
   243/243; CI `44124645140` (`1bc7827`) — success.
@@ -13,8 +14,9 @@
   Mail.ru отключён, локальный кэш/поиск, privacy; схема v8, backup v3.
   Analyze 0, test 228/228. Stage-05 — PASS WITH COMMENTS; stage-04 — PASS
   WITH COMMENTS; stage-03 — PASS; stage-02 — PASS WITH COMMENTS.
-- Гейты stage-10 (2026-11-18): analyze **0**, test **245/245**, Windows debug
-  и web release build — **success**; CI — после push.
+- Гейты stage-10 (2026-11-18): analyze **0**, test **246/246**, Windows debug
+  и web release build — **success**; CI `44317321230` (`cc9608e`) — success,
+  artifacts Windows + web.
 - Гейты stage-09 (2026-11-17): `flutter analyze --fatal-infos` — **No issues
   found**, `flutter test` — **243/243**, debug/release Windows build —
   **success**; CI `44124645140` (`1bc7827`) — success, installer artifact
@@ -118,6 +120,11 @@
   (2026-11-17, `234fc29`): **FAIL** (MSVC runtime, perf-проход).
 - [stage-09-final-review](reviews/stage-09-final-review.md) — финальное
   ревью A/B (2026-11-17, `1bc7827`): **PASS WITH COMMENTS (0 MAJOR)**.
+- [stage-10-review](reviews/stage-10-review.md) — первое ревью A/B
+  (2026-11-18, `cc9608e`): **FAIL** (Pull/UI refresh).
+- [stage-10-fix-results](reviews/stage-10-fix-results.md) — confirm+undo,
+  data-version refresh, профили/ошибки; analyze 0, test 246/246; ожидается
+  re-review.
 - [stage-09-fix-results](reviews/stage-09-fix-results.md) — VC redist,
   perf-smoke, packaging tests; analyze 0, test 243/243.
 - Исправления stage-04:
@@ -173,8 +180,8 @@
   installer + VC++ runtime, perf-smoke, CI artifact, README/RELEASE; ADR-026;
   analyze 0, test 243/243; FAIL → **PASS WITH COMMENTS**)
 - [stage-10](stages/stage-10.md) — после MVP, первая итерация (sync core,
-  локальные профили, backend stub, web-сборка; ADR-027; analyze 0, test
-  245/245; ревью ожидается)
+  локальные профили, backend stub, confirm+undo Pull, web-сборка; ADR-027;
+  analyze 0, test 246/246; FAIL → ожидается re-review)
 
 ## Шаблоны
 - [decisions.template.md](decisions.template.md) — формат ADR

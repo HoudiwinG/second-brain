@@ -21,7 +21,7 @@ abstract interface class SyncBackend {
 class StubSyncBackend implements SyncBackend {
   StubSyncBackend();
 
-  static final Map<String, Map<String, Object?>> _snapshots = {};
+  final Map<String, Map<String, Object?>> _snapshots = {};
 
   @override
   String get id => 'stub';

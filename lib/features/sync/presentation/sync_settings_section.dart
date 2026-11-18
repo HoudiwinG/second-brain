@@ -18,6 +18,7 @@ class SyncSettingsSection extends ConsumerStatefulWidget {
 class _SyncSettingsSectionState extends ConsumerState<SyncSettingsSection> {
   Future<List<SyncProfile>>? _future;
   String? _busyProfileId;
+  bool _canUndo = false;
 
   @override
   void initState() {
@@ -70,21 +71,50 @@ class _SyncSettingsSectionState extends ConsumerState<SyncSettingsSection> {
   }
 
   Future<void> _setActive(SyncProfile profile) async {
+    final lcm = AppLocalizations.of(context)!;
     final repo = await ref.read(syncProfileRepositoryProvider.future);
-    await repo.setActive(profile.id);
-    if (mounted) _reload();
+    final result = await repo.setActive(profile.id);
+    if (!mounted) return;
+    result.when(
+      success: (_) => _reload(),
+      failure: (error) => showErrorSnackBar(context, lcm, error),
+    );
   }
 
   Future<void> _delete(SyncProfile profile) async {
     final lcm = AppLocalizations.of(context)!;
     if (!await confirmDelete(context, lcm) || !mounted) return;
     final repo = await ref.read(syncProfileRepositoryProvider.future);
-    await repo.delete(profile.id);
-    if (mounted) _reload();
+    final result = await repo.delete(profile.id);
+    if (!mounted) return;
+    result.when(
+      success: (_) => _reload(),
+      failure: (error) => showErrorSnackBar(context, lcm, error),
+    );
   }
 
   Future<void> _sync(SyncProfile profile, {required bool push}) async {
     final lcm = AppLocalizations.of(context)!;
+    if (!push) {
+      final confirmed = await showDialog<bool>(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: Text(lcm.syncPullConfirm),
+          content: Text(lcm.syncPullWarning),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: Text(lcm.actionCancel),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              child: Text(lcm.syncPull),
+            ),
+          ],
+        ),
+      );
+      if (confirmed != true || !mounted) return;
+    }
     setState(() => _busyProfileId = profile.id);
     try {
       final service = await ref.read(syncServiceProvider.future);
@@ -94,6 +124,33 @@ class _SyncSettingsSectionState extends ConsumerState<SyncSettingsSection> {
       if (!mounted) return;
       result.when(
         success: (_) {
+          if (!push) {
+            _canUndo = true;
+            ref.read(syncDataVersionProvider.notifier).bump();
+          }
+          _reload();
+          showMessageSnackBar(context, lcm.syncSaved);
+        },
+        failure: (error) => showErrorSnackBar(context, lcm, error),
+      );
+    } on Object {
+      if (mounted) showMessageSnackBar(context, lcm.syncError);
+    } finally {
+      if (mounted) setState(() => _busyProfileId = null);
+    }
+  }
+
+  Future<void> _undoPull() async {
+    final lcm = AppLocalizations.of(context)!;
+    setState(() => _busyProfileId = 'undo');
+    try {
+      final service = await ref.read(syncServiceProvider.future);
+      final result = await service.undoLastPull();
+      if (!mounted) return;
+      result.when(
+        success: (_) {
+          _canUndo = false;
+          ref.read(syncDataVersionProvider.notifier).bump();
           _reload();
           showMessageSnackBar(context, lcm.syncSaved);
         },
@@ -126,6 +183,12 @@ class _SyncSettingsSectionState extends ConsumerState<SyncSettingsSection> {
                   icon: const Icon(Icons.add),
                   label: Text(lcm.syncAddProfile),
                 ),
+                if (_canUndo)
+                  TextButton.icon(
+                    onPressed: _busyProfileId == null ? _undoPull : null,
+                    icon: const Icon(Icons.undo),
+                    label: Text(lcm.syncUndoPull),
+                  ),
               ],
             ),
             Text(lcm.syncHint, style: Theme.of(context).textTheme.bodySmall),
@@ -135,6 +198,14 @@ class _SyncSettingsSectionState extends ConsumerState<SyncSettingsSection> {
               builder: (context, snapshot) {
                 if (snapshot.connectionState != ConnectionState.done) {
                   return const LinearProgressIndicator();
+                }
+                if (snapshot.hasError) {
+                  return Text(
+                    lcm.syncError,
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.error,
+                    ),
+                  );
                 }
                 final profiles = snapshot.data ?? const <SyncProfile>[];
                 if (profiles.isEmpty) {

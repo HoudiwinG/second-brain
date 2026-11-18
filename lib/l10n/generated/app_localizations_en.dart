@@ -440,6 +440,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get syncNever => 'never';
 
   @override
+  String get syncPullConfirm => 'Pull data from backend?';
+
+  @override
+  String get syncPullWarning =>
+      'All local data will be replaced by the backend snapshot. A local safety copy is kept for undo.';
+
+  @override
+  String get syncUndoPull => 'Undo last pull';
+
+  @override
   String get privateBadge => 'Private';
 
   @override

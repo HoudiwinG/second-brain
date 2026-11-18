@@ -944,6 +944,24 @@ abstract class AppLocalizations {
   /// **'never'**
   String get syncNever;
 
+  /// No description provided for @syncPullConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Pull data from backend?'**
+  String get syncPullConfirm;
+
+  /// No description provided for @syncPullWarning.
+  ///
+  /// In en, this message translates to:
+  /// **'All local data will be replaced by the backend snapshot. A local safety copy is kept for undo.'**
+  String get syncPullWarning;
+
+  /// No description provided for @syncUndoPull.
+  ///
+  /// In en, this message translates to:
+  /// **'Undo last pull'**
+  String get syncUndoPull;
+
   /// No description provided for @privateBadge.
   ///
   /// In en, this message translates to:

@@ -26,6 +26,7 @@ class SecondBrainApp extends ConsumerWidget {
     ref.watch(reminderSchedulerProvider);
     final settings = ref.watch(settingsControllerProvider);
     final state = settings.value ?? const SettingsState();
+    final dataVersion = ref.watch(syncDataVersionProvider);
 
     return MaterialApp.router(
       // onGenerateTitle — потому что локальный delegate доступен
@@ -33,9 +34,10 @@ class SecondBrainApp extends ConsumerWidget {
       onGenerateTitle: (context) => AppLocalizations.of(context)!.appTitle,
       debugShowCheckedModeBanner: false,
       routerConfig: router,
-      builder: (context, child) => _DesktopLabelsSync(
-        child: _QuickCaptureHost(
-          child: child ?? const SizedBox.shrink(),
+      builder: (context, child) => KeyedSubtree(
+        key: ValueKey<int>(dataVersion),
+        child: _DesktopLabelsSync(
+          child: _QuickCaptureHost(child: child ?? const SizedBox.shrink()),
         ),
       ),
       themeMode: state.themeMode,
@@ -94,9 +96,8 @@ class _QuickCaptureHostState extends ConsumerState<_QuickCaptureHost> {
     if (saved == true && mounted) {
       final lcm = AppLocalizations.of(context);
       if (lcm != null) {
-        ScaffoldMessenger.of(
-          navigator.context,
-        ).showSnackBar(SnackBar(content: Text(lcm.quickCaptureSaved)));
+        ScaffoldMessenger.of(navigator.context)
+            .showSnackBar(SnackBar(content: Text(lcm.quickCaptureSaved)));
       }
     }
   }

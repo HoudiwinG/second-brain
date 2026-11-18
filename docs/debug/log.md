@@ -853,7 +853,7 @@ CI компилирует installer и публикует artifact; первое
 StubSyncBackend, LocalSyncService (snapshot push/pull через backup), UI в
 настройках. Web: conditional Drift (NativeDatabase / drift WASM), web-stub
 desktop-сервисов, web/sqlite3.wasm + drift_worker.js, universal_io. CI
-добавил build-web и artifact second-brain-web. Analyze 0, test **245/245**,
+добавил build-web и artifact second-brain-web. Analyze 0, test **246/246**,
 Windows debug и web release build success. Реального облака/OAuth/подписки
 нет; независимое ревью ожидается.
 
@@ -862,5 +862,5 @@ Windows debug и web release build success. Реального облака/OAut
 | 2026-11-18 | — | sync | profiles в app_settings, stub backend, snapshot push/pull |
 | 2026-11-18 | — | web | conditional Drift WASM, web stub, wasm/worker assets |
 | 2026-11-18 | — | ci | build-web + artifact second-brain-web |
-| 2026-11-18 | — | tests | sync_service_test, 245/245 |
+| 2026-11-18 | — | tests | sync_service_test, 246/246 |
 | 2026-11-18 | — | статус | first iteration self-check; ожидается ревью |

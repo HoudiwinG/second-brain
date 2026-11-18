@@ -143,6 +143,19 @@ final syncProfileRepositoryProvider = FutureProvider<SyncProfileRepository>((
 
 final syncBackendProvider = Provider<SyncBackend>((ref) => StubSyncBackend());
 
+/// Инкрементируется после destructive restore/pull, чтобы пересоздать экраны
+/// и перечитать локальные кэши.
+final syncDataVersionProvider = NotifierProvider<SyncDataVersion, int>(
+  SyncDataVersion.new,
+);
+
+class SyncDataVersion extends Notifier<int> {
+  @override
+  int build() => 0;
+
+  void bump() => state++;
+}
+
 final syncServiceProvider = FutureProvider<SyncService>((ref) async {
   return LocalSyncService(
     backup: await ref.watch(backupServiceProvider.future),

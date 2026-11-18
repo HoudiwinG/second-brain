@@ -127,7 +127,7 @@
 
 > **Stage-10 (2026-11-18, первая итерация):** sync core + local profiles +
 > backend stub; web-сборка Drift WASM, CI `build-web`. Analyze 0, test
-> **245/245**, Windows debug + web release build success. Нет реального
+> **246/246**, Windows debug + web release build success. Нет реального
 > облака/OAuth/подписки; snapshot-sync; web runtime smoke — техдолг.
 > Отчёт — [stages/stage-10.md](stages/stage-10.md), ADR-027.
 

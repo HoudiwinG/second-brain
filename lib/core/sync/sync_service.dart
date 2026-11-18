@@ -16,6 +16,9 @@ abstract interface class SyncService {
 
   Future<Result<void>> pull(SyncProfile profile);
 
+  /// Откатывает последний pull к локальному снимку, снятому до restore.
+  Future<Result<void>> undoLastPull();
+
   Stream<SyncStatus> get status;
 }
 
@@ -36,6 +39,7 @@ class LocalSyncService implements SyncService {
   final SyncProfileRepository profiles;
   final _status = StreamController<SyncStatus>.broadcast();
   SyncStatus _current = SyncStatus.idle;
+  Map<String, Object?>? _lastPullSafety;
 
   @override
   Stream<SyncStatus> get status => _status.stream;
@@ -47,6 +51,14 @@ class LocalSyncService implements SyncService {
 
   @override
   Future<Result<void>> push(SyncProfile profile) async {
+    if (profile.backendId != backend.id) {
+      return Result.failure(
+        ValidationException(
+          'SyncService: профиль ${profile.id} использует '
+          '${profile.backendId}, доступен ${backend.id}',
+        ),
+      );
+    }
     _emit(SyncStatus.syncing);
     final snapshot = await backup.buildSnapshot();
     if (snapshot is Failure<Map<String, Object?>>) {
@@ -61,14 +73,34 @@ class LocalSyncService implements SyncService {
       _emit(SyncStatus.error);
       return Result.failure(pushed.error);
     }
-    await profiles.markSynced(profile.id, DateTime.now().toUtc());
+    final marked = await profiles.markSynced(
+      profile.id,
+      DateTime.now().toUtc(),
+    );
+    if (marked is Failure<void>) {
+      _emit(SyncStatus.error);
+      return Result.failure(marked.error);
+    }
     _emit(SyncStatus.idle);
     return const Result.success(null);
   }
 
   @override
   Future<Result<void>> pull(SyncProfile profile) async {
+    if (profile.backendId != backend.id) {
+      return Result.failure(
+        ValidationException(
+          'SyncService: профиль ${profile.id} использует '
+          '${profile.backendId}, доступен ${backend.id}',
+        ),
+      );
+    }
     _emit(SyncStatus.syncing);
+    final safety = await backup.buildSnapshot();
+    if (safety is Failure<Map<String, Object?>>) {
+      _emit(SyncStatus.error);
+      return Result.failure(safety.error);
+    }
     final pulled = await backend.pull(profile);
     if (pulled is Failure<Map<String, Object?>?>) {
       _emit(SyncStatus.error);
@@ -86,7 +118,34 @@ class LocalSyncService implements SyncService {
       _emit(SyncStatus.error);
       return Result.failure(restored.error);
     }
-    await profiles.markSynced(profile.id, DateTime.now().toUtc());
+    _lastPullSafety = (safety as Success<Map<String, Object?>>).value;
+    final marked = await profiles.markSynced(
+      profile.id,
+      DateTime.now().toUtc(),
+    );
+    if (marked is Failure<void>) {
+      _emit(SyncStatus.error);
+      return Result.failure(marked.error);
+    }
+    _emit(SyncStatus.idle);
+    return const Result.success(null);
+  }
+
+  @override
+  Future<Result<void>> undoLastPull() async {
+    final safety = _lastPullSafety;
+    if (safety == null) {
+      return const Result.failure(
+        ValidationException('SyncService: нет снимка для отката'),
+      );
+    }
+    _emit(SyncStatus.syncing);
+    final restored = await backup.restoreSnapshot(safety);
+    if (restored is Failure<void>) {
+      _emit(SyncStatus.error);
+      return Result.failure(restored.error);
+    }
+    _lastPullSafety = null;
     _emit(SyncStatus.idle);
     return const Result.success(null);
   }

@@ -3,7 +3,9 @@
 - **Дата:** 2026-11-18
 - **Агент:** agent-1 (OpenCode)
 - **Ветка:** `master`
-- **Статус:** **первая итерация, self-check**, независимое ревью ожидается.
+- **Статус:** **fixes ready**, ожидается повторное ревью. Первое ревью A/B —
+  FAIL (деструктивный Pull без подтверждения/undo, UI не обновляется после
+  restore); блокеры исправлены.
 - **Предыдущий этап:** stage-09 — **PASS WITH COMMENTS (0 MAJOR)**.
 - **Схема БД:** **v8** без изменений.
 - **ADR:** ADR-027.
@@ -30,11 +32,12 @@
 
 ## Тесты
 - `test/sync_service_test.dart` — push/pull snapshot, локальные профили.
-- Существующие 243 + 2 = **245/245**.
+- Существующие 243 + 2 = **246/246**.
 - `flutter analyze --fatal-infos` — 0 issues.
 - `flutter build windows --debug` — success.
 - `flutter build web --release` — success.
-- CI — после push (Windows installer + web artifact).
+- CI `44317321230` (`cc9608e`) — success: analyze+test, build-web
+  (`second-brain-web`), build-windows installer.
 
 ## Ограничения
 - Backend — stub: снимок не переживает перезапуск, облака/OAuth/RLS нет.

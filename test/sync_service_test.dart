@@ -35,8 +35,28 @@ void main() {
     final restored = (await notes.list()).unwrap();
     expect(restored.single.title, 'Sync note');
 
+    // Undo возвращает локальное состояние до pull (заметка была soft-deleted).
+    expect(await service.undoLastPull(), isA<Success<void>>());
+    expect((await notes.list()).unwrap(), isEmpty);
+
     final updated = (await profiles.list()).unwrap().single;
     expect(updated.lastSyncedAt, isNotNull);
+  });
+
+  test('pull без снимка и неизвестный профиль возвращают ошибку', () async {
+    final db = InMemoryDbFactory.open();
+    addTearDown(db.close);
+    final profiles = SyncProfileRepository(SettingsRepository(db));
+    final profile = (await profiles.create('Empty')).unwrap();
+    final service = LocalSyncService(
+      backup: BackupService(db),
+      backend: StubSyncBackend(),
+      profiles: profiles,
+    );
+
+    expect(await service.pull(profile), isA<Failure<void>>());
+    expect(await service.undoLastPull(), isA<Failure<void>>());
+    expect(await profiles.setActive('missing'), isA<Failure<void>>());
   });
 
   test('профили хранятся локально и активный один', () async {

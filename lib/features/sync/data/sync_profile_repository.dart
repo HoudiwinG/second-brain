@@ -72,8 +72,14 @@ class SyncProfileRepository {
     if (current is Failure<List<SyncProfile>>) {
       return Result.failure(current.error);
     }
+    final existing = (current as Success<List<SyncProfile>>).value;
+    if (!existing.any((profile) => profile.id == id)) {
+      return Result.failure(
+        ValidationException('SyncProfileRepository: профиль $id не найден'),
+      );
+    }
     final profiles = [
-      for (final profile in (current as Success<List<SyncProfile>>).value)
+      for (final profile in existing)
         profile.id == id
             ? profile.copyWith(isActive: true)
             : profile.copyWith(isActive: false),
