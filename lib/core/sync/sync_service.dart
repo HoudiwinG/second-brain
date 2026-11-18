@@ -5,6 +5,7 @@ import '../../features/sync/data/sync_profile_repository.dart';
 import '../../features/sync/domain/sync_backend.dart';
 import '../../features/sync/domain/sync_profile.dart';
 import '../error/app_exception.dart';
+import '../logging/app_logger.dart';
 import '../result/result.dart';
 
 /// Состояние облачной синхронизации (stub на stage-10).
@@ -96,7 +97,7 @@ class LocalSyncService implements SyncService {
       );
     }
     _emit(SyncStatus.syncing);
-    final safety = await backup.buildSnapshot();
+    final safety = await backup.buildSnapshot(includeDeleted: true);
     if (safety is Failure<Map<String, Object?>>) {
       _emit(SyncStatus.error);
       return Result.failure(safety.error);
@@ -124,8 +125,9 @@ class LocalSyncService implements SyncService {
       DateTime.now().toUtc(),
     );
     if (marked is Failure<void>) {
-      _emit(SyncStatus.error);
-      return Result.failure(marked.error);
+      // Данные уже восстановлены; ошибка метки не должна скрывать успешный
+      // pull и оставлять UI со старым кэшем.
+      AppLogger.w('SyncService: не удалось обновить lastSyncedAt');
     }
     _emit(SyncStatus.idle);
     return const Result.success(null);

@@ -16,6 +16,7 @@ import '../features/tasks/presentation/tasks_screen.dart';
 import '../l10n/generated/app_localizations.dart';
 import 'feature_directions.dart';
 import 'more_screen.dart';
+import 'sync_refresh_host.dart';
 
 /// Путь ветки в схеме URL роутинга.
 String pathForBranch(FeatureBranch branch) => switch (branch) {
@@ -73,7 +74,7 @@ class RouterController {
                     path: pathForBranch(branch),
                     pageBuilder: (context, state) => NoTransitionPage<void>(
                       key: state.pageKey,
-                      child: _screenForBranch(branch),
+                      child: SyncRefreshHost(child: _screenForBranch(branch)),
                     ),
                   ),
                 ],
@@ -82,7 +83,8 @@ class RouterController {
         ),
         GoRoute(
           path: '/analytics',
-          builder: (context, state) => const AnalyticsScreen(),
+          builder: (context, state) =>
+              const SyncRefreshHost(child: AnalyticsScreen()),
         ),
       ],
     );

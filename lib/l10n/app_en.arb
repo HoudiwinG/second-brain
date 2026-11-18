@@ -161,6 +161,8 @@
   "syncPullConfirm": "Pull data from backend?",
   "syncPullWarning": "All local data will be replaced by the backend snapshot. A local safety copy is kept for undo.",
   "syncUndoPull": "Undo last pull",
+  "syncUndoConfirm": "Undo last pull?",
+  "syncUndoWarning": "Current local data will be replaced by the snapshot taken before the pull. Changes made after pull will be lost.",
   "privateBadge": "Private",
   "deleteConfirm": "Delete this record?",
   "dataSection": "Data",

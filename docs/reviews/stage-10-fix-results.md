@@ -10,17 +10,20 @@
 ### S10-B-01 / S10-A-001 — деструктивный Pull
 
 - UI показывает подтверждение с предупреждением «все локальные данные будут
-  заменены».
-- `LocalSyncService.pull` перед restore строит локальный safety snapshot;
-  `undoLastPull()` восстанавливает его.
-- В настройках появляется «Отменить последний pull» после успешного pull.
+  заменены» (и отдельное подтверждение для undo).
+- `LocalSyncService.pull` перед restore строит safety snapshot с
+  `includeDeleted: true`; `undoLastPull()` восстанавливает его.
+- Доступность undo хранится в `syncUndoAvailableProvider`, а не в state
+  виджета, поэтому кнопка не теряется при refresh.
 - Тест: pull → восстановление снимка → undo возвращает локальное состояние.
 
 ### S10-B-02 — UI не обновляется после restore
 
-- `syncDataVersionProvider` инкрементируется после pull/undo; `SecondBrainApp`
-  пересоздаёт subtree через `KeyedSubtree`, экраны перечитывают кэши.
-- Pull/undo больше не оставляют «фантомные» старые списки.
+- `syncDataVersionProvider` инкрементируется после pull/undo; `SyncRefreshHost`
+  оборачивает экраны веток (и analytics) и пересоздаёт только экран, не
+  Router/Navigator, поэтому `initState`-кэши перечитываются.
+- Pull/undo больше не оставляют «фантомные» старые списки; undo-кнопка
+  управляется провайдером.
 
 ## Неблокирующие исправления
 

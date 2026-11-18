@@ -962,6 +962,18 @@ abstract class AppLocalizations {
   /// **'Undo last pull'**
   String get syncUndoPull;
 
+  /// No description provided for @syncUndoConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Undo last pull?'**
+  String get syncUndoConfirm;
+
+  /// No description provided for @syncUndoWarning.
+  ///
+  /// In en, this message translates to:
+  /// **'Current local data will be replaced by the snapshot taken before the pull. Changes made after pull will be lost.'**
+  String get syncUndoWarning;
+
   /// No description provided for @privateBadge.
   ///
   /// In en, this message translates to:

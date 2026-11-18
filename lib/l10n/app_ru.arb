@@ -161,6 +161,8 @@
   "syncPullConfirm": "Получить данные с backend?",
   "syncPullWarning": "Все локальные данные будут заменены снимком с backend. Перед заменой сохраняется локальная копия для отката.",
   "syncUndoPull": "Отменить последний pull",
+  "syncUndoConfirm": "Отменить последний pull?",
+  "syncUndoWarning": "Текущие локальные данные будут заменены снимком, снятым перед pull. Изменения после pull будут потеряны.",
   "privateBadge": "Приватно",
   "deleteConfirm": "Удалить запись?",
   "dataSection": "Данные",

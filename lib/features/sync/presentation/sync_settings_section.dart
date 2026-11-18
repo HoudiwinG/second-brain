@@ -6,7 +6,7 @@ import '../../../app/widgets/data_ui.dart';
 import '../../../l10n/generated/app_localizations.dart';
 import '../domain/sync_profile.dart';
 
-/// Настройки локальных профилей sync и stub push/pull.
+/// РќР°СЃС‚СЂРѕР№РєРё Р»РѕРєР°Р»СЊРЅС‹С… РїСЂРѕС„РёР»РµР№ sync Рё stub push/pull.
 class SyncSettingsSection extends ConsumerStatefulWidget {
   const SyncSettingsSection({super.key});
 
@@ -18,7 +18,6 @@ class SyncSettingsSection extends ConsumerStatefulWidget {
 class _SyncSettingsSectionState extends ConsumerState<SyncSettingsSection> {
   Future<List<SyncProfile>>? _future;
   String? _busyProfileId;
-  bool _canUndo = false;
 
   @override
   void initState() {
@@ -125,7 +124,7 @@ class _SyncSettingsSectionState extends ConsumerState<SyncSettingsSection> {
       result.when(
         success: (_) {
           if (!push) {
-            _canUndo = true;
+            ref.read(syncUndoAvailableProvider.notifier).set(true);
             ref.read(syncDataVersionProvider.notifier).bump();
           }
           _reload();
@@ -142,6 +141,24 @@ class _SyncSettingsSectionState extends ConsumerState<SyncSettingsSection> {
 
   Future<void> _undoPull() async {
     final lcm = AppLocalizations.of(context)!;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(lcm.syncUndoConfirm),
+        content: Text(lcm.syncUndoWarning),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: Text(lcm.actionCancel),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: Text(lcm.syncUndoPull),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted) return;
     setState(() => _busyProfileId = 'undo');
     try {
       final service = await ref.read(syncServiceProvider.future);
@@ -149,7 +166,7 @@ class _SyncSettingsSectionState extends ConsumerState<SyncSettingsSection> {
       if (!mounted) return;
       result.when(
         success: (_) {
-          _canUndo = false;
+          ref.read(syncUndoAvailableProvider.notifier).set(false);
           ref.read(syncDataVersionProvider.notifier).bump();
           _reload();
           showMessageSnackBar(context, lcm.syncSaved);
@@ -183,7 +200,7 @@ class _SyncSettingsSectionState extends ConsumerState<SyncSettingsSection> {
                   icon: const Icon(Icons.add),
                   label: Text(lcm.syncAddProfile),
                 ),
-                if (_canUndo)
+                if (ref.watch(syncUndoAvailableProvider))
                   TextButton.icon(
                     onPressed: _busyProfileId == null ? _undoPull : null,
                     icon: const Icon(Icons.undo),
@@ -223,7 +240,7 @@ class _SyncSettingsSectionState extends ConsumerState<SyncSettingsSection> {
                         ),
                         title: Text(profile.displayName),
                         subtitle: Text(
-                          '${profile.isActive ? '${lcm.syncActive} · ' : ''}'
+                          '${profile.isActive ? '${lcm.syncActive} В· ' : ''}'
                           '${lcm.syncLast}: '
                           '${profile.lastSyncedAt?.toLocal().toString() ?? lcm.syncNever}',
                         ),
@@ -238,10 +255,10 @@ class _SyncSettingsSectionState extends ConsumerState<SyncSettingsSection> {
                               ),
                             IconButton(
                               tooltip: lcm.syncPush,
-                              onPressed: _busyProfileId == profile.id
+                              onPressed: _busyProfileId == null
                                   ? null
                                   : () => _sync(profile, push: true),
-                              icon: _busyProfileId == profile.id
+                              icon: _busyProfileId == null
                                   ? const SizedBox(
                                       width: 16,
                                       height: 16,
@@ -253,7 +270,7 @@ class _SyncSettingsSectionState extends ConsumerState<SyncSettingsSection> {
                             ),
                             IconButton(
                               tooltip: lcm.syncPull,
-                              onPressed: _busyProfileId == profile.id
+                              onPressed: _busyProfileId == null
                                   ? null
                                   : () => _sync(profile, push: false),
                               icon: const Icon(Icons.download_outlined),

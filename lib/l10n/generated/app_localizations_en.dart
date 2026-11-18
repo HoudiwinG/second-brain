@@ -450,6 +450,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get syncUndoPull => 'Undo last pull';
 
   @override
+  String get syncUndoConfirm => 'Undo last pull?';
+
+  @override
+  String get syncUndoWarning =>
+      'Current local data will be replaced by the snapshot taken before the pull. Changes made after pull will be lost.';
+
+  @override
   String get privateBadge => 'Private';
 
   @override

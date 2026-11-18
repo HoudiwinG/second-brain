@@ -450,6 +450,13 @@ class AppLocalizationsRu extends AppLocalizations {
   String get syncUndoPull => 'Отменить последний pull';
 
   @override
+  String get syncUndoConfirm => 'Отменить последний pull?';
+
+  @override
+  String get syncUndoWarning =>
+      'Текущие локальные данные будут заменены снимком, снятым перед pull. Изменения после pull будут потеряны.';
+
+  @override
   String get privateBadge => 'Приватно';
 
   @override

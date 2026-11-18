@@ -156,6 +156,17 @@ class SyncDataVersion extends Notifier<int> {
   void bump() => state++;
 }
 
+final syncUndoAvailableProvider = NotifierProvider<SyncUndoAvailable, bool>(
+  SyncUndoAvailable.new,
+);
+
+class SyncUndoAvailable extends Notifier<bool> {
+  @override
+  bool build() => false;
+
+  void set(bool value) => state = value;
+}
+
 final syncServiceProvider = FutureProvider<SyncService>((ref) async {
   return LocalSyncService(
     backup: await ref.watch(backupServiceProvider.future),
