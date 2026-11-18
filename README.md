@@ -5,8 +5,10 @@
 выполняются последовательно (Этап 0 → 10).
 
 ## Статус
-- **Реализация MVP завершена:** этапы 0–9; stage-09 — полировка, тесты и
-  Windows-инсталлятор. Ожидается независимое ревью stage-09.
+- **MVP реализован:** этапы 0–9; stage-09 — полировка, тесты и Windows-инсталлятор.
+- **Stage-10, первая итерация:** локальные sync-профили + backend stub,
+  web-сборка (Drift WASM), CI artifact `second-brain-web`. Облако/OAuth/
+  подписка пока не подключены.
 - Данные локальны (SQLite/Drift), секреты — в secure storage.
 - Точки входа: [docs/INDEX.md](docs/INDEX.md), [docs/context.md](docs/context.md),
   [docs/decisions.md](docs/decisions.md), [docs/tech-debt.md](docs/tech-debt.md),
@@ -18,6 +20,7 @@ flutter pub get
 flutter analyze --fatal-infos   # 0 issues
 flutter test                    # 243 теста
 flutter run -d windows
+flutter run -d chrome   # web-сборка stage-10
 ```
 
 ## Windows-инсталлятор

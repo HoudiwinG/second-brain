@@ -1,18 +1,20 @@
 # INDEX — карта документации
 
 ## Состояние
-- Текущий этап: stage-09 (полировка MVP) — **PASS WITH COMMENTS (0 MAJOR)**
-  после первого FAIL-ревью. Windows release build и Inno Setup installer (с
-  VC++ runtime), perf-smoke, packaging tests, CI artifact,
-  README/RELEASE/ADR-026. Analyze 0, test **243/243**, debug/release build
-  success; CI `44124645140` (`1bc7827`) — success, artifact ~36 MB.
-- Предыдущий этап: stage-08 — **PASS WITH COMMENTS (0 MAJOR)** после первого
-  FAIL-ревью; CI `44030371436` (`3743fc2`) — success, 241/241.
+- Текущий этап: stage-10 (после MVP) — **первая итерация: sync core + web,
+  self-check, ревью ожидается.** Локальные sync-профили, backend stub,
+  snapshot push/pull, web-сборка и CI artifact. Analyze 0, test **245/245**,
+  Windows debug + web release build success; CI — после push.
+- Предыдущий этап: stage-09 — **PASS WITH COMMENTS (0 MAJOR)**; Windows
+  installer + VC++ runtime, perf-smoke, artifact ~36 MB. Analyze 0, test
+  243/243; CI `44124645140` (`1bc7827`) — success.
 - Предыдущий этап: stage-06 (почта) — **PASS WITH COMMENTS (0 MAJOR)** после
   двух FAIL-кругов; OAuth 2.0 + PKCE, Gmail API, Yandex 360 Mail API,
   Mail.ru отключён, локальный кэш/поиск, privacy; схема v8, backup v3.
   Analyze 0, test 228/228. Stage-05 — PASS WITH COMMENTS; stage-04 — PASS
   WITH COMMENTS; stage-03 — PASS; stage-02 — PASS WITH COMMENTS.
+- Гейты stage-10 (2026-11-18): analyze **0**, test **245/245**, Windows debug
+  и web release build — **success**; CI — после push.
 - Гейты stage-09 (2026-11-17): `flutter analyze --fatal-infos` — **No issues
   found**, `flutter test` — **243/243**, debug/release Windows build —
   **success**; CI `44124645140` (`1bc7827`) — success, installer artifact
@@ -32,6 +34,7 @@
 - Локальные гейты stage-03 (2026-10-28): analyze 0, test 132/132, Windows debug
   build; CI `40636764573` (`49bc00f`, включая `14e63a7`) — success.
 - Снимок состояния: [context.md](context.md)
+- Отчёт stage-10: [stages/stage-10.md](stages/stage-10.md).
 - Отчёт stage-09: [stages/stage-09.md](stages/stage-09.md).
 - Отчёт stage-08: [stages/stage-08.md](stages/stage-08.md).
 - Отчёт stage-07: [stages/stage-07.md](stages/stage-07.md).
@@ -169,6 +172,9 @@
 - [stage-09](stages/stage-09.md) — полировка MVP (release build, Inno Setup
   installer + VC++ runtime, perf-smoke, CI artifact, README/RELEASE; ADR-026;
   analyze 0, test 243/243; FAIL → **PASS WITH COMMENTS**)
+- [stage-10](stages/stage-10.md) — после MVP, первая итерация (sync core,
+  локальные профили, backend stub, web-сборка; ADR-027; analyze 0, test
+  245/245; ревью ожидается)
 
 ## Шаблоны
 - [decisions.template.md](decisions.template.md) — формат ADR
@@ -220,7 +226,7 @@
 - Разделы:
   - architecture: ADR-001, ADR-002, ADR-004, ADR-005, ADR-008, ADR-012,
     ADR-016, ADR-018, ADR-019, ADR-020, ADR-021, ADR-022, ADR-023, ADR-024,
-    ADR-025, ADR-026
+    ADR-025, ADR-026, ADR-027
   - security: ADR-003, ADR-018, ADR-020, ADR-021, ADR-022, ADR-023
   - dependency: ADR-006, ADR-007, ADR-011, ADR-017
   - integration: ADR-006, ADR-009, ADR-014, ADR-017, ADR-019, ADR-023, ADR-024
@@ -228,6 +234,7 @@
   - data/search: ADR-013, ADR-024, ADR-025
   - schema: ADR-002, ADR-012, ADR-015, ADR-018, ADR-021, ADR-022, ADR-023
   - release: ADR-026
+  - sync/platform: ADR-027
 
 ## Дебаг
 - [debug/log.md](debug/log.md) — хронология находок

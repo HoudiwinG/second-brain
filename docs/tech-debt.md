@@ -125,6 +125,12 @@
 > ручной install-smoke — после MVP. Первое ревью A/B — FAIL, затем
 > **PASS WITH COMMENTS (0 MAJOR)**.
 
+> **Stage-10 (2026-11-18, первая итерация):** sync core + local profiles +
+> backend stub; web-сборка Drift WASM, CI `build-web`. Analyze 0, test
+> **245/245**, Windows debug + web release build success. Нет реального
+> облака/OAuth/подписки; snapshot-sync; web runtime smoke — техдолг.
+> Отчёт — [stages/stage-10.md](stages/stage-10.md), ADR-027.
+
 Проверка после исправлений R02-009…R02-013 (2026-10-24, Flutter 3.47.7):
 `flutter pub get --enforce-lockfile` → OK; `flutter analyze --fatal-infos` →
 0 issues; `flutter test` → **77/77**; `flutter build windows --debug` →

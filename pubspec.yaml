@@ -44,6 +44,7 @@ dependencies:
   hotkey_manager: ^0.2.3
   local_notifier: 0.1.6
   http: ^1.6.0
+  universal_io: ^2.2.0
 
 # R02-009 / ADR-017: вендорный патч hotkey_manager_windows возвращает ошибку
 # RegisterHotKey, если глобальная комбинация занята другим приложением.

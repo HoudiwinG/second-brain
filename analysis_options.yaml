@@ -19,6 +19,7 @@ analyzer:
     # его собственный analysis_options ссылается на dev-зависимость, которая
     # не ставится как транзитивная.
     - third_party/**
+    - web/**
 
 linter:
   # The lint rules applied to this project can be customized in the

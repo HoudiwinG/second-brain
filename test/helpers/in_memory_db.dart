@@ -1,3 +1,4 @@
+import 'package:drift/native.dart';
 import 'package:second_brain/data/db/app_database.dart';
 
 /// In-memory вариант [AppDatabase] для тестов.
@@ -6,5 +7,5 @@ import 'package:second_brain/data/db/app_database.dart';
 /// (через addTearDown).
 abstract final class InMemoryDbFactory {
   /// Создаёт полностью in-memory базу со свежей схемой.
-  static AppDatabase open() => AppDatabase.inMemory();
+  static AppDatabase open() => AppDatabase(NativeDatabase.memory());
 }

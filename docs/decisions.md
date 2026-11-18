@@ -1432,3 +1432,61 @@ MVP должен устанавливаться на Windows. Debug-сборки
 
 ### Связанные записи
 ADR-009 (Windows CI), ADR-011 (зависимости/hooks), ADR-025 (MVP-функции)
+
+---
+
+## ADR-027: Stage-10 — локальные sync-профили, backend interface и web-сборка
+
+- **Дата (UTC):** 2026-11-18
+- **Этап:** stage-10, первая итерация (после MVP)
+- **Тип:** architecture / sync / platform
+- **Автор/агент:** agent-1
+- **Статус:** accepted
+
+### Контекст
+Stage-10 включает облако, синхронизацию, мультиаккаунт, подписку, web и
+мобильные порты. Для первой итерации выбраны: sync core + backend interface +
+stubs, локальные профили с будущим OAuth, без реальных credentials, Windows +
+web. Полный облачный backend и auth откладываются.
+
+### Решение
+- Sync-профили — локальные записи в `app_settings` (`sync.profiles`), без
+  секретов и без миграции схемы. Один профиль активен; UI в настройках.
+- `SyncBackend` — абстракция push/pull снимка; первая реализация
+  `StubSyncBackend` хранит снимок в памяти процесса. Реальный backend
+  (Supabase/REST) подключается позже без изменения UI/sync-сервиса.
+- `LocalSyncService` использует существующий JSON backup snapshot:
+  push = export snapshot → backend; pull = backend snapshot → restore +
+  rebuild FTS. Это даёт локально-первичную модель без новой схемы.
+- Web: условное подключение Drift (`dart:io` NativeDatabase для desktop,
+  `drift/wasm` + `web/sqlite3.wasm`/`drift_worker.js` для web); desktop-
+  плагины вынесены в условный `desktop_services` stub. CI получил job
+  `build-web` и artifact `second-brain-web`.
+- Windows остаётся основным релизом; web — экспериментальная сборка MVP.
+
+### Альтернативы
+- Сразу Supabase/Firebase: нет credentials и решения по auth/RLS.
+- Новая таблица профилей и миграция v9: преждевременно для локального stub;
+  `app_settings` достаточно, миграция возможна позже.
+- Entity-level sync с CRDT/revisions: сложно; snapshot-sync достаточен для
+  первой итерации и совместим с backup.
+- Web через отдельную БД/IndexedDB: drift WASM уже даёт IndexedDB/OPFS.
+
+### Последствия
+- Положительные: sync-flow и профили можно тестировать без сети; Windows и web
+  собираются; будущий backend изолирован интерфейсом.
+- Отрицательные/риски: stub не переживает restart и не является облаком;
+  snapshot-sync перезаписывает данные целиком; OAuth/мультиаккаунт/подписка
+  не реализованы; web runtime (secure storage, backup file UI) не проверялся;
+  web-сборка может требовать HTTPS для некоторых API.
+- Совместимость: схема v8, backup v3; web добавляет `web/` и `universal_io`
+  для компиляции файловых операций.
+
+### Затронутые файлы/модули
+- `lib/core/sync/**`, `lib/features/sync/**`.
+- `lib/data/db/app_database*.dart`, `lib/app/desktop_services*.dart`.
+- `lib/data/backup/backup_service.dart`, settings UI, DI.
+- `.github/workflows/ci.yml`, `web/**`, `pubspec.yaml`.
+
+### Связанные записи
+ADR-014 (backup), ADR-019 (ApiClient), ADR-025 (MVP), ADR-026 (installer)

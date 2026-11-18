@@ -1,10 +1,7 @@
-import 'dart:io';
-
 import 'package:drift/drift.dart';
-import 'package:drift/native.dart';
-import 'package:path_provider/path_provider.dart';
 
 import '../../core/logging/app_logger.dart';
+import 'app_database_connection.dart';
 
 part 'app_database.g.dart';
 
@@ -445,20 +442,12 @@ class ToolAuditEntries extends Table {
 class AppDatabase extends _$AppDatabase {
   AppDatabase(super.executor);
 
-  /// Фабрика для runtime: файл SQLite в каталоге данных приложения.
-  ///
-  /// NativeDatabase.createInBackground — запросы не блокируют UI-поток.
+  /// Фабрика для runtime: native SQLite (IO) или WASM (web).
   static Future<AppDatabase> open() async {
-    final dir = await getApplicationSupportDirectory();
-    final db = AppDatabase(
-      NativeDatabase.createInBackground(File('${dir.path}/second_brain.db')),
-    );
-    AppLogger.d('AppDatabase: открыт файл ${dir.path}/second_brain.db');
+    final db = AppDatabase(await openAppDatabaseConnection());
+    AppLogger.d('AppDatabase: открыта платформенная БД');
     return db;
   }
-
-  /// Фабрика для тестов: полностью in-memory.
-  static AppDatabase inMemory() => AppDatabase(NativeDatabase.memory());
 
   @override
   int get schemaVersion => 8;

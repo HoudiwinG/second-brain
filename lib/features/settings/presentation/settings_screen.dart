@@ -1,8 +1,7 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:universal_io/io.dart';
 
 import '../../../app/di.dart';
 import '../../../app/quick_hotkey.dart';
@@ -10,6 +9,7 @@ import '../../../app/widgets/data_ui.dart';
 import '../../../core/logging/app_logger.dart';
 import '../../../l10n/generated/app_localizations.dart';
 import '../../llm/presentation/llm_settings_section.dart';
+import '../../sync/presentation/sync_settings_section.dart';
 import '../application/settings_controller.dart';
 import 'hotkey_recorder_dialog.dart';
 
@@ -243,6 +243,8 @@ class SettingsScreen extends ConsumerWidget {
         data: (state) => ListView(
           padding: const EdgeInsets.all(16),
           children: [
+            const SyncSettingsSection(),
+            const SizedBox(height: 16),
             Text(
               lcm.settingsAppearance,
               style: Theme.of(context).textTheme.titleMedium,

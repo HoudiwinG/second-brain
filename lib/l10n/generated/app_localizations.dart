@@ -860,6 +860,90 @@ abstract class AppLocalizations {
   /// **'Transactions'**
   String get analyticsTransactions;
 
+  /// No description provided for @syncTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Sync'**
+  String get syncTitle;
+
+  /// No description provided for @syncHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Local profiles. The cloud backend is a stub for now: snapshots live in process memory.'**
+  String get syncHint;
+
+  /// No description provided for @syncAddProfile.
+  ///
+  /// In en, this message translates to:
+  /// **'Add profile'**
+  String get syncAddProfile;
+
+  /// No description provided for @syncProfileName.
+  ///
+  /// In en, this message translates to:
+  /// **'Profile name'**
+  String get syncProfileName;
+
+  /// No description provided for @syncActive.
+  ///
+  /// In en, this message translates to:
+  /// **'Active'**
+  String get syncActive;
+
+  /// No description provided for @syncSetActive.
+  ///
+  /// In en, this message translates to:
+  /// **'Make active'**
+  String get syncSetActive;
+
+  /// No description provided for @syncPush.
+  ///
+  /// In en, this message translates to:
+  /// **'Push'**
+  String get syncPush;
+
+  /// No description provided for @syncPull.
+  ///
+  /// In en, this message translates to:
+  /// **'Pull'**
+  String get syncPull;
+
+  /// No description provided for @syncDelete.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete profile'**
+  String get syncDelete;
+
+  /// No description provided for @syncNoProfiles.
+  ///
+  /// In en, this message translates to:
+  /// **'No sync profiles'**
+  String get syncNoProfiles;
+
+  /// No description provided for @syncSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Done'**
+  String get syncSaved;
+
+  /// No description provided for @syncError.
+  ///
+  /// In en, this message translates to:
+  /// **'Sync failed'**
+  String get syncError;
+
+  /// No description provided for @syncLast.
+  ///
+  /// In en, this message translates to:
+  /// **'Last sync'**
+  String get syncLast;
+
+  /// No description provided for @syncNever.
+  ///
+  /// In en, this message translates to:
+  /// **'never'**
+  String get syncNever;
+
   /// No description provided for @privateBadge.
   ///
   /// In en, this message translates to:

@@ -1,5 +1,6 @@
 import 'dart:convert';
-import 'dart:io';
+
+import 'package:universal_io/io.dart';
 
 import 'package:drift/drift.dart' show InsertMode, OrderingTerm, Value;
 
@@ -34,6 +35,29 @@ class BackupService {
         flush: true,
       );
       AppLogger.d('BackupService: JSON экспортирован (${map.length} разделов)');
+    });
+  }
+
+  /// Снимок для sync-бэкенда без записи на диск.
+  Future<Result<Map<String, Object?>>> buildSnapshot({
+    bool includeDeleted = false,
+  }) {
+    return RepositoryGuard.guard('BackupService.buildSnapshot', () async {
+      final data = await _buildBackup(includeDeleted: includeDeleted);
+      return Map<String, Object?>.from(data);
+    });
+  }
+
+  /// Восстанавливает снимок, пришедший с sync-бэкенда.
+  Future<Result<void>> restoreSnapshot(Map<String, Object?> snapshot) {
+    return RepositoryGuard.guard('BackupService.restoreSnapshot', () async {
+      final data = Map<String, dynamic>.from(snapshot);
+      _validateHeader(data);
+      await _db.transaction(() async {
+        await _clearAll();
+        await _importJsonData(data);
+        await rebuildSearchIndex(_db);
+      });
     });
   }
 

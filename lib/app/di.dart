@@ -6,6 +6,7 @@ import 'package:http/http.dart' as http;
 
 import '../core/secrets/secret_store.dart';
 import '../core/secrets/secure_secret_store.dart';
+import '../core/sync/sync_service.dart';
 import '../data/backup/backup_service.dart';
 import '../data/db/app_database.dart';
 import '../data/repositories/categories_repository.dart';
@@ -46,6 +47,8 @@ import '../features/notes/domain/note.dart';
 import '../features/notes/domain/tag.dart';
 import '../features/reminders/application/reminder_notifier.dart';
 import '../features/reminders/application/reminder_scheduler.dart';
+import '../features/sync/data/sync_profile_repository.dart';
+import '../features/sync/domain/sync_backend.dart';
 import '../features/search/domain/search_hit.dart';
 import '../features/tasks/domain/task_item.dart';
 import 'desktop_services.dart';
@@ -129,6 +132,23 @@ final searchRepositoryProvider = FutureProvider<SearchRepository>((ref) async {
 final backupServiceProvider = FutureProvider<BackupService>((ref) async {
   final db = await ref.watch(appDatabaseProvider.future);
   return BackupService(db);
+});
+
+final syncProfileRepositoryProvider = FutureProvider<SyncProfileRepository>((
+  ref,
+) async {
+  final settings = await ref.watch(settingsRepositoryProvider.future);
+  return SyncProfileRepository(settings);
+});
+
+final syncBackendProvider = Provider<SyncBackend>((ref) => StubSyncBackend());
+
+final syncServiceProvider = FutureProvider<SyncService>((ref) async {
+  return LocalSyncService(
+    backup: await ref.watch(backupServiceProvider.future),
+    backend: ref.watch(syncBackendProvider),
+    profiles: await ref.watch(syncProfileRepositoryProvider.future),
+  );
 });
 
 /// Треки и сессии обучения.

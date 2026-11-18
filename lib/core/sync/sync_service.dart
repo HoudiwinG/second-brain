@@ -1,32 +1,95 @@
+﻿import 'dart:async';
+
+import '../../data/backup/backup_service.dart';
+import '../../features/sync/data/sync_profile_repository.dart';
+import '../../features/sync/domain/sync_backend.dart';
+import '../../features/sync/domain/sync_profile.dart';
+import '../error/app_exception.dart';
 import '../result/result.dart';
 
-/// Состояние облачной синхронизации.
-enum SyncStatus {
-  /// Синхронизация отключена (фича-флаг `cloud.sync.enabled` = false).
-  disabled,
+/// Состояние облачной синхронизации (stub на stage-10).
+enum SyncStatus { disabled, idle, syncing, error }
 
-  /// Ожидание следующего запуска.
-  idle,
+/// Контракт sync-сервиса: push/pull снимка для локального профиля.
+abstract interface class SyncService {
+  Future<Result<void>> push(SyncProfile profile);
 
-  /// Идёт push/pull.
-  syncing,
+  Future<Result<void>> pull(SyncProfile profile);
 
-  /// Последняя синхронизация завершилась ошибкой.
-  error,
+  Stream<SyncStatus> get status;
 }
 
-/// Контракт облачной синхронизации (заготовка, PROMPT.md модуль 13).
+/// Локально-первичная реализация: backup-snapshot → backend → restore.
 ///
-/// Реализация появится на stage-10; до этого флаг `cloud.sync.enabled`
-/// выключен, а UI не вызывает методы. Контракт фиксируется сейчас, чтобы
-/// репозитории и настройки не пришлось перепроектировать позже.
-abstract interface class SyncService {
-  /// Отправляет локальные изменения на сервер.
-  Future<Result<void>> push();
+/// В первой итерации stage-10 backend — [StubSyncBackend], поэтому данные
+/// живут в памяти процесса. OAuth/облачный backend подключается через
+/// [SyncBackend] без изменения UI.
+class LocalSyncService implements SyncService {
+  LocalSyncService({
+    required this.backup,
+    required this.backend,
+    required this.profiles,
+  });
 
-  /// Забирает изменения с сервера и применяет их локально.
-  Future<Result<void>> pull();
+  final BackupService backup;
+  final SyncBackend backend;
+  final SyncProfileRepository profiles;
+  final _status = StreamController<SyncStatus>.broadcast();
+  SyncStatus _current = SyncStatus.idle;
 
-  /// Текущий статус синхронизации для индикатора в UI.
-  Stream<SyncStatus> get status;
+  @override
+  Stream<SyncStatus> get status => _status.stream;
+
+  void _emit(SyncStatus value) {
+    _current = value;
+    if (!_status.isClosed) _status.add(value);
+  }
+
+  @override
+  Future<Result<void>> push(SyncProfile profile) async {
+    _emit(SyncStatus.syncing);
+    final snapshot = await backup.buildSnapshot();
+    if (snapshot is Failure<Map<String, Object?>>) {
+      _emit(SyncStatus.error);
+      return Result.failure(snapshot.error);
+    }
+    final pushed = await backend.push(
+      profile,
+      (snapshot as Success<Map<String, Object?>>).value,
+    );
+    if (pushed is Failure<void>) {
+      _emit(SyncStatus.error);
+      return Result.failure(pushed.error);
+    }
+    await profiles.markSynced(profile.id, DateTime.now().toUtc());
+    _emit(SyncStatus.idle);
+    return const Result.success(null);
+  }
+
+  @override
+  Future<Result<void>> pull(SyncProfile profile) async {
+    _emit(SyncStatus.syncing);
+    final pulled = await backend.pull(profile);
+    if (pulled is Failure<Map<String, Object?>?>) {
+      _emit(SyncStatus.error);
+      return Result.failure(pulled.error);
+    }
+    final snapshot = (pulled as Success<Map<String, Object?>?>).value;
+    if (snapshot == null) {
+      _emit(SyncStatus.error);
+      return const Result.failure(
+        ValidationException('SyncService: на backend нет снимка'),
+      );
+    }
+    final restored = await backup.restoreSnapshot(snapshot);
+    if (restored is Failure<void>) {
+      _emit(SyncStatus.error);
+      return Result.failure(restored.error);
+    }
+    await profiles.markSynced(profile.id, DateTime.now().toUtc());
+    _emit(SyncStatus.idle);
+    return const Result.success(null);
+  }
+
+  SyncStatus get currentStatus => _current;
 }

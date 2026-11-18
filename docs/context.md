@@ -1,13 +1,15 @@
 # Контекст проекта (снимок состояния)
 
-- **Текущий этап:** stage-09 (полировка MVP) — **PASS WITH COMMENTS
-  (0 MAJOR)** после первого FAIL-ревью. Windows release build и Inno Setup
-  installer (с VC++ runtime), perf-smoke, packaging tests, CI artifact,
-  README/RELEASE. Analyze 0, test **243/243**, debug/release build success;
-  CI `44124645140` (`1bc7827`) — success, artifact ~36 MB. Отчёт:
-  [stages/stage-09.md](stages/stage-09.md); финальное ревью:
-  [reviews/stage-09-final-review.md](reviews/stage-09-final-review.md);
-  ADR-026; схема **v8** без изменений.
+- **Текущий этап:** stage-10 (после MVP) — **первая итерация: sync core +
+  web, self-check, ревью ожидается.** Локальные sync-профили, backend stub,
+  snapshot push/pull, web-сборка, CI `build-web`. Analyze 0, test **245/245**,
+  Windows debug + web release build success. Отчёт:
+  [stages/stage-10.md](stages/stage-10.md); ADR-027; схема **v8** без
+  изменений.
+- **Предыдущий этап:** stage-09 — **PASS WITH COMMENTS (0 MAJOR)**;
+  installer + VC++ runtime, perf-smoke; CI `44124645140` (`1bc7827`).
+  Финальное ревью:
+  [reviews/stage-09-final-review.md](reviews/stage-09-final-review.md).
 - **Предыдущий этап:** stage-08 — **PASS WITH COMMENTS (0 MAJOR)** после
   первого FAIL-ревью; FTS/аналитика, CI `44030371436` (`3743fc2`), 243/243.
   Финальное ревью:
@@ -60,9 +62,10 @@
   **FAIL** (ревью и повторное №2). Результаты исправлений R02-001…R02-008 —
   [reviews/stage-02-review-results.md](reviews/stage-02-review-results.md),
   R02-009…R02-013 — [reviews/stage-02-fix-results.md](reviews/stage-02-fix-results.md).
-- **Текущий отчёт:** [stages/stage-09.md](stages/stage-09.md)
+- **Текущий отчёт:** [stages/stage-10.md](stages/stage-10.md)
 - **Открытых CRITICAL:** 0
-- **Stage-09:** PASS WITH COMMENTS (0 MAJOR) после первого FAIL-ревью.
+- **Stage-10:** первая итерация, ревью ожидается.
+  **Stage-09:** PASS WITH COMMENTS (0 MAJOR) после первого FAIL-ревью.
   **Stage-08:** PASS WITH COMMENTS (0 MAJOR) после первого FAIL-ревью.
   **Stage-07:** PASS WITH COMMENTS (0 MAJOR) после первого FAIL-ревью.
   **Stage-06:** PASS WITH COMMENTS (0 MAJOR) после двух FAIL-кругов.
@@ -74,11 +77,13 @@
   TD-28 (нет UI выбора контекста; триггер перенесён на позднюю доработку
   чата). TD-21 — отдельное принятое ограничение `REAL` для финансов.
 - **Сборка:** `flutter analyze --fatal-infos` — **No issues found**;
-  `flutter test` — **243/243**; `flutter build windows --debug` и
-  `--release` — **success** (2026-11-17); CI `44124645140` (`1bc7827`) —
-  success, installer artifact `second-brain-windows` (~36 MB).
+  `flutter test` — **245/245**; `flutter build windows --debug` и
+  `flutter build web --release` — **success** (2026-11-18); CI — после push
+  stage-10.
 - **Installer:** `installer/second_brain.iss`,
   `tool/build_installer.ps1`, artifact `second-brain-windows`.
+- **Web:** `web/` + `drift/wasm` (`sqlite3.wasm`, `drift_worker.js`);
+  CI artifact `second-brain-web`.
 - **Flutter SDK:** 3.47.7 stable, `C:\src\flutter` (Dart 3.13.5)
 - **Windows-тулчейн:** Visual Studio Build Tools 2022 17.14 (MSVC v143 +
   Windows SDK + ATL/ATLMFC), установлен 2026-10-24; `flutter doctor` — без
@@ -187,6 +192,16 @@
 - `EmbeddingService` и `VectorStore` — интерфейсы RAG, без индексации.
 - В чате пока нет UI выбора контекста (TD-28), но production-путь
   `sendMessage(contextRefs:)` покрыт тестами.
+
+## Что сделано на stage-10 (первая итерация)
+
+- Sync-профили в `app_settings`; `SyncBackend`/`StubSyncBackend`;
+  `LocalSyncService` (snapshot push/pull через backup) и UI в настройках.
+- Web: conditional Drift (NativeDatabase / drift WASM), web-stub desktop-
+  сервисов, `web/sqlite3.wasm` + `drift_worker.js`, `universal_io`.
+- CI `build-web` + artifact `second-brain-web`; Windows installer сохранён.
+- Тесты: 245/245, analyze 0, Windows debug + web release build success.
+  Реального облака/OAuth/подписки пока нет — backend stub.
 
 ## Что сделано на stage-09
 
@@ -439,13 +454,14 @@
 - DST-переход (23/25-часовые сутки) локально не воспроизводился; тест
   `dashboard_period_test.dart` проверяет календарную семантику границ.
 
-## Ближайшие задачи (stage-09/MVP)
-- Провести независимое ревью stage-09 и закрыть MVP.
-- **Stage-10 (после MVP)**: облачный бэкенд, синхронизация, мультиаккаунт,
-  подписка, веб/мобильные порты.
+## Ближайшие задачи (stage-10)
+- Провести ревью первой итерации stage-10; затем выбрать реальный backend
+  (Supabase/REST), OAuth/RLS и entity-level sync.
+- Web runtime smoke (secure storage, file backup UI, WASM DB).
+- Подписка/биллинг и мобильные порты.
 - Закрыть ограничения MVP: live OAuth/API smoke, Mail.ru, live-smoke
-  Crossref/HN/Openverse, вложения в поиске, фильтр тегов, мультивалютная
-  аналитика, подпись installer.
+  Crossref/HN/Openverse, вложения, фильтр тегов, мультивалютная аналитика,
+  подпись installer.
 - Учесть неблокирующие S03R/S04Z/S05Z-комментарии.
 - TD-28 (UI выбора контекста) — отдельная поздняя доработка чата.
 - RAG: реализация `EmbeddingService`/`VectorStore` и индексация заметок.
@@ -480,6 +496,7 @@
 - ADR-024: поиск идей — Crossref/Hacker News, Openverse
 - ADR-025: глобальный FTS-поиск и локальная аналитика
 - ADR-026: Windows release build и Inno Setup installer
+- ADR-027: sync-профили, backend stub и web-сборка
 
 ## Активный агент
 - agent-1: DeepSeek V4.1 Flash Free (OpenCode), ветка master
@@ -503,6 +520,7 @@
   228/228, ожидается re-review.
 
 ## Ссылки
+- Отчёт stage-10: [stages/stage-10.md](stages/stage-10.md)
 - Отчёт stage-09: [stages/stage-09.md](stages/stage-09.md)
 - Ревью stage-09: [reviews/stage-09-review.md](reviews/stage-09-review.md)
   (**FAIL**), [reviews/stage-09-final-review.md](reviews/stage-09-final-review.md)
@@ -530,6 +548,7 @@
   результатов
 - ADR-025: глобальный поиск по обучению/чату/почте и локальная аналитика
 - ADR-026: Windows release build и Inno Setup installer
+- ADR-027: sync-профили, backend stub и web-сборка
 - Отчёт stage-05: [stages/stage-05.md](stages/stage-05.md)
 - Ревью stage-05: [reviews/stage-05-review.md](reviews/stage-05-review.md)
 - Финальное ревью stage-05:

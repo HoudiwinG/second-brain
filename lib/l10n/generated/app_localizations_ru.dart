@@ -397,6 +397,49 @@ class AppLocalizationsRu extends AppLocalizations {
   String get analyticsTransactions => 'Операции';
 
   @override
+  String get syncTitle => 'Синхронизация';
+
+  @override
+  String get syncHint =>
+      'Локальные профили. Облачный backend пока stub: снимок живёт в памяти процесса.';
+
+  @override
+  String get syncAddProfile => 'Добавить профиль';
+
+  @override
+  String get syncProfileName => 'Название профиля';
+
+  @override
+  String get syncActive => 'Активный';
+
+  @override
+  String get syncSetActive => 'Сделать активным';
+
+  @override
+  String get syncPush => 'Отправить';
+
+  @override
+  String get syncPull => 'Получить';
+
+  @override
+  String get syncDelete => 'Удалить профиль';
+
+  @override
+  String get syncNoProfiles => 'Профилей синхронизации нет';
+
+  @override
+  String get syncSaved => 'Готово';
+
+  @override
+  String get syncError => 'Ошибка синхронизации';
+
+  @override
+  String get syncLast => 'Последняя синхронизация';
+
+  @override
+  String get syncNever => 'ещё не было';
+
+  @override
   String get privateBadge => 'Приватно';
 
   @override

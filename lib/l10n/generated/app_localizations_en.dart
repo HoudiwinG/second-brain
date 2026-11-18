@@ -397,6 +397,49 @@ class AppLocalizationsEn extends AppLocalizations {
   String get analyticsTransactions => 'Transactions';
 
   @override
+  String get syncTitle => 'Sync';
+
+  @override
+  String get syncHint =>
+      'Local profiles. The cloud backend is a stub for now: snapshots live in process memory.';
+
+  @override
+  String get syncAddProfile => 'Add profile';
+
+  @override
+  String get syncProfileName => 'Profile name';
+
+  @override
+  String get syncActive => 'Active';
+
+  @override
+  String get syncSetActive => 'Make active';
+
+  @override
+  String get syncPush => 'Push';
+
+  @override
+  String get syncPull => 'Pull';
+
+  @override
+  String get syncDelete => 'Delete profile';
+
+  @override
+  String get syncNoProfiles => 'No sync profiles';
+
+  @override
+  String get syncSaved => 'Done';
+
+  @override
+  String get syncError => 'Sync failed';
+
+  @override
+  String get syncLast => 'Last sync';
+
+  @override
+  String get syncNever => 'never';
+
+  @override
   String get privateBadge => 'Private';
 
   @override
