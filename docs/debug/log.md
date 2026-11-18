@@ -855,12 +855,14 @@ StubSyncBackend, LocalSyncService (snapshot push/pull через backup), UI в
 desktop-сервисов, web/sqlite3.wasm + drift_worker.js, universal_io. CI
 добавил build-web и artifact second-brain-web. Analyze 0, test **248/248**,
 Windows debug и web release build success. Реального облака/OAuth/подписки
-нет; независимое ревью ожидается.
+нет. Три круга A/B-ревью: FAIL ×2 (Pull/refresh, busy-логика) →
+**PASS WITH COMMENTS (0 MAJOR)**; CI `44329072922` (`3981839`).
 
 | Timestamp (UTC) | ID | Действие | Примечание |
 |-----------------|----|----------|------------|
 | 2026-11-18 | — | sync | profiles в app_settings, stub backend, snapshot push/pull |
 | 2026-11-18 | — | web | conditional Drift WASM, web stub, wasm/worker assets |
 | 2026-11-18 | — | ci | build-web + artifact second-brain-web |
-| 2026-11-18 | — | tests | sync_service_test, 248/248 |
-| 2026-11-18 | — | статус | first iteration self-check; ожидается ревью |
+| 2026-11-18 | — | tests | sync unit + widget, 248/248 |
+| 2026-11-18 | — | fix | Pull confirm/undo, SyncRefreshHost, busy-логика, UTF-8 |
+| 2026-11-18 | — | статус | PASS WITH COMMENTS (0 MAJOR), CI `44329072922` |

@@ -3,9 +3,9 @@
 - **Дата:** 2026-11-18
 - **Агент:** agent-1 (OpenCode)
 - **Ветка:** `master`
-- **Статус:** **fixes ready**, ожидается повторное ревью. Первое ревью A/B —
-  FAIL (деструктивный Pull без подтверждения/undo, UI не обновляется после
-  restore); блокеры исправлены.
+- **Статус:** **PASS WITH COMMENTS (0 MAJOR)** после трёх кругов A/B-ревью.
+  Первое ревью — FAIL (деструктивный Pull, UI не обновляется), второе — FAIL
+  (инвертированная busy-логика), финальное — PASS WITH COMMENTS.
 - **Предыдущий этап:** stage-09 — **PASS WITH COMMENTS (0 MAJOR)**.
 - **Схема БД:** **v8** без изменений.
 - **ADR:** ADR-027.
@@ -19,9 +19,12 @@
   `app_settings` (`sync.profiles`), один активный.
 - `SyncBackend` / `StubSyncBackend` — push/pull снимка в памяти процесса.
 - `LocalSyncService` — snapshot через `BackupService`:
-  push = export → backend; pull = backend → restore + rebuild FTS.
+  push = export → backend; pull = подтверждение → safety snapshot → restore →
+  rebuild FTS; undo возвращает снимок до pull.
 - Settings UI: «Синхронизация» — создать/активировать/удалить профиль,
-  push/pull, статус последней синхронизации.
+  push/pull, undo, статус последней синхронизации.
+- После restore `SyncRefreshHost` пересоздаёт экраны веток/analytics по
+  `syncDataVersion`, не трогая Router/Navigator.
 - Web:
   - `web/` (`index.html`, manifest, `sqlite3.wasm`, `drift_worker.js`);
   - условное подключение Drift: NativeDatabase (IO) / `drift/wasm` (web);
@@ -38,7 +41,7 @@
 - `flutter analyze --fatal-infos` — 0 issues.
 - `flutter build windows --debug` — success.
 - `flutter build web --release` — success.
-- CI `44327437808` (`f301efa`) — success: analyze+test, build-web
+- CI `44329072922` (`3981839`) — success: analyze+test, build-web
   (`second-brain-web`), build-windows installer.
 
 ## Ограничения
@@ -58,4 +61,10 @@
 
 ## Ссылки
 - ADR-027.
+- Первое ревью: [../reviews/stage-10-review.md](../reviews/stage-10-review.md)
+  (**FAIL**).
+- Исправления: [../reviews/stage-10-fix-results.md](../reviews/stage-10-fix-results.md).
+- Финальное ревью:
+  [../reviews/stage-10-final-review.md](../reviews/stage-10-final-review.md)
+  (**PASS WITH COMMENTS, 0 MAJOR**).
 - Предыдущий этап: [stage-09.md](stage-09.md).

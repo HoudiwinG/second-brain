@@ -6,9 +6,9 @@
 
 ## Статус
 - **MVP реализован:** этапы 0–9; stage-09 — полировка, тесты и Windows-инсталлятор.
-- **Stage-10, первая итерация:** локальные sync-профили + backend stub,
-  web-сборка (Drift WASM), CI artifact `second-brain-web`. Облако/OAuth/
-  подписка пока не подключены.
+- **Stage-10 — PASS WITH COMMENTS (0 MAJOR):** локальные sync-профили +
+  backend stub, snapshot Pull с confirm/undo, web-сборка (Drift WASM), CI
+  artifact `second-brain-web`. Облако/OAuth/подписка пока не подключены.
 - Данные локальны (SQLite/Drift), секреты — в secure storage.
 - Точки входа: [docs/INDEX.md](docs/INDEX.md), [docs/context.md](docs/context.md),
   [docs/decisions.md](docs/decisions.md), [docs/tech-debt.md](docs/tech-debt.md),
